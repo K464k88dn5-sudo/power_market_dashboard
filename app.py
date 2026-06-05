@@ -133,7 +133,16 @@ st.markdown("""
     /* 隐藏滚动条相关 */
     .st-emotion-cache-1wrcr25 { padding-top: 0 !important; }
 
-    /* ===== 响应式自适应 ===== */
+    /* ===== 单页自适应（不滚动） ===== */
+    html, body, .stApp, .block-container {
+        overflow: hidden !important;
+        height: 100vh !important;
+    }
+    .block-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.2rem !important;
+    }
 
     /* 平板 (768px~1024px) */
     @media (max-width: 1024px) {
@@ -146,25 +155,26 @@ st.markdown("""
 
     /* 手机 (< 768px) */
     @media (max-width: 768px) {
-        .block-container { padding: 0.2rem 0.3rem !important; }
-        .kpi-bar { flex-wrap: wrap; gap: 0.15rem; }
-        .kpi-card { min-width: 45%; padding: 0.15rem 0.3rem; }
-        .kpi-value { font-size: 0.75rem !important; }
-        .kpi-label { font-size: 0.5rem; }
-        .dash-header { padding: 0.15rem 0.5rem; }
-        .dash-title { font-size: 0.8rem; }
-        .dash-time { font-size: 0.55rem; }
-        .mod-card { padding: 0.2rem; margin-bottom: 0.15rem; }
-        .mod-head { font-size: 0.65rem; }
-        [data-testid="stMetricValue"] { font-size: 0.7rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.5rem !important; }
+        .block-container { padding: 0.15rem 0.2rem !important; }
+        .kpi-bar { flex-wrap: wrap; gap: 0.1rem; }
+        .kpi-card { min-width: 45%; padding: 0.1rem 0.2rem; }
+        .kpi-value { font-size: 0.7rem !important; }
+        .kpi-label { font-size: 0.45rem; }
+        .dash-header { padding: 0.1rem 0.4rem; }
+        .dash-title { font-size: 0.75rem; }
+        .dash-time { font-size: 0.5rem; }
+        .mod-card { padding: 0.15rem; margin-bottom: 0.1rem; }
+        .mod-head { font-size: 0.6rem; margin-bottom: 0.1rem; padding-bottom: 0.1rem; }
+        [data-testid="stMetricValue"] { font-size: 0.65rem !important; }
+        [data-testid="stMetricLabel"] { font-size: 0.45rem !important; }
+        [data-testid="stMetric"] { padding: 0.02rem 0 !important; }
     }
 
     /* 小屏手机 (< 480px) */
     @media (max-width: 480px) {
         .kpi-card { min-width: 100%; }
-        .kpi-value { font-size: 0.7rem !important; }
-        .dash-title { font-size: 0.7rem; }
+        .kpi-value { font-size: 0.65rem !important; }
+        .dash-title { font-size: 0.65rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -310,7 +320,7 @@ with col1:
                         marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                         textposition="top center" if clr=="#ff4444" else "bottom center",
                         textfont=dict(size=8,color=clr),showlegend=False,cliponaxis=False))
-            fig1.update_layout(height=120,template="plotly_dark",showlegend=False,
+            fig1.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=28,r=4,t=18,b=6),font=dict(size=7),
                 title=dict(text=f"📅 {fmt_date(today)} 逐时温度(℃)",font=dict(size=9)))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H:00")
@@ -326,7 +336,7 @@ with col1:
             fig2.add_trace(go.Scatter(x=list(agg["标签"])+list(agg["标签"][::-1]),
                 y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
-            fig2.update_layout(height=120,template="plotly_dark",showlegend=False,
+            fig2.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
                 title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9)))
             fig2.update_xaxes(tickangle=-30,tickfont=dict(size=6))
@@ -338,7 +348,7 @@ with col1:
                 fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
                     line=dict(color="#6bcb77",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-            fig3.update_layout(height=120,template="plotly_dark",showlegend=False,
+            fig3.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
                 title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9)))
             fig3.update_xaxes(tickangle=-30,tickfont=dict(size=6))
@@ -349,7 +359,7 @@ with col1:
                 fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
                     line=dict(color="#a29bfe",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-            fig4.update_layout(height=120,template="plotly_dark",showlegend=False,
+            fig4.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
                 title=dict(text="💧 预报湿度(%)",font=dict(size=9)))
             fig4.update_xaxes(tickangle=-30,tickfont=dict(size=6))
@@ -388,7 +398,7 @@ with col1:
             fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
-            fig_coal.update_layout(height=100,template="plotly_dark",showlegend=False,
+            fig_coal.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=30,r=10,t=18,b=4),font=dict(size=8),
                 title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=9)))
             fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=6))
@@ -400,7 +410,7 @@ with col1:
             fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
-            fig_lng.update_layout(height=100,template="plotly_dark",showlegend=False,
+            fig_lng.update_layout(height=80,template="plotly_dark",showlegend=False,
                 margin=dict(l=30,r=10,t=18,b=4),font=dict(size=8),
                 title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=9)))
             fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=6))
@@ -451,7 +461,7 @@ with col2:
                 html=f'<div style="font-size:10px;font-weight:bold;color:#222;text-align:center;text-shadow:1px 1px 2px white,-1px -1px 2px white,1px -1px 2px white,-1px 1px 2px white;">{nm}<br><span style="font-size:12px;">{temp:.0f}℃</span></div>',
                 icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
-        st_folium(m,width="100%",height=350,returned_objects=[])
+        st_folium(m,width="100%",height=280,returned_objects=[])
         avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
         st.caption(f"均温**{avg_t:.1f}℃** | 最高{mx['城市']}**{mx['温度']:.1f}℃** | 最低{mn['城市']}**{mn['温度']:.1f}℃**")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -525,7 +535,7 @@ with col3:
                     mode="lines+markers", marker=dict(size=2)))
 
         if has_data:
-            fig.update_layout(height=180, template="plotly_dark",
+            fig.update_layout(height=140, template="plotly_dark",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7)),
                 margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8),
                 xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
