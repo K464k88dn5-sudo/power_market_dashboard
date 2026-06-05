@@ -8,7 +8,11 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime, date as _date, timedelta
+from datetime import datetime, date as _date, timedelta, timezone
+
+# 北京时间（Streamlit Cloud 服务器在美国，需强制 UTC+8）
+_CN_TZ = timezone(timedelta(hours=8))
+def _now(): return datetime.now(_CN_TZ)
 import json, copy, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -233,7 +237,7 @@ with st.sidebar:
     maint_file = st.file_uploader("🔧 导入检修Excel", type=["xlsx","xls","csv"])
     if st.button("🔄 刷新全部", use_container_width=True):
         st.cache_data.clear(); st.rerun()
-    st.caption(f"⏱ {datetime.now().strftime('%H:%M:%S')}")
+    st.caption(f"⏱ {_now().strftime('%H:%M:%S')}")
 
 # ============================================================
 # 加载数据
@@ -257,7 +261,7 @@ margin_color = {"充裕":"#2ecc71","偏紧":"#f39c12","紧张":"#e74c3c"}.get(ma
 sw = '✅' if not weather_df.empty else '❌'
 sf = '✅' if not fuel_df.empty else '❌'
 sp = '✅' if price_data.get('source') else '❌'
-st.markdown(f'<div class="dash-header"><span class="dash-title">⚡ 电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {datetime.now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header"><span class="dash-title">⚡ 电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
@@ -398,7 +402,7 @@ with col1:
     else:
         from datetime import timedelta as _td
         fuel_df = fuel_df.copy()
-        _cutoff = datetime.now() - _td(days=30)
+        _cutoff = _now() - _td(days=30)
         fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
         fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
 
@@ -500,8 +504,8 @@ with col3:
     if not _forecast_df.empty:
         _all_dates += _forecast_df["_日期"].unique().tolist()
     # 添加今天和明天（模型可预测）
-    _today = datetime.now().strftime("%Y-%m-%d")
-    _tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+    _today = _now().strftime("%Y-%m-%d")
+    _tomorrow = (_now() + timedelta(days=1)).strftime("%Y-%m-%d")
     for _d in [_today, _tomorrow]:
         if _d not in _all_dates:
             _all_dates.append(_d)
