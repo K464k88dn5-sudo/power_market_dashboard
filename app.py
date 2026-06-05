@@ -226,6 +226,55 @@ def cached_fuel_summary(): return get_fuel_latest_summary()
 @st.cache_data(ttl=300)
 def cached_price(): return fetch_electricity_data()
 
+
+def parse_maintenance_from_disclosure(target_date: str) -> dict:
+    """
+    从信息披露xlsx解析检修数据
+    返回: {"机组检修": DataFrame, "输变电检修": DataFrame, "检修容量": dict}
+    """
+    import pandas as _pd
+    disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
+
+    result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
+
+    if not os.path.exists(fp):
+        return result
+
+    try:
+        xl = _pd.ExcelFile(fp)
+
+        # 机组检修预测信息
+        sheets = [s for s in xl.sheet_names if "机组检修预测信息" in s]
+        if sheets:
+            df = _pd.read_excel(fp, sheet_name=sheets[0], header=None, skiprows=1)
+            if len(df.columns) >= 7:
+                df.columns = ["序号", "电厂名称", "机组名称", "状态类型", "设备改变原因", "开始时间", "结束时间"]
+                result["机组检修"] = df[["电厂名称", "机组名称", "状态类型", "开始时间", "结束时间"]].copy()
+
+        # 输变电检修预测信息
+        sheets = [s for s in xl.sheet_names if "输变电检修预测信息" in s]
+        if sheets:
+            df = _pd.read_excel(fp, sheet_name=sheets[0], header=None, skiprows=1)
+            if len(df.columns) >= 4:
+                df.columns = ["序号", "日期", "元件名称", "电压等级"]
+                result["输变电检修"] = df[["元件名称", "电压等级"]].copy()
+
+        # 机组检修容量预测信息
+        sheets = [s for s in xl.sheet_names if "机组检修容量" in s]
+        if sheets:
+            df = _pd.read_excel(fp, sheet_name=sheets[0], header=None, skiprows=1)
+            if len(df.columns) >= 4:
+                result["检修容量"] = {
+                    "总容量": float(df.iloc[0, 2]) if len(df) > 0 else 0,
+                    "市场机组容量": float(df.iloc[0, 3]) if len(df) > 0 else 0,
+                }
+    except Exception as e:
+        print(f"[检修数据] 解析失败: {e}")
+
+    return result
+
+
 # ============================================================
 # 侧边栏
 # ============================================================
@@ -480,7 +529,38 @@ with col2:
         st.caption(f"均温**{avg_t:.1f}℃** | 最高{mx['城市']}**{mx['温度']:.1f}℃** | 最低{mn['城市']}**{mn['温度']:.1f}℃**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ===== 第三列：电价分析 + 检修计划 =====
+    # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
+    # 获取当前电价模块选择的日期
+    _price_date = st.session_state.get("price_date_sel", datetime.now().strftime("%Y-%m-%d"))
+    _maint_data = parse_maintenance_from_disclosure(_price_date)
+
+    if _maint_data["检修容量"]:
+        _cap = _maint_data["检修容量"]
+        mc1, mc2 = st.columns(2)
+        with mc1: st.metric("总检修容量", f"{_cap['总容量']:.0f} MW")
+        with mc2: st.metric("市场机组容量", f"{_cap['市场机组容量']:.0f} MW")
+
+    _mach = _maint_data.get("机组检修", pd.DataFrame())
+    _line = _maint_data.get("输变电检修", pd.DataFrame())
+
+    if not _mach.empty:
+        st.markdown(f"**🔩 机组检修**（{len(_mach)}台）")
+        st.dataframe(_mach, use_container_width=True, hide_index=True, height=80)
+
+    if not _line.empty:
+        st.markdown(f"**⚡ 输变电检修**（{len(_line)}条）")
+        _line_show = _line.head(10)
+        st.dataframe(_line_show, use_container_width=True, hide_index=True, height=80)
+        if len(_line) > 10:
+            st.caption(f"显示前10条，共{len(_line)}条")
+
+    if _mach.empty and _line.empty and not _maint_data["检修容量"]:
+        st.info(f"{_price_date} 无检修数据，请先上传披露文件")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ===== 第三列：电价分析 =====
 with col3:
     # ----- 电价分析 -----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析</div>', unsafe_allow_html=True)
@@ -642,17 +722,4 @@ with col3:
     else:
         st.warning("无电价数据文件")
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ----- 检修计划 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
-    if not maint_df.empty:
-        mc1,mc2,mc3=st.columns(3)
-        with mc1: st.metric("高峰负荷",f"{mi['高峰负荷(MW)']:,}MW")
-        with mc2: st.metric("在检容量",f"{mi['进行中容量(MW)']:,}MW")
-        with mc3: {"充裕":st.success,"偏紧":st.warning,"紧张":st.error}.get(margin_lv,st.info)(f"裕度{margin_val:.1f}%")
-        st.progress(min(margin_val/100,1.0))
-        cols=[c for c in ["线路名称","检修类型","状态","影响容量(MW)"] if c in maint_df.columns]
-        if cols: st.dataframe(maint_df[cols],use_container_width=True,hide_index=True,height=100)
-    else: st.info("无检修数据")
     st.markdown('</div>', unsafe_allow_html=True)
