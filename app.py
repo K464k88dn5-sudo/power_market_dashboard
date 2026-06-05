@@ -189,7 +189,7 @@ st.markdown("""
 # 常量 & 工具函数
 # ============================================================
 CN_WEEKDAYS = {0:"周一",1:"周二",2:"周三",3:"周四",4:"周五",5:"周六",6:"周日"}
-def fmt_date(dt): return f"{dt.month:02d}-{dt.day:02d}"
+def fmt_date(dt): return f"{dt.month}月{dt.day}日"
 def fmt_date_short(dt): return f"{dt.month}月{dt.day}日"
 
 CITY_ADCODE = {
@@ -329,7 +329,7 @@ with col1:
             fig1.update_layout(height=90,template="plotly_dark",showlegend=False,
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9)))
-            fig1.update_xaxes(dtick=3600000*3,tickformat="%H:00")
+            fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
             st.plotly_chart(fig1,use_container_width=True)
 
             fig2 = go.Figure()
