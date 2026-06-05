@@ -132,6 +132,40 @@ st.markdown("""
     header[data-testid="stHeader"] { display: none !important; }
     /* 隐藏滚动条相关 */
     .st-emotion-cache-1wrcr25 { padding-top: 0 !important; }
+
+    /* ===== 响应式自适应 ===== */
+
+    /* 平板 (768px~1024px) */
+    @media (max-width: 1024px) {
+        .kpi-bar { flex-wrap: wrap; }
+        .kpi-card { min-width: 30%; }
+        .kpi-value { font-size: 0.8rem !important; }
+        .dash-title { font-size: 0.9rem; }
+        [data-testid="stMetricValue"] { font-size: 0.75rem !important; }
+    }
+
+    /* 手机 (< 768px) */
+    @media (max-width: 768px) {
+        .block-container { padding: 0.2rem 0.3rem !important; }
+        .kpi-bar { flex-wrap: wrap; gap: 0.15rem; }
+        .kpi-card { min-width: 45%; padding: 0.15rem 0.3rem; }
+        .kpi-value { font-size: 0.75rem !important; }
+        .kpi-label { font-size: 0.5rem; }
+        .dash-header { padding: 0.15rem 0.5rem; }
+        .dash-title { font-size: 0.8rem; }
+        .dash-time { font-size: 0.55rem; }
+        .mod-card { padding: 0.2rem; margin-bottom: 0.15rem; }
+        .mod-head { font-size: 0.65rem; }
+        [data-testid="stMetricValue"] { font-size: 0.7rem !important; }
+        [data-testid="stMetricLabel"] { font-size: 0.5rem !important; }
+    }
+
+    /* 小屏手机 (< 480px) */
+    @media (max-width: 480px) {
+        .kpi-card { min-width: 100%; }
+        .kpi-value { font-size: 0.7rem !important; }
+        .dash-title { font-size: 0.7rem; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
