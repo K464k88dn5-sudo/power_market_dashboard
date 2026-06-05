@@ -495,10 +495,12 @@ with col3:
         _all_dates += _actual_df["_日期"].unique().tolist()
     if not _forecast_df.empty:
         _all_dates += _forecast_df["_日期"].unique().tolist()
-    # 添加明天日期（模型可预测）
+    # 添加今天和明天（模型可预测）
+    _today = datetime.now().strftime("%Y-%m-%d")
     _tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    if _tomorrow not in _all_dates:
-        _all_dates.append(_tomorrow)
+    for _d in [_today, _tomorrow]:
+        if _d not in _all_dates:
+            _all_dates.append(_d)
     _all_dates = sorted(set(_all_dates), reverse=True)
 
     if _all_dates:
