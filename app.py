@@ -649,18 +649,38 @@ with col3:
                     mode="lines+markers", marker=dict(size=2)))
 
         # 模型实时预测（当选择的日期无实际/Excel预测数据时）
+        # 从 session_state 获取已保存的预测结果
+        _fc_key = f"forecast_{sel_date}"
+        _saved_fc = st.session_state.get(_fc_key)
+
+        if not has_data and _saved_fc is not None:
+            # 已有预测结果，直接显示
+            _fc_result = _saved_fc["result"]
+            _fc_log = _saved_fc.get("log", "")
+            fig.add_trace(go.Scatter(
+                x=_fc_result["小时"], y=_fc_result["预测电价(元/MWh)"],
+                name="模型预测", line=dict(color="#ff6b6b", width=2),
+                mode="lines+markers", marker=dict(size=4),
+                fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
+            has_data = True
+
         if not has_data:
             if st.button(f"🔮 预测 {sel_date} 电价", key="btn_forecast"):
                 with st.spinner("模型推理中（约1-2分钟）..."):
                     from forecast.predictor import forecast_price
                     import io, contextlib
-                    # 捕获预测脚本输出
                     f = io.StringIO()
                     with contextlib.redirect_stdout(f):
                         fc_result = forecast_price(sel_date)
                     log_output = f.getvalue()
 
                 if not fc_result.empty:
+                    # 保存到 session_state
+                    st.session_state[_fc_key] = {
+                        "result": fc_result,
+                        "log": log_output,
+                    }
+
                     fig.add_trace(go.Scatter(
                         x=fc_result["小时"], y=fc_result["预测电价(元/MWh)"],
                         name="模型预测", line=dict(color="#ff6b6b", width=2),
@@ -668,35 +688,36 @@ with col3:
                         fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
                     has_data = True
 
-                    # 保存预测结果
+                    # 保存CSV
                     _pred_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predictions")
                     os.makedirs(_pred_dir, exist_ok=True)
                     fc_result.to_csv(os.path.join(_pred_dir, f"forecast_{sel_date}.csv"), index=False)
-
-                    # 预测详情
-                    st.markdown("**📋 预测结果详情**")
-                    _pc1, _pc2, _pc3, _pc4 = st.columns(4)
-                    _avg = fc_result["预测电价(元/MWh)"].mean()
-                    _peak = fc_result["预测电价(元/MWh)"].max()
-                    _valley = fc_result["预测电价(元/MWh)"].min()
-                    _peak_h = int(fc_result.loc[fc_result["预测电价(元/MWh)"].idxmax(), "小时"])
-                    _valley_h = int(fc_result.loc[fc_result["预测电价(元/MWh)"].idxmin(), "小时"])
-                    with _pc1: st.metric("均价", f"{_avg:.0f} 元/MWh")
-                    with _pc2: st.metric("峰值", f"{_peak:.0f}", f"{_peak_h}时")
-                    with _pc3: st.metric("谷值", f"{_valley:.0f}", f"{_valley_h}时")
-                    with _pc4: st.metric("峰谷差", f"{_peak - _valley:.0f}")
-
-                    # 逐时明细表
-                    with st.expander("📊 逐时预测明细", expanded=False):
-                        _display_df = fc_result.copy()
-                        _display_df.columns = ["小时", "预测电价(元/MWh)", "日期"]
-                        st.dataframe(_display_df, use_container_width=True, hide_index=True, height=200)
-
-                    # 预测过程日志
-                    with st.expander("🔍 预测过程日志", expanded=False):
-                        st.code(log_output if log_output else "无详细日志", language="text")
                 else:
                     st.error("预测失败，请检查披露文件是否已上传")
+
+        # 显示预测详情（无论新预测还是已保存）
+        if _saved_fc is not None:
+            _fc_result = _saved_fc["result"]
+            _fc_log = _saved_fc.get("log", "")
+            st.markdown("**📋 预测结果详情**")
+            _pc1, _pc2, _pc3, _pc4 = st.columns(4)
+            _avg = _fc_result["预测电价(元/MWh)"].mean()
+            _peak = _fc_result["预测电价(元/MWh)"].max()
+            _valley = _fc_result["预测电价(元/MWh)"].min()
+            _peak_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmax(), "小时"])
+            _valley_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmin(), "小时"])
+            with _pc1: st.metric("均价", f"{_avg:.0f} 元/MWh")
+            with _pc2: st.metric("峰值", f"{_peak:.0f}", f"{_peak_h}时")
+            with _pc3: st.metric("谷值", f"{_valley:.0f}", f"{_valley_h}时")
+            with _pc4: st.metric("峰谷差", f"{_peak - _valley:.0f}")
+
+            with st.expander("📊 逐时预测明细", expanded=False):
+                _display_df = _fc_result.copy()
+                _display_df.columns = ["小时", "预测电价(元/MWh)", "日期"]
+                st.dataframe(_display_df, use_container_width=True, hide_index=True, height=200)
+
+            with st.expander("🔍 预测过程日志", expanded=False):
+                st.code(_fc_log if _fc_log else "无详细日志", language="text")
 
         if has_data:
             fig.update_layout(height=140, template="plotly_dark",
