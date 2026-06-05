@@ -5927,3 +5927,102 @@ For `use_container_width=True`, use `width='stretch'`. For `use_container_width=
 `use_container_width` will be removed after 2025-12-31.
 
 For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:04:52.516 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:10:20.047 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:14:26.574 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:20:16.810 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:24:27.086 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:30:22.481 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:38:53.861 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173db070>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117685580>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173168b0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x11754ae20>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[Open-Meteo] 阳江 实况获取失败: HTTPSConnectionPool(host='api.open-meteo.com', port=443): Read timed out. (read timeout=10)
+[Open-Meteo] 云浮 实况获取失败: HTTPSConnectionPool(host='api.open-meteo.com', port=443): Read timed out. (read timeout=10)
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173db3a0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117327340>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x11787b100>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117508940>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1164c10a0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1177ff220>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x116f12c70>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1174747f0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1172ac640>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173e2520>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x11707f5b0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173d8790>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1174de970>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1171f2040>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173dbfa0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117e2ef10>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117d65f70>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x117a07970>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+[电价数据] 北极星爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: /topics/gddljy/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1173c8c40>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=15)'))
+[电价新闻] 北极星售电网 爬取失败: HTTPSConnectionPool(host='sd.bjx.com.cn', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x1178707f0>, 'Connection to sd.bjx.com.cn timed out. (connect timeout=10)'))
+[电价数据] 广东电力交易中心无法访问
+2026-06-05 10:44:44.746 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:52:53.616 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 10:56:59.794 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 11:02:50.570 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-05 11:12:38.031 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.

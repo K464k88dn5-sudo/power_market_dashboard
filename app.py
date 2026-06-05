@@ -483,23 +483,25 @@ with col3:
     _actual_df = pd.read_excel(_actual_path) if os.path.exists(_actual_path) else pd.DataFrame()
     _forecast_df = pd.read_excel(_forecast_path) if os.path.exists(_forecast_path) else pd.DataFrame()
 
-    # 统一日期格式为 "YYYY-MM-DD"
     _hour_cols = [f"{i}时" for i in range(24)]
     if not _actual_df.empty:
         _actual_df["_日期"] = pd.to_datetime(_actual_df["日期"]).dt.strftime("%Y-%m-%d")
     if not _forecast_df.empty:
         _forecast_df["_日期"] = pd.to_datetime(_forecast_df["日期"]).dt.strftime("%Y-%m-%d")
 
-    # 合并可用日期
+    # 合并可用日期 + 模型预测日期
     _all_dates = []
     if not _actual_df.empty:
         _all_dates += _actual_df["_日期"].unique().tolist()
     if not _forecast_df.empty:
         _all_dates += _forecast_df["_日期"].unique().tolist()
+    # 添加明天日期（模型可预测）
+    _tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+    if _tomorrow not in _all_dates:
+        _all_dates.append(_tomorrow)
     _all_dates = sorted(set(_all_dates), reverse=True)
 
     if _all_dates:
-        # 日期选择器
         sel_date = st.selectbox("选择日期", _all_dates, key="price_date_sel")
 
         fig = go.Figure()
@@ -518,27 +520,43 @@ with col3:
                     fill="tozeroy", fillcolor="rgba(0,210,211,0.1)"))
                 has_data = True
 
-        # 预测电价（校准后）
+        # Excel预测电价（校准后）
         if not _forecast_df.empty:
             _fc = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准后")]
             if not _fc.empty:
                 _row = _fc.iloc[0]
                 _vals = [_row[h] for h in _hour_cols]
                 fig.add_trace(go.Scatter(
-                    x=list(range(24)), y=_vals, name="预测电价(校准后)",
+                    x=list(range(24)), y=_vals, name="预测(校准后)",
                     line=dict(color="#ff6b6b", width=2, dash="dot"),
                     mode="lines+markers", marker=dict(size=3)))
                 has_data = True
 
-            # 预测电价（校准前）
             _fc2 = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准前")]
             if not _fc2.empty:
                 _row = _fc2.iloc[0]
                 _vals = [_row[h] for h in _hour_cols]
                 fig.add_trace(go.Scatter(
-                    x=list(range(24)), y=_vals, name="预测电价(校准前)",
+                    x=list(range(24)), y=_vals, name="预测(校准前)",
                     line=dict(color="#ffd93d", width=1.5, dash="dash"),
                     mode="lines+markers", marker=dict(size=2)))
+
+        # 模型实时预测（当选择的日期无实际/Excel预测数据时）
+        if not has_data:
+            if st.button(f"🔮 预测 {sel_date} 电价", key="btn_forecast"):
+                with st.spinner("模型推理中..."):
+                    from forecast.predictor import forecast_price
+                    fc_result = forecast_price(sel_date)
+                if not fc_result.empty:
+                    fig.add_trace(go.Scatter(
+                        x=fc_result["小时"], y=fc_result["预测电价(元/MWh)"],
+                        name="模型预测", line=dict(color="#ff6b6b", width=2),
+                        mode="lines+markers", marker=dict(size=4),
+                        fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
+                    has_data = True
+                    # 保存预测结果
+                    fc_result.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     f"predictions/forecast_{sel_date}.csv"), index=False)
 
         if has_data:
             fig.update_layout(height=140, template="plotly_dark",
@@ -560,7 +578,7 @@ with col3:
                     with pc2: st.metric("峰", f"{max(_vals):.0f}", f"{pk_h}时")
                     with pc3: st.metric("谷", f"{min(_vals):.0f}", f"{vl_h}时")
         else:
-            st.info(f"{sel_date} 无电价数据")
+            st.info(f"{sel_date} 无电价数据，点击上方按钮进行模型预测")
     else:
         st.warning("无电价数据文件")
 
