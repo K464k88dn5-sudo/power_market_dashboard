@@ -404,10 +404,10 @@ with col1:
             fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
-            fig_coal.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=30,r=10,t=18,b=4),font=dict(size=8),
-                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=9)))
-            fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=6))
+            fig_coal.update_layout(height=110,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
+                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10)))
+            fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=7))
             st.plotly_chart(fig_coal,use_container_width=True)
 
         # LNG气价
@@ -416,10 +416,10 @@ with col1:
             fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
-            fig_lng.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=30,r=10,t=18,b=4),font=dict(size=8),
-                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=9)))
-            fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=6))
+            fig_lng.update_layout(height=110,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
+                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10)))
+            fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=7))
             st.plotly_chart(fig_lng,use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 

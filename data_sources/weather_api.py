@@ -10,6 +10,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional
+import time
 
 # 广东21地市坐标
 GUANGDONG_CITIES = {
@@ -61,6 +62,30 @@ VARIABLE_KEYS = ",".join(VARIABLES.keys())
 
 
 # ============================================================
+# 通用重试请求封装（解决 Streamlit Cloud 跨洋超时问题）
+# ============================================================
+def _request_with_retry(url: str, params: dict, timeout: int = 30,
+                        max_retries: int = 3, backoff: float = 2.0) -> requests.Response:
+    """
+    带指数退避重试的 HTTP GET 请求。
+    Streamlit Cloud（美国）→ Open-Meteo（欧洲）跨洋延迟高，
+    需要更长 timeout + 自动重试。
+    """
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(url, params=params, timeout=timeout)
+            resp.raise_for_status()
+            return resp
+        except Exception as e:
+            last_err = e
+            if attempt < max_retries - 1:
+                wait = backoff * (2 ** attempt)
+                time.sleep(wait)
+    raise last_err
+
+
+# ============================================================
 # 实时实况数据（Open-Meteo current）
 # ============================================================
 def fetch_current_observation(city: str) -> dict:
@@ -70,7 +95,7 @@ def fetch_current_observation(city: str) -> dict:
     """
     coords = GUANGDONG_CITIES.get(city, GUANGDONG_CITIES["广州"])
     try:
-        resp = requests.get(
+        resp = _request_with_retry(
             "https://api.open-meteo.com/v1/forecast",
             params={
                 "latitude": coords["lat"],
@@ -79,9 +104,9 @@ def fetch_current_observation(city: str) -> dict:
                 "timezone": "Asia/Shanghai",
                 "wind_speed_unit": "ms",
             },
-            timeout=10,
+            timeout=30,
+            max_retries=3,
         )
-        resp.raise_for_status()
         data = resp.json()
         c = data.get("current", {})
         wmo = c.get("weather_code", 0)
@@ -145,12 +170,12 @@ def fetch_weather_single(city: str = "广州", forecast_days: int = 7) -> pd.Dat
     }
 
     try:
-        resp = requests.get(
+        resp = _request_with_retry(
             "https://api.open-meteo.com/v1/forecast",
             params=params,
-            timeout=15
+            timeout=30,
+            max_retries=3,
         )
-        resp.raise_for_status()
         data = resp.json()
     except Exception as e:
         print(f"[Open-Meteo] {city} 预报获取失败: {e}")
