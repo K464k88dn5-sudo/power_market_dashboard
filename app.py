@@ -346,7 +346,7 @@ st.markdown(kpi, unsafe_allow_html=True)
 # ============================================================
 col1, col2, col3 = st.columns(3)
 
-# ===== 第一列：气象监测 + 燃料价格 =====
+# ===== 第一列：气象监测 + 检修计划 =====
 with col1:
     # ----- 气象监测 -----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测</div>', unsafe_allow_html=True)
@@ -445,42 +445,37 @@ with col1:
         st.markdown(_wx_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----- 燃料价格 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-f">⛽ 燃料价格</div>', unsafe_allow_html=True)
-    if fuel_df.empty: st.warning("数据获取失败")
-    else:
-        from datetime import timedelta as _td
-        fuel_df = fuel_df.copy()
-        _cutoff = _now().replace(tzinfo=None) - _td(days=30)
-        fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
-        fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
+    # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
+    _price_date = st.session_state.get("price_date_sel", datetime.now().strftime("%Y-%m-%d"))
+    _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-        # 煤价
-        if "动力煤价格(元/吨)" in fuel_df.columns:
-            fig_coal=go.Figure()
-            fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
-                mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
-            fig_coal.update_layout(height=110,template="plotly_dark",showlegend=False,
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
-                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10)))
-            fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=7))
-            st.plotly_chart(fig_coal,use_container_width=True)
+    if _maint_data["检修容量"]:
+        _cap = _maint_data["检修容量"]
+        mc1, mc2 = st.columns(2)
+        with mc1: st.metric("总检修容量", f"{_cap['总容量']:.0f} MW")
+        with mc2: st.metric("市场机组容量", f"{_cap['市场机组容量']:.0f} MW")
 
-        # LNG气价
-        if "LNG出厂价(元/吨)" in fuel_df.columns:
-            fig_lng=go.Figure()
-            fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
-                mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
-            fig_lng.update_layout(height=110,template="plotly_dark",showlegend=False,
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
-                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10)))
-            fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=7))
-            st.plotly_chart(fig_lng,use_container_width=True)
+    _mach = _maint_data.get("机组检修", pd.DataFrame())
+    _line = _maint_data.get("输变电检修", pd.DataFrame())
+
+    if not _mach.empty:
+        st.markdown(f"**🔩 机组检修**（{len(_mach)}台）")
+        st.dataframe(_mach, use_container_width=True, hide_index=True, height=80)
+
+    if not _line.empty:
+        st.markdown(f"**⚡ 输变电检修**（{len(_line)}条）")
+        _line_show = _line.head(10)
+        st.dataframe(_line_show, use_container_width=True, hide_index=True, height=80)
+        if len(_line) > 10:
+            st.caption(f"显示前10条，共{len(_line)}条")
+
+    if _mach.empty and _line.empty and not _maint_data["检修容量"]:
+        st.info(f"{_price_date} 无检修数据，请先上传披露文件")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ===== 第二列：广东地图 + 电价分析 =====
+# ===== 第二列：广东地图 + 燃料价格 =====
 with col2:
     # ----- 广东地图 -----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度</div>', unsafe_allow_html=True)
@@ -529,35 +524,39 @@ with col2:
         st.caption(f"均温**{avg_t:.1f}℃** | 最高{mx['城市']}**{mx['温度']:.1f}℃** | 最低{mn['城市']}**{mn['温度']:.1f}℃**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
-    # 获取当前电价模块选择的日期
-    _price_date = st.session_state.get("price_date_sel", datetime.now().strftime("%Y-%m-%d"))
-    _maint_data = parse_maintenance_from_disclosure(_price_date)
+    # ----- 燃料价格 -----
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-f">⛽ 燃料价格</div>', unsafe_allow_html=True)
+    if fuel_df.empty: st.warning("数据获取失败")
+    else:
+        from datetime import timedelta as _td
+        fuel_df = fuel_df.copy()
+        _cutoff = _now().replace(tzinfo=None) - _td(days=30)
+        fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
+        fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
 
-    if _maint_data["检修容量"]:
-        _cap = _maint_data["检修容量"]
-        mc1, mc2 = st.columns(2)
-        with mc1: st.metric("总检修容量", f"{_cap['总容量']:.0f} MW")
-        with mc2: st.metric("市场机组容量", f"{_cap['市场机组容量']:.0f} MW")
+        # 煤价
+        if "动力煤价格(元/吨)" in fuel_df.columns:
+            fig_coal=go.Figure()
+            fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
+                mode="lines+markers",marker=dict(size=3),
+                line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
+            fig_coal.update_layout(height=110,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
+                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10)))
+            fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=7))
+            st.plotly_chart(fig_coal,use_container_width=True)
 
-    _mach = _maint_data.get("机组检修", pd.DataFrame())
-    _line = _maint_data.get("输变电检修", pd.DataFrame())
-
-    if not _mach.empty:
-        st.markdown(f"**🔩 机组检修**（{len(_mach)}台）")
-        st.dataframe(_mach, use_container_width=True, hide_index=True, height=80)
-
-    if not _line.empty:
-        st.markdown(f"**⚡ 输变电检修**（{len(_line)}条）")
-        _line_show = _line.head(10)
-        st.dataframe(_line_show, use_container_width=True, hide_index=True, height=80)
-        if len(_line) > 10:
-            st.caption(f"显示前10条，共{len(_line)}条")
-
-    if _mach.empty and _line.empty and not _maint_data["检修容量"]:
-        st.info(f"{_price_date} 无检修数据，请先上传披露文件")
-
+        # LNG气价
+        if "LNG出厂价(元/吨)" in fuel_df.columns:
+            fig_lng=go.Figure()
+            fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
+                mode="lines+markers",marker=dict(size=3),
+                line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
+            fig_lng.update_layout(height=110,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8),
+                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10)))
+            fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=7))
+            st.plotly_chart(fig_lng,use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ===== 第三列：电价分析 =====
