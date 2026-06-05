@@ -457,8 +457,8 @@ with col1:
         _cap = _maint_data["检修容量"]
         st.markdown(
             f'<div style="display:flex;gap:8px;margin:4px 0">'
-            f'<span style="font-size:0.6rem;color:#aaa">总检修容量 <b style="color:#e0e0e0">{_cap["总容量"]:.0f}</b> MW</span>'
-            f'<span style="font-size:0.6rem;color:#aaa">市场机组 <b style="color:#e0e0e0">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.8rem;color:#aaa">总检修容量 <b style="color:#e0e0e0">{_cap["总容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.8rem;color:#aaa">市场机组 <b style="color:#e0e0e0">{_cap["市场机组容量"]:.0f}</b> MW</span>'
             f'</div>', unsafe_allow_html=True)
 
     _mach = _maint_data.get("机组检修", pd.DataFrame())
