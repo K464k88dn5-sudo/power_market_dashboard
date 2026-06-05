@@ -450,25 +450,29 @@ with col1:
     _price_date = st.session_state.get("price_date_sel", datetime.now().strftime("%Y-%m-%d"))
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-    # 数据来源日期
-    st.caption(f"📅 数据日期：{_price_date}")
+    # 数据来源日期（橙色）
+    st.markdown(f'<span style="font-size:0.6rem;color:#ff9f43;font-weight:bold">📅 数据日期：{_price_date}</span>', unsafe_allow_html=True)
 
     if _maint_data["检修容量"]:
         _cap = _maint_data["检修容量"]
-        mc1, mc2 = st.columns(2)
-        with mc1: st.metric("总检修容量", f"{_cap['总容量']:.0f} MW")
-        with mc2: st.metric("市场机组容量", f"{_cap['市场机组容量']:.0f} MW")
+        st.markdown(
+            f'<div style="display:flex;gap:8px;margin:4px 0">'
+            f'<span style="font-size:0.6rem;color:#aaa">总检修容量 <b style="color:#e0e0e0">{_cap["总容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.6rem;color:#aaa">市场机组 <b style="color:#e0e0e0">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+            f'</div>', unsafe_allow_html=True)
 
     _mach = _maint_data.get("机组检修", pd.DataFrame())
     _line = _maint_data.get("输变电检修", pd.DataFrame())
 
     if not _mach.empty:
-        st.markdown(f'<span style="font-size:0.65rem;font-weight:bold">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-        st.dataframe(_mach, use_container_width=True, hide_index=True, height=70)
+        st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
+        st.dataframe(_mach.style.set_properties(**{"font-size": "0.6rem"}),
+                     use_container_width=True, hide_index=True, height=70)
 
     if not _line.empty:
-        st.markdown(f'<span style="font-size:0.65rem;font-weight:bold">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
-        st.dataframe(_line, use_container_width=True, hide_index=True, height=120)
+        st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
+        st.dataframe(_line.style.set_properties(**{"font-size": "0.6rem"}),
+                     use_container_width=True, hide_index=True, height=120)
 
     if _mach.empty and _line.empty and not _maint_data["检修容量"]:
         st.info(f"{_price_date} 无检修数据，请先上传披露文件")
