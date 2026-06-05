@@ -402,7 +402,7 @@ with col1:
     else:
         from datetime import timedelta as _td
         fuel_df = fuel_df.copy()
-        _cutoff = _now() - _td(days=30)
+        _cutoff = _now().replace(tzinfo=None) - _td(days=30)
         fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
         fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
 
