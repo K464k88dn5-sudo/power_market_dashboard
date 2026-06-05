@@ -691,6 +691,30 @@ with col3:
                     _pred_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predictions")
                     os.makedirs(_pred_dir, exist_ok=True)
                     fc_result.to_csv(os.path.join(_pred_dir, f"forecast_{sel_date}.csv"), index=False)
+
+                    # 追加到广东日前电价预测.xlsx
+                    _xlsx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
+                    _hour_cols_fc = [f"{i}时" for i in range(24)]
+                    _new_row = {"日期": sel_date, "模型": "校准后"}
+                    for _h in range(24):
+                        _new_row[f"{_h}时"] = fc_result.iloc[_h]["预测电价(元/MWh)"]
+
+                    if os.path.exists(_xlsx_path):
+                        _exist_df = pd.read_excel(_xlsx_path)
+                        # 检查是否已有该日期+模型的数据
+                        _mask = (_exist_df["日期"].astype(str) == sel_date) & (_exist_df["模型"] == "校准后")
+                        if _mask.any():
+                            # 更新已有行
+                            for _h in range(24):
+                                _exist_df.loc[_mask, f"{_h}时"] = _new_row[f"{_h}时"]
+                        else:
+                            # 追加新行
+                            _new_df = pd.DataFrame([_new_row])
+                            _exist_df = pd.concat([_exist_df, _new_df], ignore_index=True)
+                        _exist_df = _exist_df.sort_values(["日期", "模型"]).reset_index(drop=True)
+                        _exist_df.to_excel(_xlsx_path, index=False, engine="openpyxl")
+                    else:
+                        pd.DataFrame([_new_row]).to_excel(_xlsx_path, index=False, engine="openpyxl")
                 else:
                     st.error("预测失败，请检查披露文件是否已上传")
 
