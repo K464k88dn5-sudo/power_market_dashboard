@@ -523,7 +523,7 @@ with col2:
                 html=f'<div style="font-size:10px;font-weight:bold;color:#222;text-align:center;text-shadow:1px 1px 2px white,-1px -1px 2px white,1px -1px 2px white,-1px 1px 2px white;">{nm}<br><span style="font-size:12px;">{temp:.0f}℃</span></div>',
                 icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
-        st_folium(m,width="100%",height=350,returned_objects=[])
+        st_folium(m,width="100%",height=320,returned_objects=[])
         avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
         st.caption(f"均温**{avg_t:.1f}℃** | 最高{mx['城市']}**{mx['温度']:.1f}℃** | 最低{mn['城市']}**{mn['温度']:.1f}℃**")
     st.markdown('</div>', unsafe_allow_html=True)
