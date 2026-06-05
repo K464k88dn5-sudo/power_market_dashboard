@@ -450,6 +450,9 @@ with col1:
     _price_date = st.session_state.get("price_date_sel", datetime.now().strftime("%Y-%m-%d"))
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
+    # 数据来源日期
+    st.caption(f"📅 数据日期：{_price_date}")
+
     if _maint_data["检修容量"]:
         _cap = _maint_data["检修容量"]
         mc1, mc2 = st.columns(2)
@@ -460,15 +463,12 @@ with col1:
     _line = _maint_data.get("输变电检修", pd.DataFrame())
 
     if not _mach.empty:
-        st.markdown(f"**🔩 机组检修**（{len(_mach)}台）")
-        st.dataframe(_mach, use_container_width=True, hide_index=True, height=80)
+        st.markdown(f'<span style="font-size:0.65rem;font-weight:bold">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
+        st.dataframe(_mach, use_container_width=True, hide_index=True, height=70)
 
     if not _line.empty:
-        st.markdown(f"**⚡ 输变电检修**（{len(_line)}条）")
-        _line_show = _line.head(10)
-        st.dataframe(_line_show, use_container_width=True, hide_index=True, height=80)
-        if len(_line) > 10:
-            st.caption(f"显示前10条，共{len(_line)}条")
+        st.markdown(f'<span style="font-size:0.65rem;font-weight:bold">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
+        st.dataframe(_line, use_container_width=True, hide_index=True, height=120)
 
     if _mach.empty and _line.empty and not _maint_data["检修容量"]:
         st.info(f"{_price_date} 无检修数据，请先上传披露文件")
