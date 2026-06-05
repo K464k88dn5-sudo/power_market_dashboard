@@ -485,6 +485,23 @@ with col3:
     # ----- 电价分析 -----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析</div>', unsafe_allow_html=True)
 
+    # 信息披露文件上传
+    _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    os.makedirs(_disclosure_dir, exist_ok=True)
+
+    with st.expander("📤 上传信息披露文件", expanded=False):
+        _upload_file = st.file_uploader(
+            "选择信息披露查询预测信息文件",
+            type=["xlsx", "xls"],
+            key="disclosure_upload",
+            help="文件名格式：信息披露查询预测信息(YYYY-MM-DD).xlsx"
+        )
+        if _upload_file is not None:
+            _save_path = os.path.join(_disclosure_dir, _upload_file.name)
+            with open(_save_path, "wb") as f:
+                f.write(_upload_file.getbuffer())
+            st.success(f"✅ 已保存: {_upload_file.name}")
+
     # 加载实际电价和预测电价
     _actual_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
     _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
