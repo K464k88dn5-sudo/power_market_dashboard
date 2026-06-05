@@ -11,6 +11,39 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional
 import time
+import os
+import json
+import tempfile
+
+# ============================================================
+# 本地缓存兜底（解决 Streamlit Cloud 跨洋请求不稳定）
+# ============================================================
+_CACHE_DIR = os.path.join(tempfile.gettempdir(), "weather_cache")
+os.makedirs(_CACHE_DIR, exist_ok=True)
+
+def _save_cache(key: str, data):
+    """将数据写入本地缓存"""
+    try:
+        path = os.path.join(_CACHE_DIR, f"{key}.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"data": data, "ts": datetime.now().isoformat()}, f, ensure_ascii=False)
+    except Exception:
+        pass
+
+def _load_cache(key: str, max_age_hours: float = 6):
+    """读取本地缓存，超时则返回 None"""
+    try:
+        path = os.path.join(_CACHE_DIR, f"{key}.json")
+        if not os.path.exists(path):
+            return None
+        with open(path, "r", encoding="utf-8") as f:
+            obj = json.load(f)
+        cached_time = datetime.fromisoformat(obj["ts"])
+        if (datetime.now() - cached_time).total_seconds() > max_age_hours * 3600:
+            return None
+        return obj["data"]
+    except Exception:
+        return None
 
 # 广东21地市坐标
 GUANGDONG_CITIES = {
@@ -94,6 +127,7 @@ def fetch_current_observation(city: str) -> dict:
     返回 dict: {"温度": float, "湿度": float, "风速": float, "天气": str, "时间": str}
     """
     coords = GUANGDONG_CITIES.get(city, GUANGDONG_CITIES["广州"])
+    cache_key = f"obs_{city}"
     try:
         resp = _request_with_retry(
             "https://api.open-meteo.com/v1/forecast",
@@ -110,15 +144,21 @@ def fetch_current_observation(city: str) -> dict:
         data = resp.json()
         c = data.get("current", {})
         wmo = c.get("weather_code", 0)
-        return {
+        result = {
             "温度": c.get("temperature_2m", 0),
             "湿度": c.get("relative_humidity_2m", 0),
             "风速": c.get("wind_speed_10m", 0),
             "天气": WMO_WEATHER.get(wmo, f"代码{wmo}"),
             "时间": c.get("time", ""),
         }
+        _save_cache(cache_key, result)
+        return result
     except Exception as e:
         print(f"[Open-Meteo] {city} 实况获取失败: {e}")
+        cached = _load_cache(cache_key, max_age_hours=6)
+        if cached:
+            print(f"[Open-Meteo] {city} 使用缓存数据")
+            return cached
         return {}
 
 
@@ -159,6 +199,7 @@ def fetch_weather_single(city: str = "广州", forecast_days: int = 7) -> pd.Dat
     返回DataFrame: 时间、温度、辐照度、风速、降水量、湿度、云量
     """
     coords = GUANGDONG_CITIES.get(city, GUANGDONG_CITIES["广州"])
+    cache_key = f"forecast_{city}_{forecast_days}"
 
     params = {
         "latitude": coords["lat"],
@@ -179,6 +220,12 @@ def fetch_weather_single(city: str = "广州", forecast_days: int = 7) -> pd.Dat
         data = resp.json()
     except Exception as e:
         print(f"[Open-Meteo] {city} 预报获取失败: {e}")
+        cached = _load_cache(cache_key, max_age_hours=6)
+        if cached:
+            print(f"[Open-Meteo] {city} 预报使用缓存数据")
+            df = pd.DataFrame(cached)
+            df["时间"] = pd.to_datetime(df["时间"])
+            return df
         return pd.DataFrame()
 
     hourly = data.get("hourly", {})
@@ -194,6 +241,10 @@ def fetch_weather_single(city: str = "广州", forecast_days: int = 7) -> pd.Dat
             df[cn_name] = hourly[api_key]
 
     df["城市"] = city
+    # 缓存成功数据（时间转字符串以便JSON序列化）
+    _df_cache = df.copy()
+    _df_cache["时间"] = _df_cache["时间"].astype(str)
+    _save_cache(cache_key, _df_cache.to_dict(orient="records"))
     return df
 
 

@@ -189,7 +189,7 @@ st.markdown("""
 # 常量 & 工具函数
 # ============================================================
 CN_WEEKDAYS = {0:"周一",1:"周二",2:"周三",3:"周四",4:"周五",5:"周六",6:"周日"}
-def fmt_date(dt): return f"{dt.month}月{dt.day}日 {CN_WEEKDAYS.get(dt.weekday(),'')}"
+def fmt_date(dt): return f"{dt.month:02d}-{dt.day:02d}"
 def fmt_date_short(dt): return f"{dt.month}月{dt.day}日"
 
 CITY_ADCODE = {
@@ -326,9 +326,9 @@ with col1:
                         marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                         textposition="top center" if clr=="#ff4444" else "bottom center",
                         textfont=dict(size=8,color=clr),showlegend=False,cliponaxis=False))
-            fig1.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=28,r=4,t=18,b=6),font=dict(size=7),
-                title=dict(text=f"📅 {fmt_date(today)} 逐时温度(℃)",font=dict(size=9)))
+            fig1.update_layout(height=90,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7),
+                title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9)))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H:00")
             st.plotly_chart(fig1,use_container_width=True)
 
@@ -342,8 +342,8 @@ with col1:
             fig2.add_trace(go.Scatter(x=list(agg["标签"])+list(agg["标签"][::-1]),
                 y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
-            fig2.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
+            fig2.update_layout(height=90,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7),
                 title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9)))
             fig2.update_xaxes(tickangle=-30,tickfont=dict(size=6))
             st.plotly_chart(fig2,use_container_width=True)
@@ -354,8 +354,8 @@ with col1:
                 fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
                     line=dict(color="#6bcb77",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-            fig3.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
+            fig3.update_layout(height=90,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7),
                 title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9)))
             fig3.update_xaxes(tickangle=-30,tickfont=dict(size=6))
             st.plotly_chart(fig3,use_container_width=True)
@@ -365,8 +365,8 @@ with col1:
                 fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
                     line=dict(color="#a29bfe",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-            fig4.update_layout(height=80,template="plotly_dark",showlegend=False,
-                margin=dict(l=28,r=4,t=18,b=12),font=dict(size=7),
+            fig4.update_layout(height=90,template="plotly_dark",showlegend=False,
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7),
                 title=dict(text="💧 预报湿度(%)",font=dict(size=9)))
             fig4.update_xaxes(tickangle=-30,tickfont=dict(size=6))
             st.plotly_chart(fig4,use_container_width=True)
@@ -380,12 +380,16 @@ with col1:
         _max_t = weather_df["温度(℃)"].max()
         _avg_t = weather_df["温度(℃)"].mean()
 
-        w1,w2,w3,w4,w5 = st.columns(5)
-        with w1: st.metric("实况温度",f"{_cur_t:.1f}℃",f"{_cur_wx}")
-        with w2: st.metric("预报均温",f"{_avg_t:.1f}℃")
-        with w3: st.metric("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃")
-        with w4: st.metric("实况湿度",f"{_cur_h:.0f}%")
-        with w5: st.metric("实况风速",f"{_cur_w:.1f}m/s")
+        _wx_html = '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">'
+        for _label,_val,_sub in [("实况温度",f"{_cur_t:.1f}℃",f"{_cur_wx}"),
+                                  ("预报均温",f"{_avg_t:.1f}℃",""),
+                                  ("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃",""),
+                                  ("实况湿度",f"{_cur_h:.0f}%",""),
+                                  ("实况风速",f"{_cur_w:.1f}m/s","")]:
+            _sub_s = f'<span style="font-size:0.45rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
+            _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#7aa">{_label}</div><div style="font-size:0.7rem;color:#e0e0e0">{_val}{_sub_s}</div></div>'
+        _wx_html += '</div>'
+        st.markdown(_wx_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ----- 燃料价格 -----
