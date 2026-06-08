@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Streamlit
+.streamlit/
+
+# Cache
+*.cache
+*.log
+data_sources/.price_cache.json
+
+# Data files (large)
+predictions/
+*.xlsx
+!requirements.txt
+
+# Experiments
+experiments/
+
+# Temp files
+logo_base64.txt
+process_logo.py
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
