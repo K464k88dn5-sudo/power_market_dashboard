@@ -898,24 +898,28 @@ with col1:
     # 表格深色主题样式（HTML表格，循环滚动展示）
     def _df_to_dark_html(df, max_height=120, scroll=True):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-        th_style = 'background:#14202e;color:#00d2d3;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(0,210,211,0.15);font-weight:bold;position:sticky;top:0;z-index:1;'
+        th_style = 'background:#14202e;color:#00d2d3;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(0,210,211,0.15);font-weight:bold;'
         td_style = 'background:#0d1117;color:#e0e0e0;font-size:0.45rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
 
         row_count = len(df)
         # 计算滚动动画时长（每行约3秒，最少10秒）
         anim_duration = max(row_count * 3, 10)
 
-        html = f'<div style="max-height:{max_height}px;overflow:hidden;border-radius:4px;position:relative;">'
-
-        if scroll and row_count > 3:
-            # 滚动模式：内容循环滚动
-            html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
-
-        html += '<table style="width:100%;border-collapse:collapse">'
+        # 表头（固定不滚动）
+        html = '<table style="width:100%;border-collapse:collapse">'
         html += '<thead><tr>'
         for col in df.columns:
             html += f'<th style="{th_style}">{col}</th>'
-        html += '</tr></thead><tbody>'
+        html += '</tr></thead></table>'
+
+        # 表体（循环滚动）
+        body_height = max_height - 25  # 减去表头高度
+        html += f'<div style="max-height:{body_height}px;overflow:hidden;border-radius:0 0 4px 4px;">'
+
+        if scroll and row_count > 3:
+            html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
+
+        html += '<table style="width:100%;border-collapse:collapse"><tbody>'
 
         rows_html = ''
         for _, row in df.iterrows():
@@ -924,16 +928,16 @@ with col1:
                 rows_html += f'<td style="{td_style}">{val}</td>'
             rows_html += '</tr>'
 
-        # 写入行（滚动模式时复制一份实现无缝循环）
         html += rows_html
         if scroll and row_count > 3:
             html += rows_html  # 复制行用于无缝循环
+
         html += '</tbody></table>'
 
         if scroll and row_count > 3:
             html += '</div>'  # 关闭滚动容器
 
-        html += '</div>'
+        html += '</div>'  # 关闭表体容器
         return html
 
     if not _mach.empty:
