@@ -119,11 +119,11 @@ st.markdown("""
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    /* 隐藏 sidebar 按钮（保留可点击） */
-    [data-testid="stSidebarCollapsedControl"] { opacity: 0.5; }
-    /* 显示 sidebar */
-    [data-testid="stSidebar"] { display: block !important; }
-    section[data-testid="stSidebar"] { display: block !important; }
+    /* sidebar 按钮完全可见 */
+    [data-testid="stSidebarCollapsedControl"] { opacity: 1 !important; display: block !important; visibility: visible !important; }
+    /* sidebar 强制可见 */
+    [data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
+    section[data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
     /* 隐藏所有 Streamlit 顶部装饰 */
     header, [role="banner"] { display: none !important; height: 0 !important; }
     /* 压缩 main 区域 */
