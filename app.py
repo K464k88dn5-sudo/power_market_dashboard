@@ -896,7 +896,7 @@ with col1:
     _line = _maint_data.get("输变电检修", pd.DataFrame())
 
     # 表格深色主题样式（HTML表格，循环滚动展示）
-    def _df_to_dark_html(df, max_height=120, scroll=True):
+    def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
         th_style = 'background:#14202e;color:#00d2d3;font-size:0.5rem;padding:3px 6px;border:1px solid rgba(0,210,211,0.15);font-weight:bold;line-height:1.5;'
         td_style = 'background:#0d1117;color:#e0e0e0;font-size:0.45rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
@@ -904,19 +904,23 @@ with col1:
         row_count = len(df)
         anim_duration = max(row_count * 3, 10)
 
-        # 计算列宽比例（根据内容自动分配）
+        # 计算列宽比例
         col_count = len(df.columns)
-        col_width = f'{100/col_count:.1f}%'
+        if col_widths:
+            widths = col_widths
+        else:
+            widths = [f'{100/col_count:.1f}%'] * col_count
 
         # 表头（固定不滚动）
         html = f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
         html += '<thead><tr>'
-        for col in df.columns:
-            html += f'<th style="{th_style}width:{col_width};">{col}</th>'
+        for i, col in enumerate(df.columns):
+            w = widths[i] if i < len(widths) else widths[-1]
+            html += f'<th style="{th_style}width:{w};">{col}</th>'
         html += '</tr></thead></table>'
 
         # 表体（循环滚动）
-        body_height = max_height - 40  # 减去表头高度
+        body_height = max_height - 40
         html += f'<div style="max-height:{body_height}px;overflow:hidden;">'
 
         if scroll and row_count > 3:
@@ -945,7 +949,7 @@ with col1:
 
     if not _mach.empty:
         st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-        st.markdown(_df_to_dark_html(_mach, 80), unsafe_allow_html=True)
+        st.markdown(_df_to_dark_html(_mach, 80, col_widths=["25%", "20%", "15%", "20%", "20%"]), unsafe_allow_html=True)
 
     if not _line.empty:
         st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
