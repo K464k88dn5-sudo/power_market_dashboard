@@ -41,47 +41,6 @@ st.markdown('<div class="refresh-bar-wrap"><div class="refresh-bar"></div></div>
 # 刷新脉冲光晕（页面加载时播放一次）
 st.markdown('<div class="refresh-pulse-overlay"></div>', unsafe_allow_html=True)
 
-# JavaScript：强制删除顶部空白
-st.markdown("""
-<script>
-const removeTopGap = () => {
-    // 删除 Streamlit 顶部工具栏/装饰元素
-    const selectors = [
-        '[data-testid="stHeader"]',
-        '[data-testid="stToolbar"]', 
-        '[data-testid="stDecoration"]'
-    ];
-    selectors.forEach(s => {
-        document.querySelectorAll(s).forEach(el => {
-            el.style.display = 'none';
-            el.style.height = '0';
-            el.style.minHeight = '0';
-            el.style.padding = '0';
-            el.style.margin = '0';
-        });
-    });
-    // 压缩 block-container 上方所有兄弟元素
-    const bc = document.querySelector('.block-container');
-    if (bc) {
-        bc.style.paddingTop = '0';
-        bc.style.marginTop = '0';
-        let prev = bc.previousElementSibling;
-        while (prev) {
-            prev.style.height = '0';
-            prev.style.minHeight = '0';
-            prev.style.padding = '0';
-            prev.style.margin = '0';
-            prev.style.overflow = 'hidden';
-            prev = prev.previousElementSibling;
-        }
-    }
-};
-// 页面加载后执行
-setTimeout(removeTopGap, 500);
-setTimeout(removeTopGap, 2000);
-</script>
-""", unsafe_allow_html=True)
-
 # ============================================================
 # 全局样式 — 极致紧凑，无滚动
 # ============================================================
