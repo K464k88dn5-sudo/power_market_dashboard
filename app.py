@@ -899,7 +899,7 @@ with col1:
     def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
         th_style = 'background:#14202e;color:#00d2d3;font-size:0.5rem;padding:3px 6px;border:1px solid rgba(0,210,211,0.15);font-weight:bold;line-height:1.5;'
-        td_style = 'background:#0d1117;color:#e0e0e0;font-size:0.45rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
+        td_style = 'background:#0d1117;color:#e0e0e0;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
 
         row_count = len(df)
         anim_duration = max(row_count * 3, 10)
