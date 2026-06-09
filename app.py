@@ -30,7 +30,7 @@ from data_sources.fuel_api import build_fuel_display_data, get_fuel_latest_summa
 # 页面配置 & 自动刷新
 # ============================================================
 st.set_page_config(page_title="电力市场监控大屏", page_icon="⚡", layout="wide",
-                   initial_sidebar_state="collapsed")
+                   initial_sidebar_state="expanded")
 
 from streamlit_autorefresh import st_autorefresh
 st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh")
