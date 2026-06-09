@@ -931,8 +931,9 @@ with col1:
         rows_html = ''
         for _, row in df.iterrows():
             rows_html += '<tr>'
-            for val in row:
-                rows_html += f'<td style="{td_style}">{val}</td>'
+            for i, val in enumerate(row):
+                w = widths[i] if i < len(widths) else widths[-1]
+                rows_html += f'<td style="{td_style}width:{w};">{val}</td>'
             rows_html += '</tr>'
 
         html += rows_html
