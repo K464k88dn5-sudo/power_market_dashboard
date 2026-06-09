@@ -1250,7 +1250,7 @@ with col3:
             _fc_log = _saved_fc.get("log", "")
             fig.add_trace(go.Scattergl(
                 x=_fc_result["小时"], y=_fc_result["预测电价(元/MWh)"],
-                name="模型预测", line=dict(color="#ff6b6b", width=2),
+                name="日前电价预测", line=dict(color="#ff6b6b", width=2),
                 mode="lines+markers", marker=dict(size=4),
                 fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
             has_data = True
@@ -1274,7 +1274,7 @@ with col3:
 
                     fig.add_trace(go.Scattergl(
                         x=fc_result["小时"], y=fc_result["预测电价(元/MWh)"],
-                        name="模型预测", line=dict(color="#ff6b6b", width=2),
+                        name="日前电价预测", line=dict(color="#ff6b6b", width=2),
                         mode="lines+markers", marker=dict(size=4),
                         fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
                     has_data = True
