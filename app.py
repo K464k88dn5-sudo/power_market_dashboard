@@ -78,14 +78,21 @@ st.markdown("""
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    /* sidebar 折叠/展开按钮：始终可见（Streamlit 1.50+ 改名为 stSidebarCollapseButton） */
+    /* sidebar 折叠/展开按钮：始终可见（Streamlit 1.50+） */
+    /* 收起按钮（侧边栏打开时，在侧边栏内部） */
     [data-testid="stSidebarCollapseButton"] {
         opacity: 1 !important;
-        display: block !important;
+        display: flex !important;
+        visibility: visible !important;
+    }
+    /* 展开按钮（侧边栏关闭时，在 header 内）— 固定到左上角 */
+    [data-testid="stExpandSidebarButton"] {
+        opacity: 1 !important;
+        display: flex !important;
         visibility: visible !important;
         position: fixed !important;
-        top: 0.5rem !important;
-        left: 0.5rem !important;
+        top: 0.4rem !important;
+        left: 0.4rem !important;
         z-index: 999999 !important;
     }
     /* 兼容旧版 */
@@ -1387,10 +1394,43 @@ with col3:
                     pk_h = _vals.index(max(_vals))
                     vl_h = _vals.index(min(_vals))
                     _avg_v = sum(_vals)/len(_vals)
+
+                    # 前一天数据（用于对比）
+                    _prev_day = _actual_df[_actual_df["_日期"] < sel_date].tail(1)
+                    _pk_arrow = ""; _vl_arrow = ""; _pk_price_arrow = ""; _avg_arrow = ""
+                    if not _prev_day.empty:
+                        _prev_vals = [_prev_day.iloc[0][h] for h in _hour_cols]
+                        _prev_pk_h = _prev_vals.index(max(_prev_vals))
+                        _prev_vl_h = _prev_vals.index(min(_prev_vals))
+                        _prev_avg = sum(_prev_vals)/len(_prev_vals)
+                        # 峰时箭头：后移↑ 前移↓
+                        if pk_h > _prev_pk_h:
+                            _pk_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                        elif pk_h < _prev_pk_h:
+                            _pk_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                        # 谷时箭头：后移↑ 前移↓
+                        if vl_h > _prev_vl_h:
+                            _vl_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                        elif vl_h < _prev_vl_h:
+                            _vl_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                        # 峰值价格箭头
+                        _pk_diff = max(_vals) - max(_prev_vals)
+                        if _pk_diff > 5:
+                            _pk_price_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                        elif _pk_diff < -5:
+                            _pk_price_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                        # 均价箭头
+                        _avg_arrow = ""
+                        _avg_diff = _avg_v - _prev_avg
+                        if _avg_diff > 5:
+                            _avg_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                        elif _avg_diff < -5:
+                            _avg_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+
                     _metrics_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;margin-top:2px;">
-                        <span>均价 <b style="color:#00d2d3;font-size:0.75rem;">{_avg_v:.0f}</b></span>
-                        <span>峰 <b style="color:#ff6b6b;font-size:0.75rem;">{max(_vals):.0f}</b> {pk_h}时</span>
-                        <span>谷 <b style="color:#54a0ff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时</span>
+                        <span>均价 <b style="color:#00d2d3;font-size:0.75rem;">{_avg_v:.0f}</b> {_avg_arrow}</span>
+                        <span>峰 <b style="color:#ff6b6b;font-size:0.75rem;">{max(_vals):.0f}</b>{_pk_price_arrow} {pk_h}时{_pk_arrow}</span>
+                        <span>谷 <b style="color:#54a0ff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
                     </div>'''
                     st.markdown(_metrics_html, unsafe_allow_html=True)
         else:
