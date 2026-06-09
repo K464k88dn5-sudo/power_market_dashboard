@@ -64,12 +64,12 @@ st.markdown("""
     .stApp {
         transform: translateY(-4rem);
     }
-    /* 压缩顶部空白（Streamlit 1.50 适配） */
-    .stApp > header { height: 0 !important; min-height: 0 !important; display: none !important; }
+    /* 压缩顶部空白（Streamlit 1.50 适配） — 不隐藏 header，否则侧边栏折叠按钮消失 */
+    .stApp > header { height: 0 !important; min-height: 0 !important; overflow: visible !important; }
     section[data-testid="stMain"] { padding-top: 0 !important; margin-top: 0 !important; }
     section[data-testid="stMain"] > div { padding-top: 0 !important; margin-top: 0 !important; }
     .block-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-    [data-testid="stHeader"] { display: none !important; height: 0 !important; }
+    [data-testid="stHeader"] { height: 0 !important; overflow: visible !important; }
     .stApp > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
     [data-testid="stToolbar"] { display: none !important; }
     [data-testid="stDecoration"] { display: none !important; }
@@ -78,13 +78,27 @@ st.markdown("""
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    /* sidebar 按钮完全可见 */
-    [data-testid="stSidebarCollapsedControl"] { opacity: 1 !important; display: block !important; visibility: visible !important; }
+    /* sidebar 折叠/展开按钮：始终可见（兼容 Streamlit 1.50+） */
+    [data-testid="stSidebarCollapsedControl"] {
+        opacity: 1 !important;
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        z-index: 999999 !important;
+    }
     /* sidebar 强制可见 */
     [data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
     section[data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
-    /* 隐藏所有 Streamlit 顶部装饰 */
-    header, [role="banner"] { display: none !important; height: 0 !important; }
+    /* 隐藏顶部装饰，但保留侧边栏折叠按钮容器 */
+    header, [role="banner"] {
+        height: 0 !important;
+        overflow: visible !important;
+    }
+    /* 只隐藏 header 内的 toolbar/decoration，不动折叠按钮 */
+    [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
     /* 压缩 main 区域 */
     .main { padding-top: 0 !important; margin-top: 0 !important; }
     .main .block-container { padding-top: 0 !important; margin-top: 0 !important; }
@@ -225,7 +239,7 @@ st.markdown("""
     #MainMenu, footer { visibility: hidden; }
     /* 隐藏加载进度条和刷新动画 */
     .stSpinner, [data-testid="stStatusWidget"] { display: none !important; }
-    header[data-testid="stHeader"] { display: none !important; }
+    header[data-testid="stHeader"] { height: 0 !important; overflow: visible !important; }
     /* 隐藏滚动条相关 */
     .st-emotion-cache-1wrcr25 { padding-top: 0 !important; }
 
@@ -1350,6 +1364,7 @@ with col3:
             _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
 
             fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=140, template="deep_space",
+                title=dict(text="📊 日前电价预测", font=dict(size=10, color="#ffffff")),
                 hovermode="x unified",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#ffffff")),
                 margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#ffffff"),
