@@ -953,7 +953,7 @@ with col1:
 
     if not _mach.empty:
         st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-        st.markdown(_df_to_dark_html(_mach, 80, col_widths=["25%", "20%", "15%", "20%", "20%"]), unsafe_allow_html=True)
+        st.markdown(_df_to_dark_html(_mach, 80, col_widths=["35%", "15%", "10%", "20%", "20%"]), unsafe_allow_html=True)
 
     if not _line.empty:
         st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
