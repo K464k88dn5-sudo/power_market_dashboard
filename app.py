@@ -319,6 +319,9 @@ st.markdown("""
         0%   { transform: translateY(0); }
         100% { transform: translateY(-50%); }
     }
+    .table-scroll-wrap:hover .table-scroll-inner {
+        animation-play-state: paused !important;
+    }
 
     /* ===== 背景微粒子增强（20+光点 + 星芒）===== */
     .stApp::before {
@@ -921,10 +924,10 @@ with col1:
 
         # 表体（循环滚动）
         body_height = max_height - 40
-        html += f'<div style="max-height:{body_height}px;overflow:hidden;">'
+        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow:hidden;">'
 
         if scroll and row_count > 3:
-            html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
+            html += f'<div class="table-scroll-inner" style="animation:table-scroll {anim_duration}s linear infinite;">'
 
         html += f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><tbody>'
 
