@@ -518,7 +518,11 @@ def parse_maintenance_from_disclosure(target_date: str) -> dict:
     返回: {"机组检修": DataFrame, "输变电检修": DataFrame, "检修容量": dict}
     """
     import pandas as _pd
-    disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    if not os.path.exists(disclosure_dir):
+        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        if not os.path.exists(disclosure_dir):
+            disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
 
     result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
@@ -1112,7 +1116,9 @@ with col3:
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析</div>', unsafe_allow_html=True)
 
     # 信息披露文件上传
-    _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    if not os.path.exists(_disclosure_dir):
+        _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     os.makedirs(_disclosure_dir, exist_ok=True)
 
     with st.expander("📤 上传信息披露文件", expanded=False):
