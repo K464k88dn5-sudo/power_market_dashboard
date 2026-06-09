@@ -49,8 +49,7 @@ const removeTopGap = () => {
     const selectors = [
         '[data-testid="stHeader"]',
         '[data-testid="stToolbar"]', 
-        '[data-testid="stDecoration"]',
-        '[data-testid="stSidebarCollapsedControl"]'
+        '[data-testid="stDecoration"]'
     ];
     selectors.forEach(s => {
         document.querySelectorAll(s).forEach(el => {
