@@ -610,6 +610,38 @@ with st.sidebar:
     selected_city = st.selectbox("📍 气象城市", list(GUANGDONG_CITIES.keys()), index=0)
     forecast_days = st.slider("📅 预报天数", 1, 16, 7)
     fuel_days = st.slider("📅 燃料天数", 7, 180, 60)
+
+    st.markdown("---")
+    st.markdown("## 📁 数据文件管理")
+
+    # 电价数据文件上传
+    st.markdown("### 📊 电价数据")
+    price_actual_file = st.file_uploader("上传日前节点电价.xlsx", type=["xlsx"], key="price_actual")
+    price_forecast_file = st.file_uploader("上传广东日前电价预测.xlsx", type=["xlsx"], key="price_forecast")
+
+    # 检修数据文件上传
+    st.markdown("### 🔧 检修数据")
+    disclosure_file = st.file_uploader("上传信息披露文件", type=["xlsx"], key="disclosure")
+
+    # 保存上传的文件
+    if price_actual_file:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx"), "wb") as f:
+            f.write(price_actual_file.getbuffer())
+        st.success("✅ 日前节点电价.xlsx 已上传")
+
+    if price_forecast_file:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx"), "wb") as f:
+            f.write(price_forecast_file.getbuffer())
+        st.success("✅ 广东日前电价预测.xlsx 已上传")
+
+    if disclosure_file:
+        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        os.makedirs(disclosure_dir, exist_ok=True)
+        with open(os.path.join(disclosure_dir, disclosure_file.name), "wb") as f:
+            f.write(disclosure_file.getbuffer())
+        st.success(f"✅ {disclosure_file.name} 已上传")
+
+    st.markdown("---")
     maint_file = st.file_uploader("🔧 导入检修Excel", type=["xlsx","xls","csv"])
     if st.button("🔄 刷新全部", use_container_width=True):
         st.cache_data.clear(); st.rerun()
@@ -623,6 +655,30 @@ with st.spinner("加载中..."):
     city_temps = cached_all_cities_temp()
     fuel_df = cached_fuel(fuel_days)
     fuel_summary = cached_fuel_summary()
+
+    # 云存储加载电价数据（GitHub raw URL）
+    def _load_from_cloud(url, local_path):
+        """从云存储加载数据文件"""
+        if os.path.exists(local_path):
+            return True  # 本地已有文件
+        try:
+            import urllib.request
+            urllib.request.urlretrieve(url, local_path)
+            print(f"[云存储] 已从 {url} 下载到 {local_path}")
+            return True
+        except Exception as e:
+            print(f"[云存储] 下载失败: {e}")
+            return False
+
+    # GitHub raw URL（需要替换为实际的仓库地址）
+    _github_base = "https://raw.githubusercontent.com/K464k88dn5-sudo/power_market_dashboard/main"
+    _actual_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+    _forecast_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
+
+    # 尝试从云存储加载
+    _load_from_cloud(f"{_github_base}/日前节点电价.xlsx", _actual_local)
+    _load_from_cloud(f"{_github_base}/广东日前电价预测.xlsx", _forecast_local)
+
     try:
         price_data = cached_price()
     except Exception as e:

@@ -18,8 +18,8 @@ data_sources/.price_cache.json
 
 # Data files (large)
 predictions/
-*.xlsx
-!requirements.txt
+# 允许上传电价和预测数据文件到 GitHub（用于云存储加载）
+# *.xlsx
 
 # Experiments
 experiments/
