@@ -78,8 +78,8 @@ st.markdown("""
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    /* sidebar 折叠/展开按钮：始终可见（兼容 Streamlit 1.50+） */
-    [data-testid="stSidebarCollapsedControl"] {
+    /* sidebar 折叠/展开按钮：始终可见（Streamlit 1.50+ 改名为 stSidebarCollapseButton） */
+    [data-testid="stSidebarCollapseButton"] {
         opacity: 1 !important;
         display: block !important;
         visibility: visible !important;
@@ -87,6 +87,12 @@ st.markdown("""
         top: 0.5rem !important;
         left: 0.5rem !important;
         z-index: 999999 !important;
+    }
+    /* 兼容旧版 */
+    [data-testid="stSidebarCollapsedControl"] {
+        opacity: 1 !important;
+        display: block !important;
+        visibility: visible !important;
     }
     /* sidebar 强制可见 */
     [data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
@@ -1380,10 +1386,13 @@ with col3:
                     _vals = [_act.iloc[0][h] for h in _hour_cols]
                     pk_h = _vals.index(max(_vals))
                     vl_h = _vals.index(min(_vals))
-                    pc1, pc2, pc3 = st.columns(3)
-                    with pc1: st.metric("均价", f"{sum(_vals)/len(_vals):.0f}")
-                    with pc2: st.metric("峰", f"{max(_vals):.0f}", f"{pk_h}时")
-                    with pc3: st.metric("谷", f"{min(_vals):.0f}", f"{vl_h}时")
+                    _avg_v = sum(_vals)/len(_vals)
+                    _metrics_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;margin-top:2px;">
+                        <span>均价 <b style="color:#00d2d3;font-size:0.75rem;">{_avg_v:.0f}</b></span>
+                        <span>峰 <b style="color:#ff6b6b;font-size:0.75rem;">{max(_vals):.0f}</b> {pk_h}时</span>
+                        <span>谷 <b style="color:#54a0ff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时</span>
+                    </div>'''
+                    st.markdown(_metrics_html, unsafe_allow_html=True)
         else:
             st.info(f"{sel_date} 无电价数据，点击上方按钮进行模型预测")
     else:
