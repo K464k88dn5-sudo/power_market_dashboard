@@ -413,14 +413,15 @@ st.markdown("""
         .kpi-value { font-size: 0.75rem !important; }
         .kpi-label { font-size: 0.45rem; }
         .kpi-sparkline { display: none; }
-        /* 标题栏：Logo 在上，标题+时间在下 */
+        /* 标题栏：Logo + 标题居中，时间换行右对齐 */
         .dash-header {
             flex-wrap: wrap;
             gap: 0.1rem 0.3rem;
             padding: 0.15rem 0.4rem;
+            justify-content: center;
         }
         .dash-header img { height: 22px !important; margin-right: 0 !important; }
-        .dash-title { font-size: 0.75rem; flex: 1; }
+        .dash-title { font-size: 0.75rem; text-align: center; flex: 1; }
         .dash-time  { font-size: 0.45rem; display: block; width: 100%; text-align: right; margin-top: 2px; position: static; }
         /* 同步按钮列在手机端隐藏 */
         [data-testid="stHorizontalBlock"] > div:nth-child(2) { display: none !important; }
