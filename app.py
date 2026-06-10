@@ -713,7 +713,7 @@ if os.path.exists(_logo_path):
     import base64 as _b64
     with open(_logo_path, "rb") as _f:
         _logo_b64 = _b64.b64encode(_f.read()).decode()
-    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:28px;margin-right:0.6rem;flex-shrink:0;">'
+    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:28px;position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);">'
 else:
     _logo_html = ''
 
