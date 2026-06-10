@@ -421,7 +421,7 @@ st.markdown("""
         }
         .dash-header img { height: 22px !important; margin-right: 0 !important; }
         .dash-title { font-size: 0.75rem; flex: 1; }
-        .dash-time  { font-size: 0.45rem; width: 100%; text-align: right; }
+        .dash-time  { font-size: 0.45rem; display: block; width: 100%; text-align: right; margin-top: 2px; position: static; }
         /* 同步按钮列在手机端隐藏 */
         [data-testid="stHorizontalBlock"] > div:nth-child(2) { display: none !important; }
         .mod-card { padding: 0.15rem; margin-bottom: 0.1rem; }
@@ -883,10 +883,10 @@ with col1:
                     fig1.add_trace(go.Scatter(x=[r["时间"]],y=[r["温度(℃)"]],mode="markers+text",
                         marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                         textposition="top center" if clr=="#ff4444" else "bottom center",
-                        textfont=dict(size=8, color=clr),showlegend=False))
+                        textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
             fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="deep_space",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
+                margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#ffffff"),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#ffffff")))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
             st.plotly_chart(fig1,use_container_width=True)
