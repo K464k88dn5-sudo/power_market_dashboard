@@ -30,7 +30,7 @@ from data_sources.fuel_api import build_fuel_display_data, get_fuel_latest_summa
 # 页面配置 & 自动刷新
 # ============================================================
 st.set_page_config(page_title="电力市场监控大屏", page_icon="⚡", layout="wide",
-                   initial_sidebar_state="expanded")
+                   initial_sidebar_state="collapsed")
 
 from streamlit_autorefresh import st_autorefresh
 st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh")
@@ -79,18 +79,8 @@ st.markdown("""
         padding-top: 0 !important;
     }
     /* sidebar 按钮保持可见 */
-    [data-testid="stSidebarCollapseButton"],
-    [data-testid="stExpandSidebarButton"],
-    [data-testid="stSidebarCollapsedControl"] {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-    /* 隐藏顶部装饰，但保留侧边栏折叠按钮容器 */
-    header, [role="banner"] {
-        height: 0 !important;
-        overflow: visible !important;
-    }
-    /* 只隐藏 header 内的 toolbar/decoration，不动折叠按钮 */
+    /* 隐藏顶部装饰 */
+    header[data-testid="stHeader"] { display: none !important; height: 0 !important; }
     [data-testid="stToolbar"] { display: none !important; }
     [data-testid="stDecoration"] { display: none !important; }
     /* 压缩 main 区域 */
