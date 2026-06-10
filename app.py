@@ -413,9 +413,17 @@ st.markdown("""
         .kpi-value { font-size: 0.75rem !important; }
         .kpi-label { font-size: 0.45rem; }
         .kpi-sparkline { display: none; }
-        .dash-header { flex-wrap: wrap; gap: 2px; }
-        .dash-title { font-size: 0.8rem; }
-        .dash-time  { font-size: 0.5rem; }
+        /* 标题栏：Logo 在上，标题+时间在下 */
+        .dash-header {
+            flex-wrap: wrap;
+            gap: 0.1rem 0.3rem;
+            padding: 0.15rem 0.4rem;
+        }
+        .dash-header img { height: 22px !important; margin-right: 0 !important; }
+        .dash-title { font-size: 0.75rem; flex: 1; }
+        .dash-time  { font-size: 0.45rem; width: 100%; text-align: right; }
+        /* 同步按钮列在手机端隐藏 */
+        [data-testid="stHorizontalBlock"] > div:nth-child(2) { display: none !important; }
         .mod-card { padding: 0.15rem; margin-bottom: 0.1rem; }
         .mod-head { font-size: 0.6rem; }
         [data-testid="stMetricValue"] { font-size: 0.7rem !important; }
@@ -430,8 +438,8 @@ st.markdown("""
         .kpi-value { font-size: 0.7rem !important; }
         .kpi-label { font-size: 0.45rem; }
         .dash-header { padding: 0.15rem 0.4rem; flex-wrap: wrap; }
-        .dash-title { font-size: 0.75rem; }
-        .dash-time { font-size: 0.5rem; }
+        .dash-title { font-size: 0.7rem; }
+        .dash-time { font-size: 0.45rem; }
         .mod-card { padding: 0.15rem; }
         .mod-head { font-size: 0.6rem; }
         [data-testid="stMetricValue"] { font-size: 0.65rem !important; }
@@ -443,6 +451,7 @@ st.markdown("""
         .kpi-card { min-width: 100%; }
         .kpi-value { font-size: 0.65rem !important; }
         .dash-title { font-size: 0.65rem; }
+        .dash-time { font-size: 0.4rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -548,10 +557,10 @@ def parse_maintenance_from_disclosure(target_date: str) -> dict:
     返回: {"机组检修": DataFrame, "输变电检修": DataFrame, "检修容量": dict}
     """
     import pandas as _pd
-    # 优先从本地 disclosure/ 目录查找，兜底从用户本地目录
-    disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    # 优先从用户本地目录查找，兜底从项目 disclosure/ 目录
+    disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     if not os.path.exists(disclosure_dir):
-        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
 
     result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
