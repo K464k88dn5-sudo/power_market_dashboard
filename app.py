@@ -413,7 +413,7 @@ st.markdown("""
         .kpi-value { font-size: 0.75rem !important; }
         .kpi-label { font-size: 0.45rem; }
         .kpi-sparkline { display: none; }
-        .dash-header { flex-direction: column; gap: 2px; }
+        .dash-header { flex-wrap: wrap; gap: 2px; }
         .dash-title { font-size: 0.8rem; }
         .dash-time  { font-size: 0.5rem; }
         .mod-card { padding: 0.15rem; margin-bottom: 0.1rem; }
@@ -429,7 +429,7 @@ st.markdown("""
         .kpi-card { min-width: 45%; padding: 0.1rem 0.2rem; }
         .kpi-value { font-size: 0.7rem !important; }
         .kpi-label { font-size: 0.45rem; }
-        .dash-header { padding: 0.1rem 0.4rem; }
+        .dash-header { padding: 0.15rem 0.4rem; flex-wrap: wrap; }
         .dash-title { font-size: 0.75rem; }
         .dash-time { font-size: 0.5rem; }
         .mod-card { padding: 0.15rem; }
@@ -548,11 +548,10 @@ def parse_maintenance_from_disclosure(target_date: str) -> dict:
     返回: {"机组检修": DataFrame, "输变电检修": DataFrame, "检修容量": dict}
     """
     import pandas as _pd
+    # 优先从本地 disclosure/ 目录查找，兜底从用户本地目录
     disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     if not os.path.exists(disclosure_dir):
-        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-        if not os.path.exists(disclosure_dir):
-            disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
 
     result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
@@ -705,7 +704,7 @@ if os.path.exists(_logo_path):
     import base64 as _b64
     with open(_logo_path, "rb") as _f:
         _logo_b64 = _b64.b64encode(_f.read()).decode()
-    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:32px;position:absolute;left:0.8rem;">'
+    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:28px;margin-right:0.6rem;flex-shrink:0;">'
 else:
     _logo_html = ''
 
@@ -949,16 +948,6 @@ with col1:
     # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
     _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
-    # 如果该日期无披露文件，自动使用最新可用日期
-    _disclosure_dir_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    _disclosure_dir_remote = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
-    _disclosure_dir = _disclosure_dir_local if os.path.exists(_disclosure_dir_local) else _disclosure_dir_remote
-    _check_fp = os.path.join(_disclosure_dir, f"信息披露查询预测信息({_price_date}).xlsx")
-    if not os.path.exists(_check_fp):
-        # 找最新可用的披露文件
-        _available = sorted([f for f in os.listdir(_disclosure_dir) if f.endswith('.xlsx')], reverse=True)
-        if _available:
-            _price_date = _available[0].replace("信息披露查询预测信息(", "").replace(").xlsx", "")
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
     # 数据来源日期（橙色）
