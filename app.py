@@ -78,32 +78,13 @@ st.markdown("""
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    /* sidebar 折叠/展开按钮：始终可见（Streamlit 1.50+） */
-    /* 收起按钮（侧边栏打开时，在侧边栏内部） */
-    [data-testid="stSidebarCollapseButton"] {
-        opacity: 1 !important;
-        display: flex !important;
-        visibility: visible !important;
-    }
-    /* 展开按钮（侧边栏关闭时，在 header 内）— 固定到左上角 */
-    [data-testid="stExpandSidebarButton"] {
-        opacity: 1 !important;
-        display: flex !important;
-        visibility: visible !important;
-        position: fixed !important;
-        top: 0.4rem !important;
-        left: 0.4rem !important;
-        z-index: 999999 !important;
-    }
-    /* 兼容旧版 */
+    /* sidebar 按钮保持可见 */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stExpandSidebarButton"],
     [data-testid="stSidebarCollapsedControl"] {
         opacity: 1 !important;
-        display: block !important;
         visibility: visible !important;
     }
-    /* sidebar 强制可见 */
-    [data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
-    section[data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
     /* 隐藏顶部装饰，但保留侧边栏折叠按钮容器 */
     header, [role="banner"] {
         height: 0 !important;
@@ -129,6 +110,28 @@ st.markdown("""
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 0 20px rgba(0,210,211,0.1);
         position: relative;
+    }
+    /* 同步按钮融入标题栏 — 目标：第2列的 stButton */
+    [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stButton"] button {
+        background: linear-gradient(90deg,
+            rgba(0,210,211,0.08) 0%,
+            rgba(0,210,211,0.2) 50%,
+            rgba(0,210,211,0.08) 100%) !important;
+        border: 1px solid rgba(0,210,211,0.3) !important;
+        border-radius: 6px !important;
+        color: #00d2d3 !important;
+        font-size: 0.75rem !important;
+        box-shadow: 0 0 10px rgba(0,210,211,0.08) !important;
+        transition: all 0.3s ease !important;
+    }
+    [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stButton"] button:hover {
+        background: linear-gradient(90deg,
+            rgba(0,210,211,0.15) 0%,
+            rgba(0,210,211,0.3) 50%,
+            rgba(0,210,211,0.15) 100%) !important;
+        border-color: rgba(0,210,211,0.5) !important;
+        box-shadow: 0 0 15px rgba(0,210,211,0.2) !important;
+        text-shadow: 0 0 8px rgba(0,210,211,0.5);
     }
     .dash-title {
         font-size: 1.3rem; font-weight: bold;
@@ -706,7 +709,26 @@ if os.path.exists(_logo_path):
 else:
     _logo_html = ''
 
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">⚡ 电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+# 标题栏 + 同步按钮（按钮融入标题栏）
+_col_title, _col_sync = st.columns([0.93, 0.07], gap="small")
+with _col_title:
+    st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">⚡ 电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+with _col_sync:
+    _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+
+# 同步逻辑
+if _sync_clicked:
+    with st.spinner("同步中..."):
+        import subprocess
+        _repo = os.path.dirname(os.path.abspath(__file__))
+        _result = subprocess.run(
+            ["bash", os.path.join(_repo, "sync_data.sh")],
+            capture_output=True, text=True, cwd=_repo, timeout=60
+        )
+        if _result.returncode == 0:
+            st.toast("✅ 同步成功", icon="☁️")
+        else:
+            st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
 
 # ============================================================
 # KPI 行（实时数据）
@@ -927,6 +949,16 @@ with col1:
     # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
     _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
+    # 如果该日期无披露文件，自动使用最新可用日期
+    _disclosure_dir_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    _disclosure_dir_remote = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    _disclosure_dir = _disclosure_dir_local if os.path.exists(_disclosure_dir_local) else _disclosure_dir_remote
+    _check_fp = os.path.join(_disclosure_dir, f"信息披露查询预测信息({_price_date}).xlsx")
+    if not os.path.exists(_check_fp):
+        # 找最新可用的披露文件
+        _available = sorted([f for f in os.listdir(_disclosure_dir) if f.endswith('.xlsx')], reverse=True)
+        if _available:
+            _price_date = _available[0].replace("信息披露查询预测信息(", "").replace(").xlsx", "")
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
     # 数据来源日期（橙色）
