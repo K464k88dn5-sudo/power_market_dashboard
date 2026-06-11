@@ -767,11 +767,11 @@ with col2:
         m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
                        attr=" ", max_zoom=10)
 
-        # 注入深色背景CSS到地图内部（作用于iframe内）
+        # 注入浅色背景CSS到地图内部（作用于iframe内）
         dark_css = """
         <style>
-            body, .leaflet-container { background: #0a0e1a !important; }
-            .leaflet-control-zoom a { background: #1a1e2a !important; color: #aaa !important; border-color: #333 !important; }
+            body, .leaflet-container { background: #f5f5f7 !important; }
+            .leaflet-control-zoom a { background: #ffffff !important; color: #666 !important; border-color: #e5e5e7 !important; }
             /* 平滑缩放过渡 */
             .leaflet-zoom-anim .leaflet-zoom-animated {
                 transition: transform 0.3s ease-out;
