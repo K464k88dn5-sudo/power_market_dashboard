@@ -138,8 +138,17 @@ st.markdown("""
 
     /* folium 地图 */
     .stFolium > iframe, .stFolium > div, .stFolium {
-        background: #f5f5f7 !important;
+        background: transparent !important;
         border-radius: 12px;
+    }
+    .stFolium iframe {
+        background: transparent !important;
+    }
+    /* 地图卡片背景透明 */
+    .mod-card-map {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     /* dataframe */
@@ -741,7 +750,7 @@ with col1:
 # ===== 第二列：广东地图 + 燃料价格 =====
 with col2:
     # ----- 广东地图 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card mod-card-map"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度</div>', unsafe_allow_html=True)
     if city_temps.empty:
         st.warning("数据获取失败")
     else:
