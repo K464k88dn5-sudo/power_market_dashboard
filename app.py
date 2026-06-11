@@ -765,7 +765,7 @@ with col2:
         lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
 
         m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
-                       attr=" ")
+                       attr=" ", max_zoom=10)
 
         # 注入深色背景CSS到地图内部（作用于iframe内）
         dark_css = """
@@ -788,9 +788,9 @@ with col2:
         m.fit_bounds([[min(lats),min(lons)],[max(lats),max(lons)]], padding=0)
 
         folium.GeoJson(gd_temp,
-            style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.7},
+            style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
             tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
-                style="background:rgba(0,0,0,.8);color:#000000;padding:3px;border-radius:4px;font-size:11px;"),
+                style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid #e5e5e7;"),
             highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
 
         for feat in GD_GEOJSON["features"]:
@@ -814,7 +814,7 @@ with col2:
                 _glow = 'text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;'
 
             folium.Marker(location=[ctr[1],ctr[0]],icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:#000000;text-align:center;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
+                html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
                 icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
         st_folium(m,width="100%",height=320,returned_objects=[])
