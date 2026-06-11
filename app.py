@@ -427,14 +427,11 @@ if os.path.exists(_logo_path):
 else:
     _logo_html = ''
 
-# 标题栏 + 同步按钮（按钮融入标题栏）
-_col_logo, _col_title, _col_sync = st.columns([0.08, 0.84, 0.08], gap="small")
-with _col_logo:
-    if _logo_html:
-        st.markdown(_logo_html, unsafe_allow_html=True)
-with _col_title:
-    st.markdown(f'<div class="dash-header" style="justify-content:center;"><span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
-with _col_sync:
+# 标题栏（logo + 标题 + 同步按钮 一行）
+_col_main, _col_btn = st.columns([0.92, 0.08], gap="small")
+with _col_main:
+    st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+with _col_btn:
     _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
 # 同步逻辑
