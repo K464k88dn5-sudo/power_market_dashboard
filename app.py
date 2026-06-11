@@ -168,6 +168,7 @@ st.markdown("""
         .dash-title { font-size: 0.85rem; }
         .dash-time { font-size: 0.5rem; position: static; text-align: center; }
     }
+</style>
 """, unsafe_allow_html=True)
 
 # ============================================================
