@@ -430,9 +430,12 @@ else:
 # 标题栏 + 同步按钮（按钮融入标题栏）
 _col_title, _col_sync = st.columns([0.93, 0.07], gap="small")
 with _col_title:
-    st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">⚡ 电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
-with _col_sync:
-    _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+    st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+
+    # 同步按钮（标题栏下方右侧）
+    _sync_col1, _sync_col2 = st.columns([99, 1])
+    with _sync_col2:
+        _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub")
 
 # 同步逻辑
 if _sync_clicked:
