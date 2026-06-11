@@ -179,21 +179,21 @@ NEUMORPHIC_TEMPLATE = go.layout.Template(
     layout=go.Layout(
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
-        font=dict(family="Inter, SF Pro Display, PingFang SC, sans-serif", color="#1a1a1a", size=8),
-        title=dict(font=dict(color="#1a1a1a", size=10)),
+        font=dict(family="Inter, SF Pro Display, PingFang SC, sans-serif", color="#000000", size=8),
+        title=dict(font=dict(color="#000000", size=10)),
         xaxis=dict(
             gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
             zerolinecolor="rgba(0,0,0,0.1)",
             linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
-            tickfont=dict(color="#666666", size=7),
-            title=dict(font=dict(color="#666666", size=7)),
+            tickfont=dict(color="#000000", size=7),
+            title=dict(font=dict(color="#000000", size=7)),
         ),
         yaxis=dict(
             gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
             zerolinecolor="rgba(0,0,0,0.1)",
             linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
-            tickfont=dict(color="#666666", size=7),
-            title=dict(font=dict(color="#666666", size=7)),
+            tickfont=dict(color="#000000", size=7),
+            title=dict(font=dict(color="#000000", size=7)),
         ),
         hoverlabel=dict(
             bgcolor="#1a1a1a", bordercolor="rgba(0,0,0,0.2)",
@@ -412,7 +412,7 @@ if os.path.exists(_logo_path):
     import base64 as _b64
     with open(_logo_path, "rb") as _f:
         _logo_b64 = _b64.b64encode(_f.read()).decode()
-    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:28px;position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);">'
+    _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="height:24px;margin-right:8px;vertical-align:middle;">'
 else:
     _logo_html = ''
 
@@ -586,7 +586,7 @@ with col1:
             fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#ffffff"),
-                title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#ffffff")))
+                title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
             st.plotly_chart(fig1,use_container_width=True)
 
@@ -603,7 +603,7 @@ with col1:
             fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
-                title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#ffffff")))
+                title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
             fig2.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig2,use_container_width=True)
 
@@ -616,7 +616,7 @@ with col1:
             fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
-                title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#ffffff")))
+                title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
             fig3.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig3,use_container_width=True)
 
@@ -628,7 +628,7 @@ with col1:
             fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
-                title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#ffffff")))
+                title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
             fig4.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig4,use_container_width=True)
 
@@ -848,7 +848,7 @@ with col2:
             fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
-                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10, color="#ffffff")))
+                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
             fig_coal.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
             st.plotly_chart(fig_coal,use_container_width=True)
 
@@ -861,7 +861,7 @@ with col2:
             fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
-                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#ffffff")))
+                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
             fig_lng.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
             st.plotly_chart(fig_lng,use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -1106,7 +1106,7 @@ with col3:
             _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
 
             fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=140, template="neumorphic",
-                title=dict(text="📊 日前电价预测", font=dict(size=10, color="#ffffff")),
+                title=dict(text="📊 日前电价预测", font=dict(size=10, color="#000000")),
                 hovermode="x unified",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#ffffff")),
                 margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#ffffff"),
