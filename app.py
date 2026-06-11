@@ -38,471 +38,178 @@ st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh")
 # 刷新倒计时进度条
 st.markdown('<div class="refresh-bar-wrap"><div class="refresh-bar"></div></div>', unsafe_allow_html=True)
 
-# 刷新脉冲光晕（页面加载时播放一次）
-st.markdown('<div class="refresh-pulse-overlay"></div>', unsafe_allow_html=True)
 
 # ============================================================
 # 全局样式 — 极致紧凑，无滚动
 # ============================================================
 st.markdown("""
 <style>
-    /* ===== 驾驶舱深空科技风 ===== */
+    /* ===== macOS Sequoia Neumorphic 极简风 ===== */
 
-    /* 全局背景：深蓝黑渐变 + 微网格纹理 */
+    /* 全局 */
     .stApp {
-        background: linear-gradient(180deg, #0a0e1a 0%, #0d1117 50%, #0a0e1a 100%) !important;
+        background: #f5f5f7 !important;
     }
     .block-container {
-        padding: 0rem 0.5rem 0.25rem 0.5rem !important;
+        padding: 0.8rem 1.2rem !important;
         max-width: 100% !important;
-        background-image:
-            linear-gradient(rgba(0,210,211,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,210,211,0.03) 1px, transparent 1px);
-        background-size: 40px 40px;
     }
-    /* 整体上移 */
-    .stApp {
-        transform: translateY(-4rem);
-    }
-    /* 压缩顶部空白（Streamlit 1.50 适配） — 不隐藏 header，否则侧边栏折叠按钮消失 */
-    .stApp > header { height: 0 !important; min-height: 0 !important; overflow: visible !important; }
-    section[data-testid="stMain"] { padding-top: 0 !important; margin-top: 0 !important; }
-    section[data-testid="stMain"] > div { padding-top: 0 !important; margin-top: 0 !important; }
-    .block-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-    [data-testid="stHeader"] { height: 0 !important; overflow: visible !important; }
-    .stApp > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-    [data-testid="stToolbar"] { display: none !important; }
-    [data-testid="stDecoration"] { display: none !important; }
-    /* 通杀：所有顶层 div 的 margin/padding */
-    .stApp, .stApp > div, .stApp > div > div {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    /* sidebar 按钮保持可见 */
-    /* 隐藏顶部装饰 */
-    header[data-testid="stHeader"] { display: none !important; height: 0 !important; }
-    [data-testid="stToolbar"] { display: none !important; }
-    [data-testid="stDecoration"] { display: none !important; }
-    /* 压缩 main 区域 */
-    .main { padding-top: 0 !important; margin-top: 0 !important; }
-    .main .block-container { padding-top: 0 !important; margin-top: 0 !important; }
 
-    /* 标题栏：渐变光带 */
+    /* 标题栏 */
     .dash-header {
-        background: linear-gradient(90deg,
-            rgba(0,210,211,0.08) 0%,
-            rgba(0,210,211,0.2) 50%,
-            rgba(0,210,211,0.08) 100%);
-        border: 1px solid rgba(0,210,211,0.3);
-        border-radius: 6px;
-        padding: 0.25rem 0.8rem;
-        margin-bottom: 0.2rem;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 0 20px rgba(0,210,211,0.1);
+        background: #ffffff;
+        border: 1px solid #e5e5e7;
+        border-radius: 16px;
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.6rem;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
         position: relative;
     }
-    /* 同步按钮融入标题栏 — 目标：第2列的 stButton */
-    [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stButton"] button {
-        background: linear-gradient(90deg,
-            rgba(0,210,211,0.08) 0%,
-            rgba(0,210,211,0.2) 50%,
-            rgba(0,210,211,0.08) 100%) !important;
-        border: 1px solid rgba(0,210,211,0.3) !important;
-        border-radius: 6px !important;
-        color: #00d2d3 !important;
-        font-size: 0.75rem !important;
-        box-shadow: 0 0 10px rgba(0,210,211,0.08) !important;
-        transition: all 0.3s ease !important;
-    }
-    [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stButton"] button:hover {
-        background: linear-gradient(90deg,
-            rgba(0,210,211,0.15) 0%,
-            rgba(0,210,211,0.3) 50%,
-            rgba(0,210,211,0.15) 100%) !important;
-        border-color: rgba(0,210,211,0.5) !important;
-        box-shadow: 0 0 15px rgba(0,210,211,0.2) !important;
-        text-shadow: 0 0 8px rgba(0,210,211,0.5);
-    }
     .dash-title {
-        font-size: 1.3rem; font-weight: bold;
-        background: linear-gradient(90deg, #00d2d3, #54a0ff, #a29bfe, #ff6b6b, #ffd93d, #00d2d3);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: title-shimmer 3s linear infinite;
+        font-size: 1.1rem; font-weight: 700; color: #1a1a1a;
     }
-    @keyframes title-shimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
-    .dash-time  { font-size: 0.8rem; color: #8cc; position: absolute; right: 0.8rem; }
-    .status-ok { color: #2ecc71; text-shadow: 0 0 5px rgba(46,204,113,0.5); }
-    .status-fail { color: #e74c3c; text-shadow: 0 0 5px rgba(231,76,60,0.5); }
+    .dash-time {
+        font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
+    }
 
-    /* KPI 行：玻璃拟态 */
-    .kpi-bar { display: flex; gap: 0.25rem; margin-bottom: 0.2rem; }
+    /* KPI 行 */
+    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
     .kpi-card {
         flex: 1;
-        background: rgba(13, 17, 23, 0.85);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(0, 210, 211, 0.15);
-        border-radius: 6px;
-        padding: 0.2rem 0.4rem;
+        background: #ffffff;
+        border: 1px solid #e5e5e7;
+        border-radius: 12px;
+        padding: 0.4rem 0.6rem;
         text-align: center;
-        box-shadow: 0 0 10px rgba(0,210,211,0.05), inset 0 0 10px rgba(0,210,211,0.02);
-        transition: border-color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04);
+        transition: box-shadow 0.2s, transform 0.2s;
     }
     .kpi-card:hover {
-        border-color: rgba(0,210,211,0.5);
-        box-shadow: 0 0 15px rgba(0,210,211,0.3), 0 0 30px rgba(0,210,211,0.1), inset 0 0 15px rgba(0,210,211,0.05);
-        transform: translateY(-2px);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
     }
-    .kpi-label { font-size: 0.55rem; color: #7aa; }
-    .kpi-value { font-size: 0.9rem; font-weight: bold; }
-    .kpi-delta { font-size: 0.55rem; }
+    .kpi-label { font-size: 0.55rem; color: #999; }
+    .kpi-value { font-size: 0.85rem; font-weight: 700; color: #1a1a1a; }
+    .kpi-delta { font-size: 0.55rem; color: #666; }
+    .kpi-sparkline { margin-top: 2px; line-height: 0; }
 
-    /* 模块卡片：玻璃拟态 */
-    .mod-card {
-        background: rgba(13, 17, 23, 0.85);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(0, 210, 211, 0.12);
-        border-radius: 6px;
-        padding: 0.3rem;
-        margin-bottom: 0.2rem;
-        box-shadow: 0 0 15px rgba(0,210,211,0.04);
-        transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    .mod-card:hover {
-        border-color: rgba(0,210,211,0.3);
-        box-shadow: 0 0 20px rgba(0,210,211,0.1);
-    }
-
-    /* 模块标题 */
-    .mod-head {
-        font-size: 0.7rem; font-weight: bold;
-        padding-bottom: 0.15rem; margin-bottom: 0.2rem;
-        border-bottom: 2px solid;
-        text-shadow: 0 0 8px currentColor;
-    }
-    .mod-head-w { color: #ffd93d; border-color: rgba(255,217,61,0.5); }
-    .mod-head-f { color: #ff9f43; border-color: rgba(255,159,67,0.5); }
-    .mod-head-p { color: #00d2d3; border-color: rgba(0,210,211,0.5); }
-    .mod-head-m { color: #ff6b6b; border-color: rgba(255,107,107,0.5); }
-    .mod-head-g { color: #2ecc71; border-color: rgba(46,204,113,0.5); }
-
-    /* 紧凑图表 */
-    .stPlotlyChart { margin: 0 !important; padding: 0 !important; background: transparent !important;
-        animation: chart-fade-in 0.8s ease-out;
-    }
-    .stPlotlyChart > div { background: transparent !important; }
-    .stPlotlyChart .plotly .main-svg { background: transparent !important; }
-    [data-testid="stChart"] { background: transparent !important; }
-
-    /* 图表渐现动画 */
-    @keyframes chart-fade-in {
-        0%   { opacity: 0; transform: translateX(-10px); }
-        100% { opacity: 1; transform: translateX(0); }
-    }
-
-    /* folium 地图渐现 */
-    .stFolium { animation: chart-fade-in 1s ease-out; }
-    [data-testid="stMetricValue"] { font-size: 0.8rem !important; color: #e0e0e0 !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.55rem !important; color: #7aa !important; }
-    [data-testid="stMetricDelta"] { font-size: 0.55rem !important; }
-    [data-testid="stMetric"] { padding: 0.05rem 0 !important; }
-    .stProgress > div > div { height: 0.35rem !important; }
-
-    /* folium 地图容器深色背景 */
-    .stFolium > iframe,
-    .stFolium > div,
-    .stFolium {
-        background: #0a0e1a !important;
-    }
-    /* 地图 attribution 栏深色 */
-    .leaflet-control-attribution { background: rgba(10,14,26,0.85) !important; color: #555 !important; }
-    .leaflet-control-attribution a { color: #666 !important; }
-    .leaflet-control-zoom a { background: #1a1e2a !important; color: #aaa !important; border-color: #333 !important; }
-
-    /* Streamlit dataframe 表格深色主题 */
-    [data-testid="stDataFrame"] th,
-    [data-testid="stDataFrame"] td,
-    [data-testid="stDataFrame"] .col_heading,
-    [data-testid="stDataFrame"] .data,
-    [data-testid="stDataFrame"] table {
-        background-color: #0d1117 !important;
-        color: #e0e0e0 !important;
-        font-size: 0.45rem !important;
-        border-color: rgba(255,255,255,0.06) !important;
-    }
-    [data-testid="stDataFrame"] th,
-    [data-testid="stDataFrame"] .col_heading {
-        background-color: rgba(0,210,211,0.08) !important;
-        color: #00d2d3 !important;
-        font-size: 0.45rem !important;
-        border-color: rgba(0,210,211,0.15) !important;
-    }
-
-    /* 隐藏 Streamlit 默认元素（保留侧边栏切换按钮） */
-    #MainMenu, footer { visibility: hidden; }
-    /* 隐藏加载进度条和刷新动画 */
-    .stSpinner, [data-testid="stStatusWidget"] { display: none !important; }
-    header[data-testid="stHeader"] { height: 0 !important; overflow: visible !important; }
-    /* 隐藏滚动条相关 */
-    .st-emotion-cache-1wrcr25 { padding-top: 0 !important; }
-
-    /* KPI sparkline 迷你趋势线 */
-    .kpi-sparkline { margin-top: 1px; line-height: 0; }
-    .kpi-sparkline svg { display: block; }
-
-    /* 异常值脉冲动画 */
     @keyframes kpi-pulse {
-        0%, 100% { box-shadow: 0 0 10px rgba(255,71,87,0.2); border-color: rgba(255,71,87,0.3); }
-        50%      { box-shadow: 0 0 20px rgba(255,71,87,0.5); border-color: rgba(255,71,87,0.7); }
+        0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        50% { box-shadow: 0 0 0 2px rgba(220,53,69,0.15); }
     }
     .kpi-pulse { animation: kpi-pulse 2s ease-in-out infinite; }
+    .kpi-arrow-up { color: #dc3545; font-size: 0.5rem; }
+    .kpi-arrow-dn { color: #0D7A3F; font-size: 0.5rem; }
+    .kpi-arrow-flat { color: #999; font-size: 0.5rem; }
 
-    /* KPI 箭头指示 */
-    .kpi-arrow-up { color: #ff4757; font-size: 0.5rem; }
-    .kpi-arrow-dn { color: #2ecc71; font-size: 0.5rem; }
-    .kpi-arrow-flat { color: #888; font-size: 0.5rem; }
-
-    /* ===== 标题栏扫描线动画 ===== */
-    .dash-header { position: relative; overflow: hidden; }
-    .dash-header::after {
-        content: '';
-        position: absolute; top: 0; left: -100%;
-        width: 50%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0,210,211,0.15), transparent);
-        animation: scan-line 4s ease-in-out infinite;
+    /* 模块卡片 */
+    .mod-card {
+        background: #ffffff;
+        border: 1px solid #e5e5e7;
+        border-radius: 16px;
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
     }
-    @keyframes scan-line {
-        0%   { left: -50%; }
-        100% { left: 150%; }
+    .mod-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08);
     }
-
-    /* ===== 模块卡片呼吸灯 ===== */
-    @keyframes card-breathe {
-        0%, 100% { box-shadow: 0 0 15px rgba(0,210,211,0.04); }
-        50%      { box-shadow: 0 0 25px rgba(0,210,211,0.12); }
-    }
-    .mod-card { animation: card-breathe 3s ease-in-out infinite; }
-
-    /* ===== 地图高温城市脉冲 ===== */
-    @keyframes map-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50%      { transform: scale(1.15); opacity: 0.8; }
+    .mod-head {
+        font-size: 0.7rem; font-weight: 600;
+        padding-bottom: 0.25rem; margin-bottom: 0.3rem;
+        border-bottom: 2px solid #e5e5e7;
+        color: #1a1a1a;
     }
 
-    /* ===== 表格循环滚动 ===== */
-    @keyframes table-scroll {
-        0%   { transform: translateY(0); }
-        100% { transform: translateY(-50%); }
-    }
-    .table-scroll-wrap:hover .table-scroll-inner {
-        animation-play-state: paused !important;
+    /* 图表 */
+    .stPlotlyChart { margin: 0 !important; padding: 0 !important; }
+    [data-testid="stMetricValue"] { font-size: 0.8rem !important; color: #1a1a1a !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.55rem !important; color: #666 !important; }
+    [data-testid="stMetricDelta"] { font-size: 0.55rem !important; }
+    [data-testid="stMetric"] { padding: 0.05rem 0 !important; }
+
+    /* Streamlit 隐藏 */
+    #MainMenu, footer { visibility: hidden; }
+    .stSpinner, [data-testid="stStatusWidget"] { display: none !important; }
+    header[data-testid="stHeader"] { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+
+    /* folium 地图 */
+    .stFolium > iframe, .stFolium > div, .stFolium {
+        background: #f5f5f7 !important;
+        border-radius: 12px;
     }
 
-    /* ===== 背景微粒子增强（20+光点 + 星芒）===== */
-    .stApp::before {
-        content: '';
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-image:
-            /* 20个光点 */
-            radial-gradient(1.5px 1.5px at 5% 15%, rgba(0,210,211,0.4) 0%, transparent 100%),
-            radial-gradient(1px 1px at 12% 45%, rgba(0,210,211,0.3) 0%, transparent 100%),
-            radial-gradient(2px 2px at 18% 72%, rgba(0,210,211,0.25) 0%, transparent 100%),
-            radial-gradient(1px 1px at 25% 28%, rgba(84,160,255,0.3) 0%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 32% 85%, rgba(0,210,211,0.35) 0%, transparent 100%),
-            radial-gradient(1px 1px at 38% 12%, rgba(162,155,254,0.3) 0%, transparent 100%),
-            radial-gradient(2px 2px at 45% 55%, rgba(0,210,211,0.2) 0%, transparent 100%),
-            radial-gradient(1px 1px at 52% 38%, rgba(84,160,255,0.25) 0%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 58% 78%, rgba(0,210,211,0.3) 0%, transparent 100%),
-            radial-gradient(1px 1px at 65% 22%, rgba(162,155,254,0.2) 0%, transparent 100%),
-            radial-gradient(2px 2px at 72% 62%, rgba(0,210,211,0.35) 0%, transparent 100%),
-            radial-gradient(1px 1px at 78% 8%, rgba(84,160,255,0.3) 0%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 85% 48%, rgba(0,210,211,0.25) 0%, transparent 100%),
-            radial-gradient(1px 1px at 92% 82%, rgba(162,155,254,0.3) 0%, transparent 100%),
-            radial-gradient(2px 2px at 8% 92%, rgba(0,210,211,0.2) 0%, transparent 100%),
-            radial-gradient(1px 1px at 42% 2%, rgba(84,160,255,0.25) 0%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 62% 92%, rgba(0,210,211,0.3) 0%, transparent 100%),
-            radial-gradient(1px 1px at 88% 28%, rgba(162,155,254,0.2) 0%, transparent 100%),
-            radial-gradient(2px 2px at 22% 52%, rgba(0,210,211,0.35) 0%, transparent 100%),
-            radial-gradient(1px 1px at 95% 68%, rgba(84,160,255,0.3) 0%, transparent 100%),
-            /* 星芒效果 */
-            radial-gradient(3px 1px at 15% 35%, rgba(255,255,255,0.15) 0%, transparent 100%),
-            radial-gradient(1px 3px at 55% 65%, rgba(255,255,255,0.12) 0%, transparent 100%),
-            radial-gradient(2px 1px at 75% 25%, rgba(255,255,255,0.1) 0%, transparent 100%),
-            radial-gradient(1px 2px at 35% 85%, rgba(255,255,255,0.08) 0%, transparent 100%);
-        animation: particle-drift 25s linear infinite;
-        pointer-events: none; z-index: 0;
-    }
-    @keyframes particle-drift {
-        0%   { transform: translateY(0) translateX(0); }
-        25%  { transform: translateY(-15px) translateX(5px); }
-        50%  { transform: translateY(-30px) translateX(-3px); }
-        75%  { transform: translateY(-15px) translateX(8px); }
-        100% { transform: translateY(0) translateX(0); }
-    }
+    /* dataframe */
+    [data-testid="stDataFrame"] th { background: #f5f5f7 !important; color: #1a1a1a !important; }
+    [data-testid="stDataFrame"] td { background: #ffffff !important; color: #1a1a1a !important; }
 
-    /* ===== 数据刷新脉冲光晕 ===== */
-    @keyframes refresh-pulse {
-        0%   { opacity: 0; transform: scale(0.95); }
-        50%  { opacity: 0.3; transform: scale(1); }
-        100% { opacity: 0; transform: scale(1.05); }
-    }
-    .refresh-pulse-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: radial-gradient(ellipse at center, rgba(0,210,211,0.15) 0%, transparent 70%);
-        animation: refresh-pulse 1.5s ease-out;
-        pointer-events: none; z-index: 9998;
-    }
-
-    /* ===== 刷新倒计时进度条 ===== */
+    /* 刷新进度条 */
     .refresh-bar-wrap {
-        position: fixed; bottom: 0; left: 0; width: 100%; height: 3px;
-        background: rgba(0,210,211,0.08); z-index: 999;
+        position: fixed; bottom: 0; left: 0; width: 100%; height: 2px;
+        background: rgba(0,0,0,0.05); z-index: 999;
     }
     .refresh-bar {
         height: 100%; width: 0%;
-        background: linear-gradient(90deg, #00d2d3, #54a0ff);
-        animation: refresh-fill 300s linear infinite; /* 5min = 300s */
-        box-shadow: 0 0 6px rgba(0,210,211,0.4);
+        background: linear-gradient(90deg, #0D7A3F, #4CAF50);
+        animation: refresh-fill 300s linear infinite;
     }
-    @keyframes refresh-fill {
-        0%   { width: 0%; }
-        100% { width: 100%; }
-    }
+    @keyframes refresh-fill { 0% { width: 0%; } 100% { width: 100%; } }
 
-    /* ===== 单页自适应 ===== */
-
-    /* 桌面：允许滚动 */
-    @media (min-width: 1025px) {
-        .block-container {
-            padding: 0rem 0.5rem 0.25rem 0.5rem !important;
-        }
-    }
-
-    /* 平板：两列布局 */
-    @media (min-width: 641px) and (max-width: 1024px) {
-        .block-container { padding: 0.2rem 0.3rem !important; }
-        .kpi-bar { flex-wrap: wrap; gap: 0.15rem; }
-        .kpi-card { min-width: 28%; padding: 0.15rem 0.3rem; }
-        .kpi-value { font-size: 0.8rem !important; }
-        .kpi-label { font-size: 0.5rem; }
-        .dash-title { font-size: 0.9rem; }
-        .mod-card { padding: 0.2rem; margin-bottom: 0.15rem; }
-        .mod-head { font-size: 0.65rem; }
-        [data-testid="stMetricValue"] { font-size: 0.75rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.5rem !important; }
-    }
-
-    /* 手机：单列堆叠 */
+    /* 响应式 */
     @media (max-width: 640px) {
-        .block-container { padding: 0.15rem 0.2rem !important; }
-        .kpi-bar { flex-direction: column; gap: 0.1rem; }
-        .kpi-card { width: 100%; padding: 0.12rem 0.3rem; }
-        .kpi-value { font-size: 0.75rem !important; }
-        .kpi-label { font-size: 0.45rem; }
+        .block-container { padding: 0.4rem 0.5rem !important; }
+        .kpi-bar { flex-direction: column; gap: 0.3rem; }
+        .kpi-card { width: 100%; }
         .kpi-sparkline { display: none; }
-        /* 标题栏：Logo + 标题居中，时间换行右对齐 */
-        .dash-header {
-            flex-wrap: wrap;
-            gap: 0.1rem 0.3rem;
-            padding: 0.15rem 0.4rem;
-            justify-content: center;
-        }
-        .dash-header img { height: 22px !important; margin-right: 0 !important; }
-        .dash-title { font-size: 0.75rem; text-align: center; flex: 1; }
-        .dash-time  { font-size: 0.45rem; display: block; width: 100%; text-align: right; margin-top: 2px; position: static; }
-        /* 同步按钮列在手机端隐藏 */
-        [data-testid="stHorizontalBlock"] > div:nth-child(2) { display: none !important; }
-        .mod-card { padding: 0.15rem; margin-bottom: 0.1rem; }
-        .mod-head { font-size: 0.6rem; }
-        [data-testid="stMetricValue"] { font-size: 0.7rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.45rem !important; }
-        /* 手机隐藏粒子效果，节省性能 */
-        .stApp::before { display: none; }
+        .dash-header { flex-direction: column; gap: 3px; padding: 0.4rem 0.6rem; }
+        .dash-title { font-size: 0.85rem; }
+        .dash-time { font-size: 0.5rem; position: static; text-align: center; }
     }
-
-    @media (max-width: 768px) {
-        .block-container { padding: 0.15rem 0.2rem !important; }
-        .kpi-card { min-width: 45%; padding: 0.1rem 0.2rem; }
-        .kpi-value { font-size: 0.7rem !important; }
-        .kpi-label { font-size: 0.45rem; }
-        .dash-header { padding: 0.15rem 0.4rem; flex-wrap: wrap; }
-        .dash-title { font-size: 0.7rem; }
-        .dash-time { font-size: 0.45rem; }
-        .mod-card { padding: 0.15rem; }
-        .mod-head { font-size: 0.6rem; }
-        [data-testid="stMetricValue"] { font-size: 0.65rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.45rem !important; }
-        [data-testid="stMetric"] { padding: 0.02rem 0 !important; }
-    }
-
-    @media (max-width: 480px) {
-        .kpi-card { min-width: 100%; }
-        .kpi-value { font-size: 0.65rem !important; }
-        .dash-title { font-size: 0.65rem; }
-        .dash-time { font-size: 0.4rem; }
-    }
-</style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# Plotly 深空科技风自定义模板
-# ============================================================
+# Plotly 极简风格模板
 import plotly.io as pio
 
-DEEP_SPACE_TEMPLATE = go.layout.Template(
+NEUMORPHIC_TEMPLATE = go.layout.Template(
     layout=go.Layout(
-        paper_bgcolor="#0a0e1a",             # 深空底色
-        plot_bgcolor="#0d1117",              # 绘图区微亮
-        font=dict(family="sans-serif", color="#ffffff", size=8),
-        title=dict(font=dict(color="#ffffff", size=10)),
-        # X 轴
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(family="Inter, SF Pro Display, PingFang SC, sans-serif", color="#1a1a1a", size=8),
+        title=dict(font=dict(color="#1a1a1a", size=10)),
         xaxis=dict(
-            gridcolor="rgba(255,255,255,0.06)",
-            gridwidth=0.3,
-            griddash="dot",
-            zerolinecolor="rgba(0,210,211,0.15)",
-            linecolor="rgba(255,255,255,0.5)",
-            linewidth=1,
-            showline=True,
-            tickfont=dict(color="#ffffff", size=7),
-            title=dict(font=dict(color="#ffffff", size=7)),
+            gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
+            zerolinecolor="rgba(0,0,0,0.1)",
+            linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
+            tickfont=dict(color="#666666", size=7),
+            title=dict(font=dict(color="#666666", size=7)),
         ),
-        # Y 轴
         yaxis=dict(
-            gridcolor="rgba(255,255,255,0.06)",
-            gridwidth=0.3,
-            griddash="dot",
-            zerolinecolor="rgba(0,210,211,0.15)",
-            linecolor="rgba(255,255,255,0.5)",
-            linewidth=1,
-            showline=True,
-            tickfont=dict(color="#ffffff", size=7),
-            title=dict(font=dict(color="#ffffff", size=7)),
+            gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
+            zerolinecolor="rgba(0,0,0,0.1)",
+            linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
+            tickfont=dict(color="#666666", size=7),
+            title=dict(font=dict(color="#666666", size=7)),
         ),
-        # Hover 统一风格
         hoverlabel=dict(
-            bgcolor="rgba(10,14,26,0.92)",
-            bordercolor="rgba(0,210,211,0.4)",
-            font=dict(color="#e0e0e0", size=9, family="sans-serif"),
+            bgcolor="#1a1a1a", bordercolor="rgba(0,0,0,0.2)",
+            font=dict(color="#ffffff", size=9),
         ),
-        # 图例
         legend=dict(
-            bgcolor="rgba(0,0,0,0)",
-            bordercolor="rgba(255,255,255,0.15)",
-            font=dict(color="#ffffff", size=7),
+            bgcolor="rgba(255,255,255,0.9)", bordercolor="#e5e5e7",
+            font=dict(color="#1a1a1a", size=7),
         ),
-        # 色板
         colorway=[
-            "#00d2d3", "#ff6b6b", "#ffd93d", "#54a0ff",
-            "#ff9f43", "#2ecc71", "#a29bfe", "#6bcb77",
+            "#0D7A3F", "#dc3545", "#ffc107", "#007bff",
+            "#ff6b35", "#6f42c1", "#20c997", "#e83e8c",
         ],
     ),
 )
-pio.templates["deep_space"] = DEEP_SPACE_TEMPLATE
-pio.templates.default = "deep_space"  # 所有新 Figure 自动使用
+pio.templates["neumorphic"] = NEUMORPHIC_TEMPLATE
+pio.templates.default = "neumorphic"  # 所有新 Figure 自动使用
 
 # ============================================================
 # 常量 & 工具函数
@@ -830,7 +537,7 @@ if not ld and not pdf.empty and "参考电价(元/MWh)" in pdf.columns:
     ld = pdf["日期"].max(); da = pdf[pdf["日期"] == ld]["参考电价(元/MWh)"].mean()
 
 _elec_pulse = ' kpi-pulse' if da > 500 else ''
-kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价均价</div><div class="kpi-value" style="color:#00d2d3">{da:.0f}元/MWh</div><div class="kpi-delta" style="color:#888">{ld} {_elec_arrow}</div>{_elec_sp}</div>'
+kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价均价</div><div class="kpi-value" style="color:#0D7A3F">{da:.0f}元/MWh</div><div class="kpi-delta" style="color:#888">{ld} {_elec_arrow}</div>{_elec_sp}</div>'
 
 # --- 安全裕度 KPI（脉冲=紧张）---
 _margin_pulse = ' kpi-pulse' if margin_lv == "紧张" else ''
@@ -875,7 +582,7 @@ with col1:
                         marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                         textposition="top center" if clr=="#ff4444" else "bottom center",
                         textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
-            fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="deep_space",showlegend=False,
+            fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#ffffff"),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#ffffff")))
@@ -892,11 +599,11 @@ with col1:
             fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
                 y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
-            fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="deep_space",showlegend=False,
+            fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
                 title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#ffffff")))
-            fig2.update_xaxes(tickangle=-30,tickfont=dict(size=6, color="#ffffff"))
+            fig2.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig2,use_container_width=True)
 
         with wc_right:
@@ -905,11 +612,11 @@ with col1:
                 fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
                     line=dict(color="#6bcb77",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-            fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="deep_space",showlegend=False,
+            fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
                 title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#ffffff")))
-            fig3.update_xaxes(tickangle=-30,tickfont=dict(size=6, color="#ffffff"))
+            fig3.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig3,use_container_width=True)
 
             fig4 = go.Figure()
@@ -917,11 +624,11 @@ with col1:
                 fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
                     line=dict(color="#a29bfe",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-            fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="deep_space",showlegend=False,
+            fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
                 title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#ffffff")))
-            fig4.update_xaxes(tickangle=-30,tickfont=dict(size=6, color="#ffffff"))
+            fig4.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
             st.plotly_chart(fig4,use_container_width=True)
 
         _obs = _fco(selected_city)
@@ -940,7 +647,7 @@ with col1:
                                   ("实况湿度",f"{_cur_h:.0f}%",""),
                                   ("实况风速",f"{_cur_w:.1f}m/s","")]:
             _sub_s = f'<span style="font-size:0.45rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
-            _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#7aa">{_label}</div><div style="font-size:0.7rem;color:#e0e0e0">{_val}{_sub_s}</div></div>'
+            _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#666">{_label}</div><div style="font-size:0.7rem;color:#1a1a1a">{_val}{_sub_s}</div></div>'
         _wx_html += '</div>'
         st.markdown(_wx_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -957,8 +664,8 @@ with col1:
         _cap = _maint_data["检修容量"]
         st.markdown(
             f'<div style="display:flex;gap:8px;margin:4px 0">'
-            f'<span style="font-size:0.8rem;color:#aaa">总检修容量 <b style="color:#e0e0e0">{_cap["总容量"]:.0f}</b> MW</span>'
-            f'<span style="font-size:0.8rem;color:#aaa">市场机组 <b style="color:#e0e0e0">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.8rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.8rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
             f'</div>', unsafe_allow_html=True)
 
     _mach = _maint_data.get("机组检修", pd.DataFrame())
@@ -967,8 +674,8 @@ with col1:
     # 表格深色主题样式（HTML表格，循环滚动展示）
     def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-        th_style = 'background:#14202e;color:#00d2d3;font-size:0.5rem;padding:3px 6px;border:1px solid rgba(0,210,211,0.15);font-weight:bold;line-height:1.5;'
-        td_style = 'background:#0d1117;color:#e0e0e0;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
+        th_style = 'background:#f5f5f7;color:#0D7A3F;font-size:0.5rem;padding:3px 6px;border:1px solid #e5e5e7;font-weight:bold;line-height:1.5;'
+        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
 
         row_count = len(df)
         anim_duration = max(row_count * 3, 10)
@@ -1056,7 +763,7 @@ with col2:
         for feat in GD_GEOJSON["features"]: ext(feat["geometry"]["coordinates"])
         lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
 
-        m = folium.Map(tiles="CartoDB dark_matter",control_scale=False,prefer_canvas=True,
+        m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
                        attr=" ")
 
         # 注入深色背景CSS到地图内部（作用于iframe内）
@@ -1118,7 +825,7 @@ with col2:
         </div>'''
         st.markdown(_legend_html, unsafe_allow_html=True)
         avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
-        st.markdown(f'<span style="font-size:0.55rem;color:#aaa">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
+        st.markdown(f'<span style="font-size:0.55rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ----- 燃料价格 -----
@@ -1137,11 +844,11 @@ with col2:
             fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
-            fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="deep_space",showlegend=False,
+            fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
                 title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10, color="#ffffff")))
-            fig_coal.update_xaxes(tickangle=-30,tickfont=dict(size=7, color="#ffffff"))
+            fig_coal.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
             st.plotly_chart(fig_coal,use_container_width=True)
 
         # LNG气价
@@ -1150,11 +857,11 @@ with col2:
             fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
-            fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="deep_space",showlegend=False,
+            fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
                 title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#ffffff")))
-            fig_lng.update_xaxes(tickangle=-30,tickfont=dict(size=7, color="#ffffff"))
+            fig_lng.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
             st.plotly_chart(fig_lng,use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1397,7 +1104,7 @@ with col3:
             # 晚间 18-23: 浅灰
             _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
 
-            fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=140, template="deep_space",
+            fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=140, template="neumorphic",
                 title=dict(text="📊 日前电价预测", font=dict(size=10, color="#ffffff")),
                 hovermode="x unified",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#ffffff")),
@@ -1449,9 +1156,9 @@ with col3:
                             _avg_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
 
                     _metrics_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;margin-top:2px;">
-                        <span>均价 <b style="color:#00d2d3;font-size:0.75rem;">{_avg_v:.0f}</b> {_avg_arrow}</span>
-                        <span>峰 <b style="color:#ff6b6b;font-size:0.75rem;">{max(_vals):.0f}</b>{_pk_price_arrow} {pk_h}时{_pk_arrow}</span>
-                        <span>谷 <b style="color:#54a0ff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
+                        <span>均价 <b style="color:#0D7A3F;font-size:0.75rem;">{_avg_v:.0f}</b> {_avg_arrow}</span>
+                        <span>峰 <b style="color:#dc3545;font-size:0.75rem;">{max(_vals):.0f}</b>{_pk_price_arrow} {pk_h}时{_pk_arrow}</span>
+                        <span>谷 <b style="color:#007bff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
                     </div>'''
                     st.markdown(_metrics_html, unsafe_allow_html=True)
         else:
@@ -1482,12 +1189,12 @@ with col3:
             _y = [f"{i}时" for i in range(24)]
             # 自定义色阶：绿(低)→黄→红(高)
             _colorscale = [
-                [0.0, "#1a9641"],
-                [0.2, "#a6d96a"],
-                [0.4, "#ffffbf"],
-                [0.6, "#fdae61"],
-                [0.8, "#f46d43"],
-                [1.0, "#d73027"],
+                [0.0, "#0D7A3F"],
+                [0.2, "#4CAF50"],
+                [0.4, "#8BC34A"],
+                [0.6, "#FFC107"],
+                [0.8, "#FF5722"],
+                [1.0, "#dc3545"],
             ]
             _heat_fig = go.Figure(data=go.Heatmap(
                 z=_z, x=_x, y=_y,
@@ -1513,10 +1220,10 @@ with col3:
                     break
 
             _heat_fig.update_layout(
-                height=200, template="deep_space",
+                height=200, template="neumorphic",
                 margin=dict(l=35, r=10, t=5, b=30),
                 font=dict(size=7, color="#ffffff"),
-                xaxis=dict(tickangle=-45, tickfont=dict(size=6, color="#ffffff"), side="bottom"),
+                xaxis=dict( tickfont=dict(size=6, color="#ffffff"), side="bottom"),
                 yaxis=dict(tickfont=dict(size=6, color="#ffffff"), autorange="reversed"),
             )
             st.plotly_chart(_heat_fig, use_container_width=True)
@@ -1524,7 +1231,7 @@ with col3:
             _all_vals = _np.array(_heat_df[_hour_cols].values, dtype=float).flatten()
             _all_vals = _all_vals[~_np.isnan(_all_vals)]
             if len(_all_vals) > 0:
-                st.markdown(f'<span style="font-size:0.55rem;color:#aaa">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
+                st.markdown(f'<span style="font-size:0.55rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
         except Exception as e:
             st.warning(f"热力图数据加载失败: {e}")
     else:
