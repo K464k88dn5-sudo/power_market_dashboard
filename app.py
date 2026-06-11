@@ -144,11 +144,13 @@ st.markdown("""
     .stFolium iframe {
         background: transparent !important;
     }
-    /* 地图卡片背景透明 */
+    /* 地图卡片背景与页面一致 */
     .mod-card-map {
-        background: transparent !important;
+        background: #f5f5f7 !important;
         border: none !important;
         box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     /* dataframe */
