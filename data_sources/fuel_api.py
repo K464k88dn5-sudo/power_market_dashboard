@@ -10,6 +10,10 @@
 
 import pandas as pd
 import requests
+import logging
+
+_log = logging.getLogger(fname.split("/")[-1].replace(".py",""))
+_log.addHandler(logging.NullHandler())
 import numpy as np
 from datetime import datetime, timedelta
 import subprocess
@@ -41,7 +45,7 @@ def load_domestic_reference() -> dict:
         with open(REF_PATH, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"[国内参考数据] 加载失败: {e}")
+        _log.info(f"[国内参考数据] 加载失败: {e}")
         return {}
 
 
@@ -94,7 +98,7 @@ def fetch_coal_price_cctd(days: int = 60) -> pd.DataFrame:
         df["煤价环比(%)"] = df["5500K煤价(元/吨)"].pct_change() * 100
         return df
     except Exception as e:
-        print(f"[CCTD煤价] 获取失败: {e}")
+        _log.info(f"[CCTD煤价] 获取失败: {e}")
         return pd.DataFrame()
 
 
@@ -121,7 +125,7 @@ def fetch_lng_price_shpgx() -> dict:
             "来源": "上海石油天然气交易中心",
         }
     except Exception as e:
-        print(f"[LNG价格] 获取失败: {e}")
+        _log.info(f"[LNG价格] 获取失败: {e}")
         return {}
 
 
@@ -142,7 +146,7 @@ def fetch_fred_series(series_id: str, start_date: str = "2024-01-01") -> pd.Data
             capture_output=True, timeout=30
         )
         if result.returncode != 0:
-            print(f"[FRED] curl失败: {series_id}")
+            _log.info(f"[FRED] curl失败: {series_id}")
             return pd.DataFrame()
 
         df = pd.read_csv(tmp)
@@ -155,7 +159,7 @@ def fetch_fred_series(series_id: str, start_date: str = "2024-01-01") -> pd.Data
         df = df.dropna(subset=["value"])
         return df
     except Exception as e:
-        print(f"[FRED] {series_id} 获取失败: {e}")
+        _log.info(f"[FRED] {series_id} 获取失败: {e}")
         return pd.DataFrame()
 
 
@@ -308,26 +312,26 @@ def get_fuel_latest_summary() -> dict:
 # 测试
 # ============================================================
 if __name__ == "__main__":
-    print("=== 燃料价格测试（数据源与预测模型一致）===\n")
+    _log.info("=== 燃料价格测试（数据源与预测模型一致）===\n")
 
-    print("--- 国内参考数据 ---")
+    _log.info("--- 国内参考数据 ---")
     ref = load_domestic_reference()
     if ref:
-        print(f"  煤价最新月份: {max(ref.get('coal_price_5500', {}).keys())}")
-        print(f"  LNG最新月份: {max(ref.get('gas_lng', {}).keys())}")
+        _log.info(f"  煤价最新月份: {max(ref.get('coal_price_5500', {}).keys())}")
+        _log.info(f"  LNG最新月份: {max(ref.get('gas_lng', {}).keys())}")
 
-    print("\n--- CCTD 煤价（最新5天） ---")
+    _log.info("\n--- CCTD 煤价（最新5天） ---")
     coal = fetch_coal_price_cctd(5)
     if not coal.empty:
         print(coal.to_string(index=False))
 
-    print("\n--- SHPGX LNG实时 ---")
+    _log.info("\n--- SHPGX LNG实时 ---")
     lng = fetch_lng_price_shpgx()
     if lng:
         for k, v in lng.items():
-            print(f"  {k}: {v}")
+            _log.info(f"  {k}: {v}")
 
-    print("\n--- 综合燃料数据（最新5天） ---")
+    _log.info("\n--- 综合燃料数据（最新5天） ---")
     df = build_fuel_display_data(30)
     if not df.empty:
         print(df.tail(5).to_string(index=False))

@@ -7,6 +7,10 @@
 """
 
 import requests
+import logging
+
+_log = logging.getLogger("weather_api")
+_log.addHandler(logging.NullHandler())
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional
@@ -154,10 +158,10 @@ def fetch_current_observation(city: str) -> dict:
         _save_cache(cache_key, result)
         return result
     except Exception as e:
-        print(f"[Open-Meteo] {city} 实况获取失败: {e}")
+        _log.info(f"[Open-Meteo] {city} 实况获取失败: {e}")
         cached = _load_cache(cache_key, max_age_hours=6)
         if cached:
-            print(f"[Open-Meteo] {city} 使用缓存数据")
+            _log.info(f"[Open-Meteo] {city} 使用缓存数据")
             return cached
         return {}
 
@@ -219,10 +223,10 @@ def fetch_weather_single(city: str = "广州", forecast_days: int = 7) -> pd.Dat
         )
         data = resp.json()
     except Exception as e:
-        print(f"[Open-Meteo] {city} 预报获取失败: {e}")
+        _log.info(f"[Open-Meteo] {city} 预报获取失败: {e}")
         cached = _load_cache(cache_key, max_age_hours=6)
         if cached:
-            print(f"[Open-Meteo] {city} 预报使用缓存数据")
+            _log.info(f"[Open-Meteo] {city} 预报使用缓存数据")
             df = pd.DataFrame(cached)
             df["时间"] = pd.to_datetime(df["时间"])
             return df
@@ -281,11 +285,11 @@ def fetch_weather_guangdong_avg(forecast_days: int = 7) -> pd.DataFrame:
 # 测试
 # ============================================================
 if __name__ == "__main__":
-    print("=== 测试实时实况（Open-Meteo current）===")
+    _log.info("=== 测试实时实况（Open-Meteo current）===")
     obs = fetch_current_observation("广州")
-    print(f"广州实况: {obs}")
+    _log.info(f"广州实况: {obs}")
 
-    print("\n=== 测试预报（Open-Meteo hourly）===")
+    _log.info("\n=== 测试预报（Open-Meteo hourly）===")
     df = fetch_weather_single("广州", forecast_days=2)
-    print(f"获取到 {len(df)} 条记录")
+    _log.info(f"获取到 {len(df)} 条记录")
     print(df.head(5))

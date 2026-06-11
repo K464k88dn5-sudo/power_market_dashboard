@@ -22,7 +22,7 @@ def load_maintenance_from_excel(file_path: str) -> pd.DataFrame:
         elif file_path.endswith('.csv'):
             df = pd.read_csv(file_path)
         else:
-            print(f"[检修数据] 不支持的文件格式: {file_path}")
+            _log.info(f"[检修数据] 不支持的文件格式: {file_path}")
             return pd.DataFrame()
         
         # 标准化列名
@@ -51,7 +51,7 @@ def load_maintenance_from_excel(file_path: str) -> pd.DataFrame:
         return df
         
     except Exception as e:
-        print(f"[检修数据] 读取Excel失败: {e}")
+        _log.info(f"[检修数据] 读取Excel失败: {e}")
         return pd.DataFrame()
 
 
@@ -81,7 +81,7 @@ def save_maintenance_template(file_path: str = None):
     
     template = get_maintenance_template()
     template.to_excel(file_path, index=False)
-    print(f"[检修数据] 模板已保存到: {file_path}")
+    _log.info(f"[检修数据] 模板已保存到: {file_path}")
     return file_path
 
 
@@ -127,7 +127,7 @@ def calculate_security_margin(maintenance_df: pd.DataFrame,
 # 测试
 # ============================================================
 if __name__ == "__main__":
-    print("=== 检修数据模块 ===")
+    _log.info("=== 检修数据模块 ===")
     
     # 生成模板
     path = save_maintenance_template()
@@ -135,4 +135,4 @@ if __name__ == "__main__":
     # 计算安全裕度
     template = get_maintenance_template()
     margin = calculate_security_margin(template)
-    print(f"\n安全裕度: {margin}")
+    _log.info(f"\n安全裕度: {margin}")
