@@ -12,7 +12,7 @@ import pandas as pd
 import requests
 import logging
 
-_log = logging.getLogger(fname.split("/")[-1].replace(".py",""))
+_log = logging.getLogger("fuel_api")
 _log.addHandler(logging.NullHandler())
 import numpy as np
 from datetime import datetime, timedelta
