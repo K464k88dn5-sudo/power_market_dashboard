@@ -62,7 +62,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 0.5rem 1rem;
         margin-bottom: 0.6rem;
-        display: flex; align-items: center; justify-content: space-between;
+        display: flex; align-items: center; justify-content: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
         position: relative;
     }
@@ -177,8 +177,8 @@ import plotly.io as pio
 
 NEUMORPHIC_TEMPLATE = go.layout.Template(
     layout=go.Layout(
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#ffffff",
+        paper_bgcolor="#000000",
+        plot_bgcolor="#000000",
         font=dict(family="Inter, SF Pro Display, PingFang SC, sans-serif", color="#000000", size=8),
         title=dict(font=dict(color="#000000", size=10)),
         xaxis=dict(
@@ -585,7 +585,7 @@ with col1:
                         textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
             fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#ffffff"),
+                margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
             st.plotly_chart(fig1,use_container_width=True)
@@ -602,9 +602,9 @@ with col1:
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
             fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
-            fig2.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
+            fig2.update_xaxes(tickfont=dict(size=6, color="#000000"))
             st.plotly_chart(fig2,use_container_width=True)
 
         with wc_right:
@@ -615,9 +615,9 @@ with col1:
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
             fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
-            fig3.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
+            fig3.update_xaxes(tickfont=dict(size=6, color="#000000"))
             st.plotly_chart(fig3,use_container_width=True)
 
             fig4 = go.Figure()
@@ -627,9 +627,9 @@ with col1:
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
             fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#ffffff"),
+                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
-            fig4.update_xaxes(tickfont=dict(size=6, color="#ffffff"))
+            fig4.update_xaxes(tickfont=dict(size=6, color="#000000"))
             st.plotly_chart(fig4,use_container_width=True)
 
         _obs = _fco(selected_city)
@@ -788,9 +788,9 @@ with col2:
         m.fit_bounds([[min(lats),min(lons)],[max(lats),max(lons)]], padding=0)
 
         folium.GeoJson(gd_temp,
-            style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"white","weight":1.5,"fillOpacity":0.7},
+            style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.7},
             tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
-                style="background:rgba(0,0,0,.8);color:white;padding:3px;border-radius:4px;font-size:11px;"),
+                style="background:rgba(0,0,0,.8);color:#000000;padding:3px;border-radius:4px;font-size:11px;"),
             highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
 
         for feat in GD_GEOJSON["features"]:
@@ -814,12 +814,12 @@ with col2:
                 _glow = 'text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;'
 
             folium.Marker(location=[ctr[1],ctr[0]],icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
+                html=f'<div style="font-size:10px;font-weight:bold;color:#000000;text-align:center;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
                 icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
         st_folium(m,width="100%",height=320,returned_objects=[])
         # 色阶图例
-        _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#fff">
+        _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
             <span>18℃</span>
             <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
             <span>40℃</span>
@@ -847,9 +847,9 @@ with col2:
                 line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
             fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                 title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
-            fig_coal.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
+            fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
             st.plotly_chart(fig_coal,use_container_width=True)
 
         # LNG气价
@@ -860,9 +860,9 @@ with col2:
                 line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
             fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#ffffff"),
+                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                 title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
-            fig_lng.update_xaxes(tickfont=dict(size=7, color="#ffffff"))
+            fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
             st.plotly_chart(fig_lng,use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1108,11 +1108,11 @@ with col3:
             fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=140, template="neumorphic",
                 title=dict(text="📊 日前电价预测", font=dict(size=10, color="#000000")),
                 hovermode="x unified",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#ffffff")),
-                margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#ffffff"),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
+                margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
                 shapes=_shapes,
                 xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
-                yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#ffffff")))
+                yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#000000")))
             st.plotly_chart(fig, use_container_width=True)
 
             # 指标行
@@ -1200,7 +1200,7 @@ with col3:
             _heat_fig = go.Figure(data=go.Heatmap(
                 z=_z, x=_x, y=_y,
                 colorscale=_colorscale,
-                colorbar=dict(title=dict(text="元/MWh", font=dict(size=8, color="#ffffff")), tickfont=dict(size=7, color="#ffffff"), len=0.8, thickness=8),
+                colorbar=dict(title=dict(text="元/MWh", font=dict(size=8, color="#000000")), tickfont=dict(size=7, color="#000000"), len=0.8, thickness=8),
                 hovertemplate="日期: %{x}<br时段: %{y}<br电价: %{z:.0f} 元/MWh<extra></extra>",
             ))
 
@@ -1223,9 +1223,9 @@ with col3:
             _heat_fig.update_layout(
                 height=200, template="neumorphic",
                 margin=dict(l=35, r=10, t=5, b=30),
-                font=dict(size=7, color="#ffffff"),
-                xaxis=dict( tickfont=dict(size=6, color="#ffffff"), side="bottom"),
-                yaxis=dict(tickfont=dict(size=6, color="#ffffff"), autorange="reversed"),
+                font=dict(size=7, color="#000000"),
+                xaxis=dict( tickfont=dict(size=6, color="#000000"), side="bottom"),
+                yaxis=dict(tickfont=dict(size=6, color="#000000"), autorange="reversed"),
             )
             st.plotly_chart(_heat_fig, use_container_width=True)
             # 底部统计
