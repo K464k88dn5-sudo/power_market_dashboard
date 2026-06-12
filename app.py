@@ -871,7 +871,7 @@ with col3:
     os.makedirs(_disclosure_dir, exist_ok=True)
 
     # 上传信息披露文件 + 同步按钮（同行）
-    _col_upload, _col_sync = st.columns([0.85, 0.15])
+    _col_upload, _col_sync = st.columns([0.7, 0.3])
     with _col_upload:
         with st.expander("📤 上传信息披露文件", expanded=False):
             _upload_file = st.file_uploader(
