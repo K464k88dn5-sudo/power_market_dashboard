@@ -427,26 +427,8 @@ if os.path.exists(_logo_path):
 else:
     _logo_html = ''
 
-# 标题栏（logo + 标题 + 同步按钮 一行）
-_col_main, _col_btn = st.columns([0.92, 0.08], gap="small")
-with _col_main:
-    st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
-with _col_btn:
-    _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
-
-# 同步逻辑
-if _sync_clicked:
-    with st.spinner("同步中..."):
-        import subprocess
-        _repo = os.path.dirname(os.path.abspath(__file__))
-        _result = subprocess.run(
-            ["bash", os.path.join(_repo, "sync_data.sh")],
-            capture_output=True, text=True, cwd=_repo, timeout=60
-        )
-        if _result.returncode == 0:
-            st.toast("✅ 同步成功", icon="☁️")
-        else:
-            st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
+# 标题栏（logo + 标题 + 状态栏）
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
@@ -888,18 +870,37 @@ with col3:
         _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     os.makedirs(_disclosure_dir, exist_ok=True)
 
-    with st.expander("📤 上传信息披露文件", expanded=False):
-        _upload_file = st.file_uploader(
-            "选择信息披露查询预测信息文件",
-            type=["xlsx", "xls"],
-            key="disclosure_upload",
-            help="文件名格式：信息披露查询预测信息(YYYY-MM-DD).xlsx"
-        )
+    # 上传信息披露文件 + 同步按钮（同行）
+    _col_upload, _col_sync = st.columns([0.85, 0.15])
+    with _col_upload:
+        with st.expander("📤 上传信息披露文件", expanded=False):
+            _upload_file = st.file_uploader(
+                "选择信息披露查询预测信息文件",
+                type=["xlsx", "xls"],
+                key="disclosure_upload",
+                help="文件名格式：信息披露查询预测信息(YYYY-MM-DD).xlsx"
+            )
         if _upload_file is not None:
             _save_path = os.path.join(_disclosure_dir, _upload_file.name)
             with open(_save_path, "wb") as f:
                 f.write(_upload_file.getbuffer())
             st.success(f"✅ 已保存: {_upload_file.name}")
+    with _col_sync:
+        _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+
+    # 同步逻辑
+    if _sync_clicked:
+        with st.spinner("同步中..."):
+            import subprocess
+            _repo = os.path.dirname(os.path.abspath(__file__))
+            _result = subprocess.run(
+                ["bash", os.path.join(_repo, "sync_data.sh")],
+                capture_output=True, text=True, cwd=_repo, timeout=60
+            )
+            if _result.returncode == 0:
+                st.toast("✅ 同步成功", icon="☁️")
+            else:
+                st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
 
     # 加载实际电价和预测电价
     _actual_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
