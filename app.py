@@ -691,7 +691,7 @@ with col1:
 
         # 表体（循环滚动）
         body_height = max_height - 40
-        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow:hidden;">'
+        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;">'
 
         if scroll and row_count > 3:
             html += f'<div class="table-scroll-inner" style="animation:table-scroll {anim_duration}s linear infinite;">'
