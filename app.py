@@ -871,6 +871,12 @@ with col2:
                 title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
             fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
             st.plotly_chart(fig_lng,use_container_width=True)
+
+        # 数据源信息
+        _coal_src = fuel_summary.get("煤价来源", "CCTD")
+        _lng_src = fuel_summary.get("LNG来源", "SHPGX")
+        _fuel_src_html = f'<div style="display:flex;gap:12px;font-size:0.5rem;color:#999;margin-top:2px;"><span>煤价来源: {_coal_src}</span><span>LNG来源: {_lng_src}</span></div>'
+        st.markdown(_fuel_src_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ===== 第三列：电价分析 =====
