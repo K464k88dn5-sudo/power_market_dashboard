@@ -69,9 +69,34 @@ st.markdown("""
     .dash-title {
         font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
         letter-spacing: 0.15em;
-        padding-left: 12px;
-        border-left: 3px solid #0D7A3F;
+        padding: 0 20px;
+        position: relative;
         text-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .dash-title::before,
+    .dash-title::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 100%;
+    }
+    .dash-title::before {
+        left: -8px;
+        background: 
+            linear-gradient(135deg, transparent 33%, #0D7A3F 33%, #0D7A3F 36%, transparent 36%),
+            linear-gradient(135deg, transparent 50%, #0D7A3F 50%, #0D7A3F 53%, transparent 53%),
+            linear-gradient(135deg, transparent 67%, #0D7A3F 67%, #0D7A3F 70%, transparent 70%);
+        opacity: 0.4;
+    }
+    .dash-title::after {
+        right: -8px;
+        background: 
+            linear-gradient(225deg, transparent 33%, #0D7A3F 33%, #0D7A3F 36%, transparent 36%),
+            linear-gradient(225deg, transparent 50%, #0D7A3F 50%, #0D7A3F 53%, transparent 53%),
+            linear-gradient(225deg, transparent 67%, #0D7A3F 67%, #0D7A3F 70%, transparent 70%);
+        opacity: 0.4;
     }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
