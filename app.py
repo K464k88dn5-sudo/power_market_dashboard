@@ -69,37 +69,34 @@ st.markdown("""
     .dash-title {
         font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
         letter-spacing: 0.15em;
-        padding: 0 80px;
+        padding: 0 75px;
         position: relative;
         text-shadow: 0 1px 2px rgba(0,0,0,0.06);
         text-align: center;
     }
-    .dash-title::before,
-    .dash-title::after {
-        content: '';
+    .dash-title::before {
+        content: '\\\\ \\\\ \\\\';
         position: absolute;
+        left: 0;
         top: 50%;
         transform: translateY(-50%);
-        width: 70px;
-        height: 24px;
-    }
-    .dash-title::before {
-        left: 0;
-        background: 
-            linear-gradient(to right, transparent 0%, transparent 15%, #0D7A3F 15%, #0D7A3F 18%, transparent 18%),
-            linear-gradient(to right, transparent 0%, transparent 35%, #0D7A3F 35%, #0D7A3F 38%, transparent 38%),
-            linear-gradient(to right, transparent 0%, transparent 55%, #0D7A3F 55%, #0D7A3F 58%, transparent 58%),
-            linear-gradient(to right, transparent 0%, transparent 75%, #0D7A3F 75%, #0D7A3F 78%, transparent 78%);
+        color: #0D7A3F;
+        font-size: 0.9rem;
+        letter-spacing: 6px;
         opacity: 0.5;
+        font-weight: 400;
     }
     .dash-title::after {
+        content: '/// /// ///';
+        position: absolute;
         right: 0;
-        background: 
-            linear-gradient(to left, transparent 0%, transparent 15%, #0D7A3F 15%, #0D7A3F 18%, transparent 18%),
-            linear-gradient(to left, transparent 0%, transparent 35%, #0D7A3F 35%, #0D7A3F 38%, transparent 38%),
-            linear-gradient(to left, transparent 0%, transparent 55%, #0D7A3F 55%, #0D7A3F 58%, transparent 58%),
-            linear-gradient(to left, transparent 0%, transparent 75%, #0D7A3F 75%, #0D7A3F 78%, transparent 78%);
+        top: 50%;
+        transform: translateY(-50%);
+        color: #0D7A3F;
+        font-size: 0.9rem;
+        letter-spacing: 6px;
         opacity: 0.5;
+        font-weight: 400;
     }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
