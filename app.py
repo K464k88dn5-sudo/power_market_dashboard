@@ -75,14 +75,14 @@ st.markdown("""
         text-align: center;
     }
     .dash-title::before {
-        content: '\\\\';
+        content: '\\\\\\';
         position: absolute;
         left: 0;
         top: 50%;
         transform: translateY(-50%);
         color: #0D7A3F;
         font-size: 0.9rem;
-        letter-spacing: 4px;
+        letter-spacing: 2px;
         opacity: 0.5;
         font-weight: 400;
     }
@@ -94,7 +94,7 @@ st.markdown("""
         transform: translateY(-50%);
         color: #0D7A3F;
         font-size: 0.9rem;
-        letter-spacing: 4px;
+        letter-spacing: 2px;
         opacity: 0.5;
         font-weight: 400;
     }
