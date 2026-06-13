@@ -69,36 +69,22 @@ st.markdown("""
     .dash-title {
         font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
         letter-spacing: 0.15em;
-        padding: 0 75px;
         position: relative;
         text-shadow: 0 1px 2px rgba(0,0,0,0.06);
         text-align: center;
+        flex: 1;
     }
-    .dash-title::before {
-        content: '\\\\\\';
-        position: absolute;
-        left: -20px;
-        top: 50%;
-        transform: translateY(-50%);
+    .dash-deco-left, .dash-deco-right {
         color: #0D7A3F;
         font-size: 0.9rem;
-        letter-spacing: 2px;
         opacity: 0.5;
         font-weight: 400;
-        white-space: nowrap;
-    }
-    .dash-title::after {
-        content: '///';
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #0D7A3F;
-        font-size: 0.9rem;
         letter-spacing: 2px;
-        opacity: 0.5;
-        font-weight: 400;
+        flex-shrink: 0;
+        width: 40px;
     }
+    .dash-deco-left { text-align: right; }
+    .dash-deco-right { text-align: left; }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
     }
@@ -458,7 +444,7 @@ else:
     _logo_html = ''
 
 # 标题栏（logo + 标题 + 状态栏）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-deco-left">\\\\\\</span><span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-deco-right">///</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
