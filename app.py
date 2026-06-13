@@ -259,10 +259,10 @@ with open(GEO_PATH, "r", encoding="utf-8") as f:
 # ============================================================
 # 缓存
 # ============================================================
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=900)
 def cached_weather(city, days): return fetch_weather_single(city, days)
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=900)
 def cached_all_cities_temp():
     """获取广东21地市当前实时观测温度（wttr.in气象站实测数据）"""
     return fetch_all_cities_current()
@@ -271,7 +271,7 @@ def cached_all_cities_temp():
 def cached_fuel(days): return build_fuel_display_data(days)
 @st.cache_data(ttl=3600)
 def cached_fuel_summary(): return get_fuel_latest_summary()
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=900)
 def cached_price(): return fetch_electricity_data()
 
 
