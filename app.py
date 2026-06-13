@@ -590,7 +590,7 @@ with col1:
                         marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                         textposition="top center" if clr=="#ff4444" else "bottom center",
                         textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
-            fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
+            fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=113,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
@@ -607,7 +607,7 @@ with col1:
             fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
                 y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
-            fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
+            fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=113,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
@@ -620,7 +620,7 @@ with col1:
                 fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
                     line=dict(color="#6bcb77",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-            fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
+            fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=113,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
@@ -632,7 +632,7 @@ with col1:
                 fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
                     line=dict(color="#a29bfe",width=1.5),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-            fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=90,template="neumorphic",showlegend=False,
+            fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=113,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
