@@ -67,7 +67,11 @@ st.markdown("""
         position: relative;
     }
     .dash-title {
-        font-size: 1.1rem; font-weight: 700; color: #1a1a1a;
+        font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
+        letter-spacing: 0.15em;
+        padding-left: 12px;
+        border-left: 3px solid #0D7A3F;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.06);
     }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
