@@ -69,9 +69,10 @@ st.markdown("""
     .dash-title {
         font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
         letter-spacing: 0.15em;
-        padding: 0 20px;
+        padding: 0 80px;
         position: relative;
         text-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        text-align: center;
     }
     .dash-title::before,
     .dash-title::after {
@@ -79,24 +80,26 @@ st.markdown("""
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        width: 60px;
-        height: 100%;
+        width: 70px;
+        height: 24px;
     }
     .dash-title::before {
-        left: -8px;
+        left: 0;
         background: 
-            linear-gradient(135deg, transparent 33%, #0D7A3F 33%, #0D7A3F 36%, transparent 36%),
-            linear-gradient(135deg, transparent 50%, #0D7A3F 50%, #0D7A3F 53%, transparent 53%),
-            linear-gradient(135deg, transparent 67%, #0D7A3F 67%, #0D7A3F 70%, transparent 70%);
-        opacity: 0.4;
+            linear-gradient(to right, transparent 0%, transparent 15%, #0D7A3F 15%, #0D7A3F 18%, transparent 18%),
+            linear-gradient(to right, transparent 0%, transparent 35%, #0D7A3F 35%, #0D7A3F 38%, transparent 38%),
+            linear-gradient(to right, transparent 0%, transparent 55%, #0D7A3F 55%, #0D7A3F 58%, transparent 58%),
+            linear-gradient(to right, transparent 0%, transparent 75%, #0D7A3F 75%, #0D7A3F 78%, transparent 78%);
+        opacity: 0.5;
     }
     .dash-title::after {
-        right: -8px;
+        right: 0;
         background: 
-            linear-gradient(225deg, transparent 33%, #0D7A3F 33%, #0D7A3F 36%, transparent 36%),
-            linear-gradient(225deg, transparent 50%, #0D7A3F 50%, #0D7A3F 53%, transparent 53%),
-            linear-gradient(225deg, transparent 67%, #0D7A3F 67%, #0D7A3F 70%, transparent 70%);
-        opacity: 0.4;
+            linear-gradient(to left, transparent 0%, transparent 15%, #0D7A3F 15%, #0D7A3F 18%, transparent 18%),
+            linear-gradient(to left, transparent 0%, transparent 35%, #0D7A3F 35%, #0D7A3F 38%, transparent 38%),
+            linear-gradient(to left, transparent 0%, transparent 55%, #0D7A3F 55%, #0D7A3F 58%, transparent 58%),
+            linear-gradient(to left, transparent 0%, transparent 75%, #0D7A3F 75%, #0D7A3F 78%, transparent 78%);
+        opacity: 0.5;
     }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
