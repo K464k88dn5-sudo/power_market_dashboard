@@ -77,7 +77,7 @@ st.markdown("""
     .dash-title::before {
         content: '\\\\\\';
         position: absolute;
-        left: 0;
+        left: -20px;
         top: 50%;
         transform: translateY(-50%);
         color: #0D7A3F;
@@ -85,6 +85,7 @@ st.markdown("""
         letter-spacing: 2px;
         opacity: 0.5;
         font-weight: 400;
+        white-space: nowrap;
     }
     .dash-title::after {
         content: '///';
