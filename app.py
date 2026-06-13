@@ -75,26 +75,26 @@ st.markdown("""
         text-align: center;
     }
     .dash-title::before {
-        content: '\\\\ \\\\ \\\\';
+        content: '\\\\';
         position: absolute;
         left: 0;
         top: 50%;
         transform: translateY(-50%);
         color: #0D7A3F;
         font-size: 0.9rem;
-        letter-spacing: 6px;
+        letter-spacing: 4px;
         opacity: 0.5;
         font-weight: 400;
     }
     .dash-title::after {
-        content: '/// /// ///';
+        content: '///';
         position: absolute;
         right: 0;
         top: 50%;
         transform: translateY(-50%);
         color: #0D7A3F;
         font-size: 0.9rem;
-        letter-spacing: 6px;
+        letter-spacing: 4px;
         opacity: 0.5;
         font-weight: 400;
     }
