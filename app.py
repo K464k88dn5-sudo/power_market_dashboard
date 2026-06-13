@@ -62,7 +62,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 0.5rem 1rem;
         margin-bottom: 0.6rem;
-        display: flex; align-items: center; justify-content: center;
+        display: flex; align-items: center; justify-content: center; gap: 0;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
         position: relative;
     }
@@ -79,9 +79,8 @@ st.markdown("""
         font-size: 0.9rem;
         opacity: 0.5;
         font-weight: 400;
-        letter-spacing: 2px;
         flex-shrink: 0;
-        padding: 0 4px;
+        padding: 0 2px;
     }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
