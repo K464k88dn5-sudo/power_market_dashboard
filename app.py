@@ -441,7 +441,7 @@ else:
     _logo_html = ''
 
 # 标题栏（logo + 标题 + 状态栏）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-deco-left">\\\\\\</span><span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-deco-right">///</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">\\\\\\ 电力市场多源数据监控大屏 ///</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
