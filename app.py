@@ -1140,7 +1140,7 @@ with col3:
                     </div>'''
                     st.markdown(_metrics_html, unsafe_allow_html=True)
         else:
-            st.info(f"{sel_date} 无电价数据，点击上方按钮进行模型预测")
+            st.info(f"{sel_date} 无电价数据，请进行日前电价预测")
     else:
         st.warning("无电价数据文件")
 
