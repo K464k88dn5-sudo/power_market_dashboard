@@ -1043,61 +1043,6 @@ with col3:
                 fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
             has_data = True
 
-        if not has_data:
-            if st.button(f"🔮 预测 {sel_date} 电价", key="btn_forecast"):
-                with st.spinner("模型推理中（约1-2分钟）..."):
-                    from forecast.predictor import forecast_price
-                    import io, contextlib
-                    f = io.StringIO()
-                    with contextlib.redirect_stdout(f):
-                        fc_result = forecast_price(sel_date)
-                    log_output = f.getvalue()
-
-                if not fc_result.empty:
-                    # 保存到 session_state
-                    st.session_state[_fc_key] = {
-                        "result": fc_result,
-                        "log": log_output,
-                    }
-
-                    fig.add_trace(go.Scattergl(
-                        x=fc_result["小时"], y=fc_result["预测电价(元/MWh)"],
-                        name="日前电价预测", line=dict(color="#ff6b6b", width=2),
-                        mode="lines+markers", marker=dict(size=4),
-                        fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
-                    has_data = True
-
-                    # 保存CSV
-                    _pred_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predictions")
-                    os.makedirs(_pred_dir, exist_ok=True)
-                    fc_result.to_csv(os.path.join(_pred_dir, f"forecast_{sel_date}.csv"), index=False)
-
-                    # 追加到广东日前电价预测.xlsx
-                    _xlsx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
-                    _hour_cols_fc = [f"{i}时" for i in range(24)]
-                    _new_row = {"日期": sel_date, "模型": "校准后"}
-                    for _h in range(24):
-                        _new_row[f"{_h}时"] = fc_result.iloc[_h]["预测电价(元/MWh)"]
-
-                    if os.path.exists(_xlsx_path):
-                        _exist_df = pd.read_excel(_xlsx_path)
-                        # 检查是否已有该日期+模型的数据
-                        _mask = (_exist_df["日期"].astype(str) == sel_date) & (_exist_df["模型"] == "校准后")
-                        if _mask.any():
-                            # 更新已有行
-                            for _h in range(24):
-                                _exist_df.loc[_mask, f"{_h}时"] = _new_row[f"{_h}时"]
-                        else:
-                            # 追加新行
-                            _new_df = pd.DataFrame([_new_row])
-                            _exist_df = pd.concat([_exist_df, _new_df], ignore_index=True)
-                        _exist_df = _exist_df.sort_values(["日期", "模型"]).reset_index(drop=True)
-                        _exist_df.to_excel(_xlsx_path, index=False, engine="openpyxl")
-                    else:
-                        pd.DataFrame([_new_row]).to_excel(_xlsx_path, index=False, engine="openpyxl")
-                else:
-                    st.error("预测失败，请检查披露文件是否已上传")
-
         # 显示预测详情（无论新预测还是已保存）
         if _saved_fc is not None:
             _fc_result = _saved_fc["result"]
