@@ -81,10 +81,8 @@ st.markdown("""
         font-weight: 400;
         letter-spacing: 2px;
         flex-shrink: 0;
-        width: 40px;
+        padding: 0 4px;
     }
-    .dash-deco-left { text-align: right; }
-    .dash-deco-right { text-align: left; }
     .dash-time {
         font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
     }
