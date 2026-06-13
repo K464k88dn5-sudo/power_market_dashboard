@@ -157,13 +157,14 @@ st.markdown("""
     .stFolium iframe {
         background: transparent !important;
     }
-    /* 地图卡片背景与页面一致 */
+    /* 地图卡片背景透明，保留边框和阴影 */
     .mod-card-map {
-        background: #f5f5f7 !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        background: transparent !important;
+        border: 1px solid #e5e5e7 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06) !important;
+        padding: 0.6rem !important;
+        margin-bottom: 0.6rem !important;
     }
 
     /* dataframe */
