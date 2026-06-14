@@ -861,8 +861,14 @@ with col2:
             fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                title=dict(text="🪨 动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
+                title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
             fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
+            # Y轴自适应
+            _coal_vals = fuel_df["动力煤价格(元/吨)"].dropna().tolist()
+            if _coal_vals:
+                _c_min, _c_max = min(_coal_vals), max(_coal_vals)
+                _c_pad = max((_c_max - _c_min) * 0.1, 5)
+                fig_coal.update_yaxes(range=[_c_min - _c_pad, _c_max + _c_pad])
             st.plotly_chart(fig_coal,use_container_width=True)
 
         # LNG气价
@@ -874,8 +880,14 @@ with col2:
             fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                title=dict(text="⛽ LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
+                title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
             fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
+            # Y轴自适应
+            _lng_vals = fuel_df["LNG出厂价(元/吨)"].dropna().tolist()
+            if _lng_vals:
+                _l_min, _l_max = min(_lng_vals), max(_lng_vals)
+                _l_pad = max((_l_max - _l_min) * 0.1, 50)
+                fig_lng.update_yaxes(range=[_l_min - _l_pad, _l_max + _l_pad])
             st.plotly_chart(fig_lng,use_container_width=True)
 
         # 数据源信息
