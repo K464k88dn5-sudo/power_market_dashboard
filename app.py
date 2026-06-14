@@ -1096,6 +1096,15 @@ with col3:
                 shapes=_shapes,
                 xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
                 yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#000000")))
+            # Y轴自适应
+            _all_y = []
+            for _tr in fig.data:
+                if _tr.y is not None:
+                    _all_y.extend([v for v in _tr.y if v is not None])
+            if _all_y:
+                _y_min, _y_max = min(_all_y), max(_all_y)
+                _y_pad = max((_y_max - _y_min) * 0.1, 10)
+                fig.update_yaxes(range=[_y_min - _y_pad, _y_max + _y_pad])
             st.plotly_chart(fig, use_container_width=True)
 
             # 指标行
@@ -1193,6 +1202,11 @@ with col3:
                         xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
                         yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
                     )
+                    # Y轴自适应
+                    _load_min_y = min(_load_hourly)
+                    _load_max_y = max(_load_hourly)
+                    _load_pad = max((_load_max_y - _load_min_y) * 0.1, 1000)
+                    _load_fig.update_yaxes(range=[_load_min_y - _load_pad, _load_max_y + _load_pad])
                     st.plotly_chart(_load_fig, use_container_width=True)
 
                     # 负荷指标
