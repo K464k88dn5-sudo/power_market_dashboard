@@ -798,7 +798,9 @@ with col2:
         </style>
         """
         m.get_root().html.add_child(folium.Element(dark_css))
-        m.fit_bounds([[min(lats),min(lons)],[max(lats),max(lons)]], padding=0)
+        # 自适应窗口：计算边界 + padding
+        _bounds = [[min(lats),min(lons)],[max(lats),max(lons)]]
+        m.fit_bounds(_bounds, padding=(30, 20))
 
         folium.GeoJson(gd_temp,
             style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
