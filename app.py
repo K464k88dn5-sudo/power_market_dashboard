@@ -1153,6 +1153,67 @@ with col3:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ============================================================
+    # 统调负荷预测（来自信息披露文件）
+    # ============================================================
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">统调负荷预测</div>', unsafe_allow_html=True)
+    _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    if not os.path.exists(_disclosure_dir_load):
+        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
+    if os.path.exists(_load_fp):
+        try:
+            _load_sheets = [s for s in pd.ExcelFile(_load_fp).sheet_names if "负荷预测" in s]
+            if _load_sheets:
+                _load_df = pd.read_excel(_load_fp, sheet_name=_load_sheets[0], header=None, skiprows=1)
+                if len(_load_df) > 0:
+                    _load_row = _load_df.iloc[0]
+                    _load_values = _load_row[2:].tolist()
+                    # 96个点(15分钟) → 24小时
+                    if len(_load_values) == 96:
+                        _load_hourly = [_load_values[i*4] for i in range(24)]
+                    elif len(_load_values) == 24:
+                        _load_hourly = _load_values
+                    else:
+                        _load_hourly = _load_values[:24]
+
+                    _load_fig = go.Figure()
+                    _load_fig.add_trace(go.Scatter(
+                        x=list(range(24)), y=_load_hourly,
+                        name="统调负荷", mode="lines+markers",
+                        line=dict(color="#0D7A3F", width=2),
+                        marker=dict(size=3),
+                        fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
+                    ))
+                    _load_fig.update_layout(
+                        transition=dict(duration=500, easing="cubic-in-out"),
+                        height=150, template="neumorphic",
+                        title=dict(text=f"统调负荷预测（{sel_date}）", font=dict(size=10, color="#000000")),
+                        margin=dict(l=30, r=10, t=25, b=25),
+                        font=dict(size=7, color="#000000"),
+                        xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
+                        yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
+                    )
+                    st.plotly_chart(_load_fig, use_container_width=True)
+
+                    # 负荷指标
+                    _load_max = max(_load_hourly)
+                    _load_min = min(_load_hourly)
+                    _load_avg = sum(_load_hourly) / len(_load_hourly)
+                    _load_peak_h = _load_hourly.index(_load_max)
+                    _load_valley_h = _load_hourly.index(_load_min)
+                    _load_html = f'''<div style="display:flex;gap:16px;font-size:0.55rem;color:#666;margin-top:2px;">
+                        <span>峰值 <b style="color:#dc3545;font-size:0.7rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
+                        <span>谷值 <b style="color:#0D7A3F;font-size:0.7rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
+                        <span>峰谷差 <b style="color:#1a1a1a;font-size:0.7rem;">{_load_max-_load_min:.0f}</b> MW</span>
+                    </div>'''
+                    st.markdown(_load_html, unsafe_allow_html=True)
+        except Exception as e:
+            st.warning(f"负荷数据加载失败: {e}")
+    else:
+        st.info(f"{sel_date} 无负荷预测数据")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ============================================================
     # 历史电价热力图（24h × 30d）
     # ============================================================
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">🔥 历史电价热力图</div>', unsafe_allow_html=True)
