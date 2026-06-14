@@ -595,6 +595,12 @@ with col1:
                 margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
                 title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
             fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
+            # Y轴自适应
+            if not today_df.empty:
+                _t_min = today_df["温度(℃)"].min()
+                _t_max = today_df["温度(℃)"].max()
+                _t_pad = max((_t_max - _t_min) * 0.15, 1)
+                fig1.update_yaxes(range=[_t_min - _t_pad, _t_max + _t_pad], dtick=2)
             st.plotly_chart(fig1,use_container_width=True)
 
             fig2 = go.Figure()
