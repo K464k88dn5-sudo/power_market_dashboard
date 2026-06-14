@@ -1162,9 +1162,8 @@ with col3:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ============================================================
-    # 统调负荷预测（来自信息披露文件）
+    # 统调负荷预测（电价分析模块内）
     # ============================================================
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">统调负荷预测</div>', unsafe_allow_html=True)
     _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     if not os.path.exists(_disclosure_dir_load):
         _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
@@ -1225,7 +1224,6 @@ with col3:
             st.warning(f"负荷数据加载失败: {e}")
     else:
         st.info(f"{sel_date} 无负荷预测数据")
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # ============================================================
     # 历史电价热力图（24h × 30d）
