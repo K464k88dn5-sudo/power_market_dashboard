@@ -830,7 +830,7 @@ with col2:
                 html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
                 icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
-        st_folium(m,width="100%",height=320,returned_objects=[])
+        st_folium(m,width="100%",height=384,returned_objects=[])
         # 色阶图例
         _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
             <span>18℃</span>
