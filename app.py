@@ -252,7 +252,7 @@ NEUMORPHIC_TEMPLATE = go.layout.Template(
         paper_bgcolor="#000000",
         plot_bgcolor="#000000",
         font=dict(family="Inter, SF Pro Display, PingFang SC, sans-serif", color="#000000", size=8),
-        title=dict(font=dict(color="#000000", size=10)),
+        title=dict(font=dict(color="#000000", size=10, family="Inter, sans-serif"), x=0.01, xanchor="left"),
         xaxis=dict(
             gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
             zerolinecolor="rgba(0,0,0,0.1)",
@@ -637,7 +637,7 @@ with col1:
             fig1 = go.Figure()
             if not today_df.empty:
                 fig1.add_trace(go.Scatter(x=today_df["时间"],y=today_df["温度(℃)"],
-                    mode="lines+markers",line=dict(color="#ff6b6b",width=1.5),marker=dict(size=2),
+                    mode="lines+markers",line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=2),
                     name="气温",fill="tozeroy",fillcolor="rgba(255,107,107,0.1)"))
                 for idx,clr,sym in [(today_df["温度(℃)"].idxmax(),"#ff4444","triangle-up"),
                                      (today_df["温度(℃)"].idxmin(),"#4488ff","triangle-down")]:
@@ -661,11 +661,11 @@ with col1:
 
             fig2 = go.Figure()
             fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最高"],name="最高",mode="lines+markers",
-                line=dict(color="#ff6b6b",width=1.5),marker=dict(size=3)))
+                line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=3)))
             fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["均温"],name="均温",mode="lines+markers",
-                line=dict(color="#ffd93d",width=1.5,dash="dot"),marker=dict(size=2)))
+                line=dict(color="#ffd93d",width=1.5,dash="dot",shape="spline"),marker=dict(size=2)))
             fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最低"],name="最低",mode="lines+markers",
-                line=dict(color="#54a0ff",width=1.5),marker=dict(size=3)))
+                line=dict(color="#54a0ff",width=1.5,shape="spline"),marker=dict(size=3)))
             fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
                 y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                 line=dict(width=0),showlegend=False,hoverinfo="skip"))
@@ -680,7 +680,7 @@ with col1:
             fig3 = go.Figure()
             if "风速(m/s)" in daily.columns:
                 fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
-                    line=dict(color="#6bcb77",width=1.5),marker=dict(size=4),
+                    line=dict(color="#6bcb77",width=1.5,shape="spline"),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
             fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
                 hovermode="x unified",
@@ -692,7 +692,7 @@ with col1:
             fig4 = go.Figure()
             if "湿度(%)" in daily.columns:
                 fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
-                    line=dict(color="#a29bfe",width=1.5),marker=dict(size=4),
+                    line=dict(color="#a29bfe",width=1.5,shape="spline"),marker=dict(size=4),
                     fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
             fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
                 hovermode="x unified",
@@ -915,7 +915,7 @@ with col2:
             fig_coal=go.Figure()
             fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#ff9f43",width=1.5),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
+                line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
             fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
@@ -934,7 +934,7 @@ with col2:
             fig_lng=go.Figure()
             fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#54a0ff",width=1.5),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
+                line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
             fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
@@ -1258,7 +1258,7 @@ with col3:
                     _load_fig.add_trace(go.Scatter(
                         x=list(range(24)), y=_load_hourly,
                         name="统调负荷", mode="lines+markers",
-                        line=dict(color="#0D7A3F", width=2),
+                        line=dict(color="#0D7A3F", width=2, shape="spline"),
                         marker=dict(size=3),
                         fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
                     ))
