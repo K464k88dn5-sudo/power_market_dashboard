@@ -48,7 +48,7 @@ st.markdown("""
 
     /* 全局 */
     .stApp {
-        background: #f5f5f7 !important;
+        background: linear-gradient(135deg, #f5f5f7 0%, #eaeaf0 40%, #f0f0f5 100%) !important;
     }
     .block-container {
         padding: 0.8rem 1.2rem !important;
@@ -57,13 +57,15 @@ st.markdown("""
 
     /* 标题栏 */
     .dash-header {
-        background: #ffffff;
-        border: 1px solid #e5e5e7;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,245,0.9) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.6);
+        border-bottom: 2px solid rgba(13,122,63,0.15);
         border-radius: 16px;
         padding: 0.5rem 1rem;
         margin-bottom: 0.6rem;
         display: flex; align-items: center; justify-content: center; gap: 0;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
         position: relative;
     }
     .dash-title {
@@ -90,17 +92,18 @@ st.markdown("""
     .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
     .kpi-card {
         flex: 1;
-        background: #ffffff;
-        border: 1px solid #e5e5e7;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
         border-radius: 12px;
         padding: 0.4rem 0.6rem;
         text-align: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04);
-        transition: box-shadow 0.2s, transform 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+        transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
     }
     .kpi-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08);
-        transform: translateY(-1px);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(13,122,63,0.1);
     }
     .kpi-label { font-size: 0.55rem; color: #999; }
     .kpi-value { font-size: 0.85rem; font-weight: 700; color: #1a1a1a; }
@@ -118,15 +121,18 @@ st.markdown("""
 
     /* 模块卡片 */
     .mod-card {
-        background: #ffffff;
-        border: 1px solid #e5e5e7;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px) saturate(1.2);
+        border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 16px;
         padding: 0.6rem;
         margin-bottom: 0.6rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+        transition: all 0.3s ease;
     }
     .mod-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+        border-color: rgba(13,122,63,0.15);
     }
     .mod-head {
         font-size: 0.7rem; font-weight: 600;
@@ -168,7 +174,7 @@ st.markdown("""
     }
 
     /* dataframe */
-    [data-testid="stDataFrame"] th { background: #f5f5f7 !important; color: #1a1a1a !important; }
+    [data-testid="stDataFrame"] th { background: linear-gradient(135deg, #f5f5f7 0%, #eaeaf0 40%, #f0f0f5 100%) !important; color: #1a1a1a !important; }
     [data-testid="stDataFrame"] td { background: #ffffff !important; color: #1a1a1a !important; }
 
     /* 刷新进度条 */
@@ -182,6 +188,23 @@ st.markdown("""
         animation: refresh-fill 300s linear infinite;
     }
     @keyframes refresh-fill { 0% { width: 0%; } 100% { width: 100%; } }
+
+    /* 页面加载动画 */
+    @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .mod-card { animation: fade-in-up 0.5s ease-out backwards; }
+    .mod-card:nth-child(1) { animation-delay: 0.05s; }
+    .mod-card:nth-child(2) { animation-delay: 0.1s; }
+    .mod-card:nth-child(3) { animation-delay: 0.15s; }
+    .mod-card:nth-child(4) { animation-delay: 0.2s; }
+
+    /* 滚动条美化 */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
 
     /* 响应式 */
     @media (max-width: 640px) {
@@ -473,7 +496,9 @@ def _make_sparkline_svg(values, color="#00d2d3", w=64, h=16, fill=True):
     fill_poly = ""
     if fill:
         fill_pts = [f"{2:.1f},{h-2:.1f}"] + pts + [f"{w-2:.1f},{h-2:.1f}"]
-        fill_poly = f'<polygon points="{" ".join(fill_pts)}" fill="{color}" opacity="0.12"/>'
+        grad_id = f'spark_{id(values)}'
+    defs = f'<defs><linearGradient id="{grad_id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{color}" stop-opacity="0.25"/><stop offset="100%" stop-color="{color}" stop-opacity="0.02"/></linearGradient></defs>'
+    fill_poly = f'{defs}<polygon points="{" ".join(fill_pts)}" fill="url(#{grad_id})"/>'
     return f'<div class="kpi-sparkline"><svg width="{w}" height="{h}" viewBox="0 0 {w} {h}">{fill_poly}{polyline}</svg></div>'
 
 def _kpi_arrow(val, prev, fmt="+.1f"):
