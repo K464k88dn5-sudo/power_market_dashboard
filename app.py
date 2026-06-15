@@ -833,8 +833,8 @@ with col2:
         for feat in GD_GEOJSON["features"]: ext(feat["geometry"]["coordinates"])
         lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
 
-        m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
-                       attr=" ", max_zoom=10)
+        m = folium.Map(tiles="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+                       attr="&copy; OSM &copy; CARTO", control_scale=False, prefer_canvas=True, max_zoom=10)
 
         # 注入浅色背景CSS到地图内部（作用于iframe内）
         dark_css = """
@@ -850,6 +850,14 @@ with col2:
             @keyframes map-pulse {
                 0%, 100% { transform: scale(1); opacity: 1; }
                 50%      { transform: scale(1.15); opacity: 0.8; }
+            }
+                    /* 标签淡入 */
+            .leaflet-marker-icon {
+                animation: label-fade-in 0.5s ease-out;
+            }
+            @keyframes label-fade-in {
+                from { opacity: 0; transform: scale(0.8); }
+                to { opacity: 1; transform: scale(1); }
             }
         </style>
         """
@@ -881,12 +889,11 @@ with col2:
                 _glow = 'text-shadow:0 0 6px rgba(255,159,67,0.6),1px 1px 3px black,-1px -1px 3px black;'
             else:
                 _pulse = ''
-                _temp_color = '#fff'
-                _glow = 'text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;'
+                _temp_color = '#ffffff'
 
             folium.Marker(location=[ctr[1],ctr[0]],icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
-                icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
+                html=f'<div style="background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);border-radius:5px;padding:2px 5px;text-align:center;border:1px solid rgba(255,255,255,0.1);{_pulse}"><div style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.9);line-height:1.2">{nm}</div><div style="font-size:11px;font-weight:700;color:{_temp_color};line-height:1.2">{temp:.0f}℃</div></div>',
+                icon_size=(50,28),icon_anchor=(25,14))).add_to(m)
 
         st_folium(m,width="100%",height=384,returned_objects=[])
         # 色阶图例
