@@ -219,20 +219,63 @@ st.markdown("""
 
     /* 页面加载动画 */
     @keyframes fade-in-up {
-        from { opacity: 0; transform: translateY(8px); }
+        from { opacity: 0; transform: translateY(12px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .mod-card { animation: fade-in-up 0.5s ease-out backwards; }
-    .mod-card:nth-child(1) { animation-delay: 0.05s; }
-    .mod-card:nth-child(2) { animation-delay: 0.1s; }
-    .mod-card:nth-child(3) { animation-delay: 0.15s; }
-    .mod-card:nth-child(4) { animation-delay: 0.2s; }
+    .mod-card { animation: fade-in-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+    .kpi-card { animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+    .dash-header { animation: fade-in-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.08s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.11s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.14s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.17s; }
 
     /* 滚动条美化 */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); border-radius: 3px; }
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+    /* 数据更新指示器 */
+    .data-live::before {
+        content: '';
+        display: inline-block;
+        width: 6px; height: 6px;
+        background: #0D7A3F;
+        border-radius: 50%;
+        margin-right: 4px;
+        animation: live-blink 1.5s ease-in-out infinite;
+        vertical-align: middle;
+    }
+    @keyframes live-blink {
+        0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(13,122,63,0.4); }
+        50% { opacity: 0.4; box-shadow: 0 0 0 3px rgba(13,122,63,0); }
+    }
+
+    /* 标题栏光泽扫过 */
+    .dash-header::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        animation: header-shine 6s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes header-shine {
+        0%, 70% { left: -60%; }
+        100% { left: 160%; }
+    }
+
+    /* 图表卡片悬停微光 */
+    .mod-card:hover::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 16px;
+        box-shadow: inset 0 0 20px rgba(13,122,63,0.03);
+        pointer-events: none;
+    }
 
     /* 响应式 */
     @media (max-width: 640px) {
@@ -500,7 +543,7 @@ else:
     _logo_html = ''
 
 # 标题栏（logo + 标题 + 状态栏）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">\\\\\\ 电力市场多源数据监控大屏 ///</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">\\\\\\ 电力市场多源数据监控大屏 ///</span><span class="dash-time"><span class="data-live">气象:{sw} 燃料:{sf} 电价:{sp}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
