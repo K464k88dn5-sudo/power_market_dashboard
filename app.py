@@ -92,22 +92,41 @@ st.markdown("""
     .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
     .kpi-card {
         flex: 1;
-        background: rgba(255,255,255,0.75);
+        background: rgba(255,255,255,0.78);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255,255,255,0.5);
         border-radius: 12px;
-        padding: 0.4rem 0.6rem;
+        padding: 0.35rem 0.6rem 0.25rem;
         text-align: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 12px rgba(255,255,255,0.3);
         transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+        position: relative;
+        overflow: hidden;
     }
+    .kpi-card::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transition: left 0.6s ease;
+    }
+    .kpi-card:hover::after { left: 100%; }
     .kpi-card:hover {
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(13,122,63,0.1);
     }
     .kpi-label { font-size: 0.55rem; color: #999; }
-    .kpi-value { font-size: 0.85rem; font-weight: 700; color: #1a1a1a; }
-    .kpi-delta { font-size: 0.55rem; color: #666; }
+    .kpi-value { 
+        font-size: 0.9rem; font-weight: 700; color: #1a1a1a; 
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .kpi-delta { 
+        font-size: 0.55rem; color: #666;
+        display: flex; align-items: center; justify-content: center; gap: 2px;
+        margin-top: 1px;
+    }
     .kpi-sparkline { margin-top: 2px; line-height: 0; }
 
     @keyframes kpi-pulse {
@@ -115,6 +134,11 @@ st.markdown("""
         50% { box-shadow: 0 0 0 2px rgba(220,53,69,0.15); }
     }
     .kpi-pulse { animation: kpi-pulse 2s ease-in-out infinite; }
+    @keyframes value-flash {
+        0% { text-shadow: 0 0 8px rgba(13,122,63,0.5); }
+        100% { text-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    }
+    .kpi-value-flash { animation: value-flash 0.8s ease-out; }
     .kpi-arrow-up { color: #dc3545; font-size: 0.5rem; }
     .kpi-arrow-dn { color: #0D7A3F; font-size: 0.5rem; }
     .kpi-arrow-flat { color: #999; font-size: 0.5rem; }
