@@ -238,6 +238,13 @@ pio.templates["neumorphic"] = NEUMORPHIC_TEMPLATE
 pio.templates.default = "neumorphic"  # 所有新 Figure 自动使用
 
 # ============================================================
+# 数据文件路径（优先本地实际路径，兜底项目目录）
+# ============================================================
+_ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
+if not os.path.exists(_ACTUAL_PRICE_PATH):
+    _ACTUAL_PRICE_PATH = _ACTUAL_PRICE_PATH
+
+# ============================================================
 # 常量 & 工具函数
 # ============================================================
 CN_WEEKDAYS = {0:"周一",1:"周二",2:"周三",3:"周四",4:"周五",5:"周六",6:"周日"}
@@ -349,7 +356,7 @@ with st.sidebar:
 
     # 保存上传的文件
     if price_actual_file:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx"), "wb") as f:
+        with open(_ACTUAL_PRICE_PATH, "wb") as f:
             f.write(price_actual_file.getbuffer())
         st.success("✅ 日前节点电价.xlsx 已上传")
 
@@ -396,7 +403,7 @@ with st.spinner("加载中..."):
 
     # GitHub raw URL（需要替换为实际的仓库地址）
     _github_base = "https://raw.githubusercontent.com/K464k88dn5-sudo/power_market_dashboard/main"
-    _actual_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+    _actual_local = _ACTUAL_PRICE_PATH
     _forecast_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
 
     # 尝试从云存储加载
@@ -523,7 +530,7 @@ if fuel_summary.get("LNG出厂价"):
 
 # --- 电价均价 KPI（sparkline来自日前节点电价最近7天均价，脉冲>500）---
 # 优先使用实际电价数据的日期和均价，而非参考模板
-_actual_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+_actual_path = _ACTUAL_PRICE_PATH
 _elec_sp = ""; _elec_arrow = ""; ld = ""; da = 0
 if os.path.exists(_actual_path):
     try:
@@ -943,7 +950,7 @@ with col3:
                 st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
 
     # 加载实际电价和预测电价
-    _actual_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+    _actual_path = _ACTUAL_PRICE_PATH
     _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
     _actual_df = pd.read_excel(_actual_path) if os.path.exists(_actual_path) else pd.DataFrame()
     _forecast_df = pd.read_excel(_forecast_path) if os.path.exists(_forecast_path) else pd.DataFrame()
@@ -1243,7 +1250,7 @@ with col3:
     # 历史电价热力图（24h × 30d）
     # ============================================================
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">🔥 历史电价热力图</div>', unsafe_allow_html=True)
-    _actual_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+    _actual_path = _ACTUAL_PRICE_PATH
     if os.path.exists(_actual_path):
         try:
             _heat_df = pd.read_excel(_actual_path)
