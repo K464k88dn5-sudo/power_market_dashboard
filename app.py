@@ -745,7 +745,7 @@ with col1:
     def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
         th_style = 'background:#f5f5f7;color:#0D7A3F;font-size:0.5rem;padding:3px 6px;border:1px solid #e5e5e7;font-weight:bold;line-height:1.5;'
-        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.5rem;padding:2px 6px;border:1px solid rgba(255,255,255,0.06);'
+        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.5rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
 
         row_count = len(df)
         anim_duration = max(row_count * 3, 10)
@@ -776,10 +776,12 @@ with col1:
 
         rows_html = ''
         for _, row in df.iterrows():
-            rows_html += '<tr>'
+            _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
+            rows_html += f'<tr style="{_row_bg}">'
             for i, val in enumerate(row):
                 w = widths[i] if i < len(widths) else widths[-1]
-                rows_html += f'<td style="{td_style}width:{w};">{val}</td>'
+                _td_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
+                rows_html += f'<td style="{td_style}{_td_bg}width:{w};">{val}</td>'
             rows_html += '</tr>'
 
         html += rows_html
