@@ -633,7 +633,7 @@ col1, col2, col3 = st.columns(3)
 # ===== 第一列：气象监测 + 检修计划 =====
 with col1:
     # ----- 气象监测 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测<span class="mod-sub">实时数据 · 3天预报</span></div>', unsafe_allow_html=True)
     if weather_df.empty:
         st.warning("数据获取失败")
     else:
@@ -740,7 +740,7 @@ with col1:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划<span class="mod-sub">信息披露 · 机组+输变电</span></div>', unsafe_allow_html=True)
     _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
@@ -829,7 +829,7 @@ with col1:
 # ===== 第二列：广东地图 + 燃料价格 =====
 with col2:
     # ----- 广东地图 -----
-    st.markdown('<div class="mod-card mod-card-map"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card mod-card-map"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
     if city_temps.empty:
         st.warning("数据获取失败")
     else:
@@ -928,7 +928,7 @@ with col2:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ----- 燃料价格 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-f">⛽ 燃料价格</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-f">⛽ 燃料价格<span class="mod-sub">CCTD煤价 · SHPGX气价</span></div>', unsafe_allow_html=True)
     if fuel_df.empty: st.warning("数据获取失败")
     else:
         from datetime import timedelta as _td
@@ -999,7 +999,7 @@ with col2:
 # ===== 第三列：电价分析 =====
 with col3:
     # ----- 电价分析 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
 
     # 信息披露文件上传
     _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
@@ -1344,7 +1344,7 @@ with col3:
     # ============================================================
     # 历史电价热力图（24h × 30d）
     # ============================================================
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">🔥 历史电价热力图</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">🔥 历史电价热力图<span class="mod-sub">近30天 · 24h×30d</span></div>', unsafe_allow_html=True)
     _actual_path = _ACTUAL_PRICE_PATH
     if os.path.exists(_actual_path):
         try:
