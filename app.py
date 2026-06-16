@@ -302,16 +302,16 @@ NEUMORPHIC_TEMPLATE = go.layout.Template(
         title=dict(font=dict(color="#000000", size=10, family="Inter, sans-serif"), x=0.01, xanchor="left"),
         xaxis=dict(
             gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
-            zerolinecolor="rgba(0,0,0,0.1)",
+            zeroline=False,
             linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
-            tickfont=dict(color="#000000", size=7),
+            tickfont=dict(color="#888", size=7),
             title=dict(font=dict(color="#000000", size=7)),
         ),
         yaxis=dict(
             gridcolor="rgba(0,0,0,0.06)", gridwidth=0.5, griddash="dot",
-            zerolinecolor="rgba(0,0,0,0.1)",
+            zeroline=False,
             linecolor="rgba(0,0,0,0.15)", linewidth=1, showline=True,
-            tickfont=dict(color="#000000", size=7),
+            tickfont=dict(color="#888", size=7),
             title=dict(font=dict(color="#000000", size=7)),
         ),
         hoverlabel=dict(
