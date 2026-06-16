@@ -1243,7 +1243,7 @@ with col3:
             _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
 
             fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=210, template="neumorphic",
-                title=dict(text="📊 日前电价预测", font=dict(size=10, color="#000000")),
+                title=dict(text=f"日前电价曲线 - {sel_date}", font=dict(size=10, color="#000000")),
                 hovermode="x unified",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
                 margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
