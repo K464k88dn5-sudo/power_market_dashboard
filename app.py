@@ -804,7 +804,7 @@ with col1:
     # 表格深色主题样式（HTML表格，循环滚动展示）
     def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-        th_style = 'background:#f5f5f7;color:#0D7A3F;font-size:0.5rem;padding:3px 6px;border:1px solid #e5e5e7;font-weight:bold;line-height:1.5;'
+        th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.5rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;font-size:0.45rem;'
         td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.5rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
 
         row_count = len(df)
