@@ -1387,8 +1387,9 @@ with col3:
                         transition=dict(duration=500, easing="cubic-in-out"),
                         height=150, template="neumorphic",
                         title=dict(text="统调负荷", font=dict(size=10, color="#000000")),
-                        margin=dict(l=30, r=10, t=25, b=25),
+                        margin=dict(l=30, r=10, t=40, b=25),
                         font=dict(size=7, color="#000000"),
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
                         xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
                         yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
                     )
