@@ -826,7 +826,7 @@ with col1:
             widths = [f'{100/col_count:.1f}%'] * col_count
 
         # 表头（固定不滚动）
-        html = f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
+        html = f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;margin:0;padding:0;">'
         html += '<thead><tr>'
         for i, col in enumerate(df.columns):
             w = widths[i] if i < len(widths) else widths[-1]
@@ -834,8 +834,8 @@ with col1:
         html += '</tr></thead></table>'
 
         # 表体（循环滚动）
-        body_height = max_height - 40
-        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
+        body_height = max_height - 30
+        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:0 0 8px 8px;border:1px solid #d0d0d0;border-top:none;">'
 
         if scroll and row_count > 3:
             html += f'<div class="table-scroll-inner" style="animation:table-scroll {anim_duration}s linear infinite;">'
