@@ -832,7 +832,7 @@ with col1:
         if scroll and row_count > 3:
             html += f'<div class="table-scroll-inner" style="animation:table-scroll {anim_duration}s linear infinite;">'
 
-        html += f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><tbody>'
+        html += f'<style>tbody tr:hover td{{background:rgba(13,122,63,0.12)!important;transition:background 0.15s}}</style><table style="width:100%;border-collapse:collapse;table-layout:fixed;"><tbody>'
 
         rows_html = ''
         for _, row in df.iterrows():
