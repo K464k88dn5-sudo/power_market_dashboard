@@ -812,8 +812,8 @@ with col1:
     # 表格深色主题样式（HTML表格，循环滚动展示）
     def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
         """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-        th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.5rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;font-size:0.45rem;'
-        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.5rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
+        th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
+        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
 
         row_count = len(df)
         anim_duration = max(row_count * 3, 10)
@@ -825,35 +825,27 @@ with col1:
         else:
             widths = [f'{100/col_count:.1f}%'] * col_count
 
-        # 表头（固定不滚动）
-        html = f'<table style="width:100%;border-collapse:collapse;table-layout:fixed;margin:0;padding:0;">'
-        html += '<thead><tr>'
+        # 单表格：表头sticky + 表体滚动
+        body_height = max_height - 20
+        html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
+        html += '<style>tbody tr:hover td{background:rgba(13,122,63,0.12)!important;transition:background 0.2s ease}</style>'
+
+        if scroll and row_count > 3:
+            html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
+
+        html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><thead><tr>'
         for i, col in enumerate(df.columns):
             w = widths[i] if i < len(widths) else widths[-1]
             html += f'<th style="{th_style}width:{w};">{col}</th>'
-        html += '</tr></thead></table>'
+        html += '</tr></thead><tbody>'
 
-        # 表体（循环滚动）
-        body_height = max_height - 30
-        html += f'<div class="table-scroll-wrap" style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:0 0 8px 8px;border:1px solid #d0d0d0;border-top:none;">'
-
-        if scroll and row_count > 3:
-            html += f'<div class="table-scroll-inner" style="animation:table-scroll {anim_duration}s linear infinite;">'
-
-        html += f'<style>tbody tr:hover td{{background:rgba(13,122,63,0.12)!important;transition:background 0.15s}}</style><table style="width:100%;border-collapse:collapse;table-layout:fixed;"><tbody>'
-
-        rows_html = ''
         for _, row in df.iterrows():
             _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
-            rows_html += f'<tr style="{_row_bg}">'
+            html += f'<tr style="{_row_bg}">'
             for i, val in enumerate(row):
                 w = widths[i] if i < len(widths) else widths[-1]
-                rows_html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
-            rows_html += '</tr>'
-
-        html += rows_html
-        if scroll and row_count > 3:
-            html += rows_html
+                html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
+            html += '</tr>'
 
         html += '</tbody></table>'
 
