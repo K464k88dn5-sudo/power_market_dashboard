@@ -1149,7 +1149,7 @@ with col3:
                 _vals = [_row[h] for h in _hour_cols]
                 fig.add_trace(go.Scattergl(
                     x=list(range(24)), y=_vals, name="实际电价",
-                    line=dict(color="#007bff", width=2, shape="spline"),
+                    line=dict(color="#007bff", width=2),
                     mode="lines+markers", marker=dict(size=5, color="#ffffff", line=dict(color="#007bff", width=1.5)),
                     fill="tozeroy", fillcolor="rgba(0,123,255,0.1)"))
                 has_data = True
