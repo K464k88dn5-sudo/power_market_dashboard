@@ -1352,13 +1352,13 @@ with col3:
                             try:
                                 _actual_load_df = pd.read_excel(_alfp, header=None, skiprows=1)
                                 if len(_actual_load_df) > 0:
-                                    _actual_load_vals = _actual_load_df.iloc[0, 1:].tolist()
-                                    if len(_actual_load_vals) == 96:
+                                    _actual_load_vals = [v for v in _actual_load_df.iloc[0, 1:].tolist() if isinstance(v, (int, float))]
+                                    if len(_actual_load_vals) >= 96:
                                         _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
-                                    elif len(_actual_load_vals) == 24:
-                                        _actual_load_hourly = _actual_load_vals
-                                    else:
+                                    elif len(_actual_load_vals) >= 24:
                                         _actual_load_hourly = _actual_load_vals[:24]
+                                    else:
+                                        _actual_load_hourly = None
                                     break
                             except Exception:
                                 pass
