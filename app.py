@@ -169,8 +169,17 @@ st.markdown("""
         font-size: 0.5rem; font-weight: 400; color: #999;
     }
 
-    /* 图表 */
-    .stPlotlyChart { margin: 0 !important; padding: 0 !important; }
+    /* 图表容器 */
+    .stPlotlyChart {
+        margin: 0 !important; padding: 0.3rem !important;
+        background: rgba(255,255,255,0.5) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(0,0,0,0.06) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .stPlotlyChart > div { background: transparent !important; }
+    .stPlotlyChart .plotly .main-svg { background: transparent !important; }
+    [data-testid="stChart"] { background: transparent !important; }
     [data-testid="stMetricValue"] { font-size: 0.8rem !important; color: #1a1a1a !important; }
     [data-testid="stMetricLabel"] { font-size: 0.55rem !important; color: #666 !important; }
     [data-testid="stMetricDelta"] { font-size: 0.55rem !important; }
