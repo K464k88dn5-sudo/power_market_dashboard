@@ -796,13 +796,15 @@ with col1:
     _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
     _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-    # 数据来源日期（橙色）+ 检修容量（一行）
-    _cap_html = f'<span style="font-size:0.6rem;color:#ff9f43;font-weight:bold">📅 数据日期：{_price_date}</span>'
+    # 数据来源日期（橙色）+ 检修容量（紧凑两行）
+    st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
     if _maint_data["检修容量"]:
         _cap = _maint_data["检修容量"]
-        _cap_html += f' <span style="font-size:0.6rem;color:#666;margin-left:8px;">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
-        _cap_html += f' <span style="font-size:0.6rem;color:#666;margin-left:8px;">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
-    st.markdown(_cap_html, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="display:flex;gap:8px;margin-bottom:2px;">'
+            f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
+            f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+            f'</div>', unsafe_allow_html=True)
 
     _mach = _maint_data.get("机组检修", pd.DataFrame())
     _line = _maint_data.get("输变电检修", pd.DataFrame())
