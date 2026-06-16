@@ -676,7 +676,7 @@ col1, col2, col3 = st.columns(3)
 # ===== 第一列：气象监测 + 检修计划 =====
 with col1:
     # ----- 气象监测 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测<span class="mod-sub">实时数据 · 3天预报</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测<span class="mod-sub">实时数据 · 7天预报</span></div>', unsafe_allow_html=True)
     if weather_df.empty:
         st.warning("数据获取失败")
     else:
