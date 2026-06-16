@@ -1339,9 +1339,34 @@ with col3:
                         _load_hourly = _load_values[:24]
 
                     _load_fig = go.Figure()
+
+                    # 统调实际负荷（虚线）
+                    _actual_load_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前实际")
+                    _actual_load_fp = os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls")
+                    if os.path.exists(_actual_load_fp):
+                        try:
+                            _actual_load_df = pd.read_excel(_actual_load_fp, header=None, skiprows=1)
+                            if len(_actual_load_df) > 0:
+                                _actual_load_vals = _actual_load_df.iloc[0, 1:].tolist()
+                                if len(_actual_load_vals) == 96:
+                                    _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
+                                elif len(_actual_load_vals) == 24:
+                                    _actual_load_hourly = _actual_load_vals
+                                else:
+                                    _actual_load_hourly = _actual_load_vals[:24]
+                                _load_fig.add_trace(go.Scatter(
+                                    x=list(range(24)), y=_actual_load_hourly,
+                                    name="统调实际负荷", mode="lines+markers",
+                                    line=dict(color="#888888", width=1.5, dash="dot"),
+                                    marker=dict(size=2),
+                                ))
+                        except Exception:
+                            pass
+
+                    # 统调预测负荷（实线）
                     _load_fig.add_trace(go.Scatter(
                         x=list(range(24)), y=_load_hourly,
-                        name="统调负荷", mode="lines+markers",
+                        name="统调预测负荷", mode="lines+markers",
                         line=dict(color="#0D7A3F", width=2, shape="spline"),
                         marker=dict(size=3),
                         fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
@@ -1354,7 +1379,7 @@ with col3:
                     _load_fig.update_layout(
                         transition=dict(duration=500, easing="cubic-in-out"),
                         height=150, template="neumorphic",
-                        title=dict(text=f"统调负荷预测（{sel_date}）", font=dict(size=10, color="#000000")),
+                        title=dict(text="统调负荷", font=dict(size=10, color="#000000")),
                         margin=dict(l=30, r=10, t=25, b=25),
                         font=dict(size=7, color="#000000"),
                         xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
