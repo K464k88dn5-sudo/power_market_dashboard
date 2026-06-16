@@ -336,7 +336,7 @@ pio.templates.default = "neumorphic"  # 所有新 Figure 自动使用
 # ============================================================
 _ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
 if not os.path.exists(_ACTUAL_PRICE_PATH):
-    _ACTUAL_PRICE_PATH = _ACTUAL_PRICE_PATH
+    _ACTUAL_PRICE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
 
 # ============================================================
 # 常量 & 工具函数
