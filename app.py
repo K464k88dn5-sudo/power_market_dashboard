@@ -1386,7 +1386,7 @@ with col3:
                     _load_fig.update_layout(
                         transition=dict(duration=500, easing="cubic-in-out"),
                         height=150, template="neumorphic",
-                        title=dict(text="统调负荷", font=dict(size=10, color="#000000")),
+                        title=dict(text=f"统调负荷 - {sel_date}", font=dict(size=10, color="#000000")),
                         margin=dict(l=30, r=10, t=40, b=25),
                         font=dict(size=7, color="#000000"),
                         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
