@@ -848,8 +848,7 @@ with col1:
             rows_html += f'<tr style="{_row_bg}">'
             for i, val in enumerate(row):
                 w = widths[i] if i < len(widths) else widths[-1]
-                _td_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
-                rows_html += f'<td style="{td_style}{_td_bg}width:{w};">{val}</td>'
+                rows_html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
             rows_html += '</tr>'
 
         html += rows_html
