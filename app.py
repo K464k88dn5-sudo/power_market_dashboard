@@ -1342,26 +1342,33 @@ with col3:
 
                     # 统调实际负荷（虚线）
                     _actual_load_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前实际")
-                    _actual_load_fp = os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls")
-                    if os.path.exists(_actual_load_fp):
-                        try:
-                            _actual_load_df = pd.read_excel(_actual_load_fp, header=None, skiprows=1)
-                            if len(_actual_load_df) > 0:
-                                _actual_load_vals = _actual_load_df.iloc[0, 1:].tolist()
-                                if len(_actual_load_vals) == 96:
-                                    _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
-                                elif len(_actual_load_vals) == 24:
-                                    _actual_load_hourly = _actual_load_vals
-                                else:
-                                    _actual_load_hourly = _actual_load_vals[:24]
-                                _load_fig.add_trace(go.Scatter(
-                                    x=list(range(24)), y=_actual_load_hourly,
-                                    name="统调实际负荷", mode="lines+markers",
-                                    line=dict(color="#888888", width=1.5, dash="dot"),
-                                    marker=dict(size=2),
-                                ))
-                        except Exception:
-                            pass
+                    _actual_load_hourly = None
+                    # 尝试两种文件格式
+                    for _alfp in [
+                        os.path.join(_actual_load_dir, f"信息披露查询实际信息({sel_date}).xlsx"),
+                        os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls"),
+                    ]:
+                        if os.path.exists(_alfp):
+                            try:
+                                _actual_load_df = pd.read_excel(_alfp, header=None, skiprows=1)
+                                if len(_actual_load_df) > 0:
+                                    _actual_load_vals = _actual_load_df.iloc[0, 1:].tolist()
+                                    if len(_actual_load_vals) == 96:
+                                        _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
+                                    elif len(_actual_load_vals) == 24:
+                                        _actual_load_hourly = _actual_load_vals
+                                    else:
+                                        _actual_load_hourly = _actual_load_vals[:24]
+                                    break
+                            except Exception:
+                                pass
+                    if _actual_load_hourly:
+                        _load_fig.add_trace(go.Scatter(
+                            x=list(range(24)), y=_actual_load_hourly,
+                            name="统调实际负荷", mode="lines+markers",
+                            line=dict(color="#888888", width=1.5, dash="dot"),
+                            marker=dict(size=2),
+                        ))
 
                     # 统调预测负荷（实线）
                     _load_fig.add_trace(go.Scatter(
