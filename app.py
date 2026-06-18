@@ -48,7 +48,7 @@ st.markdown("""
 
     /* 全局 */
     .stApp {
-        background: linear-gradient(135deg, #f5f5f7 0%, #eaeaf0 40%, #f0f0f5 100%) !important;
+        background: #F5F5F7 !important;
     }
     .block-container {
         padding: 0.8rem 1.2rem !important;
@@ -58,10 +58,10 @@ st.markdown("""
     /* 标题栏 */
     .dash-header {
         background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,245,0.9) 100%);
-        backdrop-filter: blur(12px);
+        backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255,255,255,0.6);
         border-bottom: 2px solid rgba(13,122,63,0.15);
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 0.5rem 1rem;
         margin-bottom: 0.6rem;
         display: flex; align-items: center; justify-content: center; gap: 0;
@@ -69,7 +69,7 @@ st.markdown("""
         position: relative;
     }
     .dash-title {
-        font-size: 1.2rem; font-weight: 700; color: #1a1a1a;
+        font-size: 1.2rem; font-weight: 700; color: #1D1D1F;
         letter-spacing: 0.15em;
         position: relative;
         text-shadow: 0 1px 2px rgba(0,0,0,0.06);
@@ -85,7 +85,7 @@ st.markdown("""
         padding: 0 2px;
     }
     .dash-time {
-        font-size: 0.7rem; color: #666; position: absolute; right: 1rem;
+        font-size: 0.7rem; color: #86868B; position: absolute; right: 1rem;
     }
 
     /* KPI 行 */
@@ -93,9 +93,9 @@ st.markdown("""
     .kpi-card {
         flex: 1;
         background: rgba(255,255,255,0.78);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255,255,255,0.5);
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 0.35rem 0.6rem 0.25rem;
         text-align: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 12px rgba(255,255,255,0.3);
@@ -113,17 +113,17 @@ st.markdown("""
     .kpi-card:hover::after { left: 100%; }
     .kpi-card:hover {
         transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(13,122,63,0.1);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.12);
     }
-    .kpi-label { font-size: 0.55rem; color: #999; }
+    .kpi-label { font-size: 0.55rem; color: #C7C7CC; }
     .kpi-value { 
-        font-size: 0.9rem; font-weight: 700; color: #1a1a1a; 
+        font-size: 0.9rem; font-weight: 700; color: #1D1D1F; 
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.02em;
         text-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
     .kpi-delta { 
-        font-size: 0.55rem; color: #666;
+        font-size: 0.55rem; color: #86868B;
         display: flex; align-items: center; justify-content: center; gap: 2px;
         margin-top: 1px;
     }
@@ -141,17 +141,17 @@ st.markdown("""
     .kpi-value-flash { animation: value-flash 0.8s ease-out; }
     .kpi-arrow-up { color: #dc3545; font-size: 0.5rem; }
     .kpi-arrow-dn { color: #0D7A3F; font-size: 0.5rem; }
-    .kpi-arrow-flat { color: #999; font-size: 0.5rem; }
+    .kpi-arrow-flat { color: #C7C7CC; font-size: 0.5rem; }
 
     /* 模块卡片 */
     .mod-card {
         background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(12px) saturate(1.2);
+        backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 0.6rem;
         margin-bottom: 0.6rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         transition: all 0.3s ease;
     }
     .mod-card:hover {
@@ -162,11 +162,11 @@ st.markdown("""
         font-size: 0.7rem; font-weight: 600;
         padding-bottom: 0.25rem; margin-bottom: 0.3rem;
         border-bottom: 2px solid #e5e5e7;
-        color: #1a1a1a;
+        color: #1D1D1F;
         display: flex; align-items: baseline; gap: 8px;
     }
     .mod-sub {
-        font-size: 0.5rem; font-weight: 400; color: #999;
+        font-size: 0.5rem; font-weight: 400; color: #C7C7CC;
     }
 
     /* 图表容器 */
@@ -175,7 +175,7 @@ st.markdown("""
         background: rgba(255,255,255,0.5) !important;
         border-radius: 10px !important;
         border: 1px solid rgba(0,0,0,0.06) !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     .stPlotlyChart > div { background: transparent !important; }
     .stPlotlyChart .plotly .main-svg { background: transparent !important; }
@@ -195,7 +195,7 @@ st.markdown("""
     /* folium 地图 */
     .stFolium > iframe, .stFolium > div, .stFolium {
         background: transparent !important;
-        border-radius: 12px;
+        border-radius: 14px;
     }
     .stFolium iframe {
         background: transparent !important;
@@ -211,7 +211,7 @@ st.markdown("""
     }
 
     /* dataframe */
-    [data-testid="stDataFrame"] th { background: linear-gradient(135deg, #f5f5f7 0%, #eaeaf0 40%, #f0f0f5 100%) !important; color: #1a1a1a !important; }
+    [data-testid="stDataFrame"] th { background: #F5F5F7 !important; color: #1a1a1a !important; }
     [data-testid="stDataFrame"] td { background: #ffffff !important; color: #1a1a1a !important; }
 
     /* 刷新进度条 */
@@ -281,7 +281,7 @@ st.markdown("""
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        border-radius: 16px;
+        border-radius: 14px;
         box-shadow: inset 0 0 20px rgba(13,122,63,0.03);
         pointer-events: none;
     }
