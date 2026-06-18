@@ -570,7 +570,7 @@ else:
     _logo_html = ''
 
 # 标题栏（先渲染，状态栏数值后续更新）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time"><span class="data-live">数据加载中</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
@@ -598,19 +598,6 @@ def _make_sparkline_svg(values, color="#00d2d3", w=64, h=16, fill=True):
     defs = f'<defs><linearGradient id="{grad_id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{color}" stop-opacity="0.25"/><stop offset="100%" stop-color="{color}" stop-opacity="0.02"/></linearGradient></defs>'
     fill_poly = f'{defs}<polygon points="{" ".join(fill_pts)}" fill="url(#{grad_id})"/>'
     return f'<div class="kpi-sparkline"><svg width="{w}" height="{h}" viewBox="0 0 {w} {h}">{fill_poly}{polyline}</svg></div>'
-
-def _chart_annotation(fig, x, y, text, color="#1a1a1a", position="top center"):
-    """Add a value annotation to a chart"""
-    fig.add_annotation(
-        x=x, y=y, text=text,
-        showarrow=False,
-        font=dict(size=7, color=color),
-        bgcolor="rgba(255,255,255,0.7)",
-        bordercolor=color,
-        borderwidth=0.5,
-        borderpad=2,
-        opacity=0.9,
-    )
 
 def _kpi_arrow(val, prev, fmt="+.1f"):
     """生成箭头指标 HTML"""
@@ -697,25 +684,6 @@ kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价�
 _margin_pulse = ' kpi-pulse' if margin_lv == "紧张" else ''
 kpi += f'<div class="kpi-card{_margin_pulse}"><div class="kpi-label">🛡️ 安全裕度</div><div class="kpi-value" style="color:{margin_color}">{margin_val:.1f}%</div><div class="kpi-delta" style="color:{margin_color}">{margin_lv}</div></div></div>'
 st.markdown(kpi, unsafe_allow_html=True)
-
-# 更新标题栏状态数值（此时数据已加载）
-_status_parts = []
-if _real_temp is not None:
-    _status_parts.append(f"🌡{_real_temp:.0f}℃")
-if fuel_summary.get("煤价最新"):
-    _coal_val = fuel_summary["煤价最新"]
-    _status_parts.append(f"煤{_coal_val:.0f}")
-if fuel_summary.get("LNG出厂价"):
-    _lng_val = fuel_summary["LNG出厂价"]
-    _status_parts.append(f"LNG{_lng_val:.0f}")
-if not pdf.empty and "参考电价(元/MWh)" in pdf.columns:
-    _ld = pdf["日期"].max()
-    _da = pdf[pdf["日期"] == _ld]["参考电价(元/MWh)"].mean()
-    _status_parts.append(f"电{_da:.0f}")
-_status_text = " | ".join(_status_parts) if _status_parts else "数据加载中"
-
-# 重新渲染标题栏（带实际数值）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time"><span class="data-live">{_status_text}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # 三列布局：气象+燃料 | 地图+电价 | 检修（等宽）
@@ -1025,13 +993,7 @@ with col2:
             fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
-            # 最新值标注
-            _coal_last = fuel_df["动力煤价格(元/吨)"].iloc[-1]
-            _coal_last_x = fuel_df["日期标签"].iloc[-1]
-            fig_coal.add_annotation(x=_coal_last_x, y=_coal_last, text=f'{_coal_last:.0f}',
-                showarrow=False, font=dict(size=7, color="#ff9f43"),
-                bgcolor="rgba(255,255,255,0.7)", bordercolor="#ff9f43", borderwidth=0.5, borderpad=2,
-                xshift=15, yshift=8)
+
             fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
@@ -1051,13 +1013,7 @@ with col2:
             fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
                 mode="lines+markers",marker=dict(size=3),
                 line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
-            # 最新值标注
-            _lng_last = fuel_df["LNG出厂价(元/吨)"].iloc[-1]
-            _lng_last_x = fuel_df["日期标签"].iloc[-1]
-            fig_lng.add_annotation(x=_lng_last_x, y=_lng_last, text=f'{_lng_last:.0f}',
-                showarrow=False, font=dict(size=7, color="#54a0ff"),
-                bgcolor="rgba(255,255,255,0.7)", bordercolor="#54a0ff", borderwidth=0.5, borderpad=2,
-                xshift=15, yshift=8)
+
             fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
                 hovermode="x unified",
                 margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
@@ -1184,11 +1140,6 @@ with col3:
                     mode="lines+markers", marker=dict(size=5, color="#ffffff", line=dict(color="#007bff", width=1.5)),
                     fill="tozeroy", fillcolor="rgba(0,123,255,0.1)"))
                 has_data = True
-                # 峰谷标注
-                _pk_idx = _vals.index(max(_vals))
-                _vl_idx = _vals.index(min(_vals))
-                _chart_annotation(fig, _pk_idx, max(_vals), f'{max(_vals):.0f}', '#dc3545', 'top center')
-                _chart_annotation(fig, _vl_idx, min(_vals), f'{min(_vals):.0f}', '#0D7A3F', 'bottom center')
 
         # Excel预测电价（校准后）
         if not _forecast_df.empty:
@@ -1414,11 +1365,7 @@ with col3:
                         marker=dict(size=3),
                         fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
                     ))
-                    # 峰谷标注
-                    _lk_idx = _load_hourly.index(max(_load_hourly))
-                    _lv_idx = _load_hourly.index(min(_load_hourly))
-                    _chart_annotation(_load_fig, _lk_idx, max(_load_hourly), f'{max(_load_hourly):.0f}', '#dc3545', 'top center')
-                    _chart_annotation(_load_fig, _lv_idx, min(_load_hourly), f'{min(_load_hourly):.0f}', '#0D7A3F', 'bottom center')
+
                     _load_fig.update_layout(
                         transition=dict(duration=500, easing="cubic-in-out"),
                         height=150, template="neumorphic",
