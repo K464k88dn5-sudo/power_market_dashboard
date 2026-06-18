@@ -636,27 +636,30 @@ if _real_temp is not None:
         _temp_sp = _make_sparkline_svg(_recent_t, "#ff6b6b", 64, 14)
     kpi += f'<div class="kpi-card{_temp_pulse}"><div class="kpi-label">🌡️ {selected_city} 实况</div><div class="kpi-value" style="color:#ff6b6b">{_real_temp:.1f}℃</div><div class="kpi-delta" style="color:#888">{_real_weather}</div>{_temp_sp}</div>'
 
-# --- 煤价 KPI（sparkline来自燃料日度数据，箭头=环比）---
+# --- 煤价 KPI（始终显示，无数据时显示N/A）---
 if fuel_summary.get("煤价最新"):
     c = fuel_summary["煤价最新"]; ch = fuel_summary.get("煤价环比", 0) or 0
     _coal_arrow = _kpi_arrow(c, c / (1 + ch / 100) if ch != 0 else None)
     _coal_sp = ""
     if not fuel_df.empty and "动力煤价格(元/吨)" in fuel_df.columns:
         _coal_sp = _make_sparkline_svg(fuel_df["动力煤价格(元/吨)"].tail(7).tolist(), "#ff9f43", 64, 14)
-    kpi += f'<div class="kpi-card"><div class="kpi-label">🪨 动力煤</div><div class="kpi-value" style="color:#ff9f43">{c:.0f}元/吨</div><div class="kpi-delta" style="color:{"#ff6b6b" if ch>0 else "#2ecc71"}">{ch:+.2f}% {_coal_arrow}</div>{_coal_sp}</div>'
+    kpi += f'<div class="kpi-card"><div class="kpi-label">动力煤</div><div class="kpi-value" style="color:#ff9f43">{c:.0f}元/吨</div><div class="kpi-delta" style="color:{"#ff6b6b" if ch>0 else "#2ecc71"}">{ch:+.2f}% {_coal_arrow}</div>{_coal_sp}</div>'
+else:
+    kpi += '<div class="kpi-card"><div class="kpi-label">动力煤</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
 
-# --- LNG KPI（sparkline来自燃料日度数据）---
+# --- LNG KPI（始终显示，无数据时显示N/A）---
 if fuel_summary.get("LNG出厂价"):
     _lng_val = fuel_summary["LNG出厂价"]
     _lng_sp = ""
     if not fuel_df.empty and "LNG出厂价(元/吨)" in fuel_df.columns:
         _lng_sp = _make_sparkline_svg(fuel_df["LNG出厂价(元/吨)"].tail(7).tolist(), "#54a0ff", 64, 14)
-    # 箭头：对比前一天
     _lng_prev = None
     if not fuel_df.empty and "LNG出厂价(元/吨)" in fuel_df.columns and len(fuel_df) >= 2:
         _lng_prev = fuel_df["LNG出厂价(元/吨)"].iloc[-2]
     _lng_arrow = _kpi_arrow(_lng_val, _lng_prev)
-    kpi += f'<div class="kpi-card"><div class="kpi-label">⛽ LNG</div><div class="kpi-value" style="color:#54a0ff">{_lng_val:.0f}元/吨</div><div class="kpi-delta" style="color:#888">参考{fuel_summary.get("LNG参考价",0):.2f}元/m³ {_lng_arrow}</div>{_lng_sp}</div>'
+    kpi += f'<div class="kpi-card"><div class="kpi-label">LNG</div><div class="kpi-value" style="color:#54a0ff">{_lng_val:.0f}元/吨</div><div class="kpi-delta" style="color:#888">参考{fuel_summary.get("LNG参考价",0):.2f}元/m³ {_lng_arrow}</div>{_lng_sp}</div>'
+else:
+    kpi += '<div class="kpi-card"><div class="kpi-label">LNG</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
 
 # --- 电价均价 KPI（sparkline来自日前节点电价最近7天均价，脉冲>500）---
 # 优先使用实际电价数据的日期和均价，而非参考模板
