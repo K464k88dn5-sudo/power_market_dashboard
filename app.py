@@ -239,22 +239,23 @@ st.markdown("""
 
     /* 按钮组件 */
     .stButton > button {
-        background: linear-gradient(180deg, #007AFF 0%, #0066D6 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 999px !important;
+        background: #FAFAFA !important;
+        color: #1D1D1F !important;
+        border: 1px solid #E5E5EA !important;
+        border-radius: 8px !important;
         padding: 6px 16px !important;
         font-size: 13px !important;
         font-weight: 500 !important;
-        box-shadow: 0 1px 3px rgba(0,122,255,0.3) !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
         transition: all 0.15s cubic-bezier(0.25,0.1,0.25,1) !important;
     }
     .stButton > button:hover {
-        filter: brightness(1.05) !important;
-        box-shadow: 0 4px 12px rgba(0,122,255,0.3) !important;
+        background: #F0F0F0 !important;
+        border-color: #D0D0D0 !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
     }
     .stButton > button:active {
-        filter: brightness(0.95) !important;
+        background: #E8E8E8 !important;
         transform: scale(0.98) !important;
     }
 
@@ -1130,14 +1131,14 @@ with col3:
             _date_str = [d for d, lb in _date_labels.items() if lb == _label][0]
             st.session_state["price_date_val"] = _date_str
 
-        # 日期选择器 + 同步按钮（同一行）
-        _col_date, _col_sync = st.columns([0.7, 0.3])
+        # 日期选择器 + 同步按钮（同一行齐平）
+        _col_date, _col_sync = st.columns([0.72, 0.28])
         with _col_date:
             sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
                                       index=_default_idx, key="price_date_sel",
                                       on_change=_on_date_change)
         with _col_sync:
-            st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:1.4rem'></div>", unsafe_allow_html=True)
             _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
         # 反查日期字符串
