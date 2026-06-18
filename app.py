@@ -1138,7 +1138,7 @@ with col3:
 
         # 日期选择器 + 同步按钮（同一行齐平）
         st.markdown('<div style="font-size:0.7rem;color:#86868B;margin-bottom:2px;">选择日期</div>', unsafe_allow_html=True)
-        _col_date, _col_sync = st.columns([0.75, 0.25])
+        _col_date, _col_sync = st.columns([0.7, 0.3])
         with _col_date:
             sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
                                       index=_default_idx, key="price_date_sel",
