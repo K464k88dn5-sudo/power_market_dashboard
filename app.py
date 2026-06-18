@@ -55,38 +55,66 @@ st.markdown("""
         max-width: 100% !important;
     }
 
-    /* 标题栏 */
+    /* 标题栏 - 科技梯形横条 */
     .dash-header {
-        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,245,0.9) 100%);
-        backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255,255,255,0.6);
-        border-bottom: 2px solid rgba(13,122,63,0.15);
-        border-radius: 14px;
-        padding: 8px 16px;
+        background: transparent;
+        border: none;
+        padding: 0;
         margin-bottom: 12px;
         display: flex; align-items: center; justify-content: center; gap: 0;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
         position: relative;
+        height: 52px;
     }
-    .dash-title {
-        font-size: 1.2rem; font-weight: 700; color: #1D1D1F;
-        letter-spacing: 0.15em;
-        position: relative;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.06);
-        text-align: center;
-        flex: 1;
-    }
-    .dash-deco-left, .dash-deco-right {
-        color: #0D7A3F;
-        font-size: 0.9rem;
-        opacity: 0.5;
-        font-weight: 400;
-        flex-shrink: 0;
-        padding: 0 2px;
+    .dash-logo {
+        position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+        z-index: 10; height: 32px;
     }
     .dash-time {
-        font-size: 0.7rem; color: #86868B; position: absolute; right: 1rem;
+        position: absolute; right: 0; bottom: -14px;
+        font-size: 0.65rem; color: #86868B;
     }
+    .dash-banner {
+        background: linear-gradient(180deg, #004d5c 0%, #007a8a 50%, #00bcd4 100%);
+        clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+        padding: 10px 50px;
+        z-index: 2;
+        display: flex; align-items: center; justify-content: center;
+        min-width: 260px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        border: 1px solid rgba(0,255,255,0.25);
+    }
+    .dash-title {
+        font-size: 1.1rem; font-weight: 700; color: #ffffff;
+        letter-spacing: 0.25em;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        white-space: nowrap;
+    }
+    .dash-deco-left {
+        display: flex; gap: 3px; align-items: flex-end;
+        margin-right: -1px; z-index: 1; height: 52px;
+    }
+    .dash-deco-left span {
+        display: block;
+        background: linear-gradient(180deg, #004d5c 0%, #00bcd4 100%);
+        border: 1px solid rgba(0,255,255,0.2);
+        border-right: none;
+    }
+    .dash-deco-left span:nth-child(1) { width: 10px; height: 52px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); }
+    .dash-deco-left span:nth-child(2) { width: 8px; height: 40px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); }
+    .dash-deco-left span:nth-child(3) { width: 6px; height: 30px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); opacity: 0.6; }
+    .dash-deco-right {
+        display: flex; gap: 3px; align-items: flex-end;
+        margin-left: -1px; z-index: 1; height: 52px;
+    }
+    .dash-deco-right span {
+        display: block;
+        background: linear-gradient(180deg, #004d5c 0%, #00bcd4 100%);
+        border: 1px solid rgba(0,255,255,0.2);
+        border-left: none;
+    }
+    .dash-deco-right span:nth-child(1) { width: 10px; height: 52px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); }
+    .dash-deco-right span:nth-child(2) { width: 8px; height: 40px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); }
+    .dash-deco-right span:nth-child(3) { width: 6px; height: 30px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); opacity: 0.6; }
 
     /* KPI 行 */
     .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; }
