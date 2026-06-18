@@ -237,6 +237,11 @@ st.markdown("""
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
 
+    /* 日期选择器+按钮对齐 */
+    [data-testid="stSelectbox"] { margin-bottom: 0 !important; }
+    [data-testid="stButton"] { margin-top: 0 !important; padding-top: 0 !important; }
+    [data-testid="stButton"] > button { margin-top: 0 !important; }
+
     /* 按钮组件 */
     .stButton > button {
         background: #FAFAFA !important;
@@ -1138,7 +1143,6 @@ with col3:
                                       index=_default_idx, key="price_date_sel",
                                       on_change=_on_date_change)
         with _col_sync:
-            st.markdown("<div style='height:1.4rem'></div>", unsafe_allow_html=True)
             _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
         # 反查日期字符串
