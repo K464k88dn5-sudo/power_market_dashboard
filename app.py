@@ -1131,13 +1131,14 @@ with col3:
             st.session_state["price_date_val"] = _date_str
 
         # 日期选择器 + 同步按钮（同一行）
-        _col_date, _col_sync = st.columns([0.88, 0.12])
+        _col_date, _col_sync = st.columns([0.7, 0.3])
         with _col_date:
             sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
                                       index=_default_idx, key="price_date_sel",
-                                      on_change=_on_date_change, label_visibility="collapsed")
+                                      on_change=_on_date_change)
         with _col_sync:
-            _sync_clicked = st.button("同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+            st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+            _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
         # 反查日期字符串
         sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
