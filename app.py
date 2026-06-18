@@ -1130,17 +1130,18 @@ with col3:
             _date_str = [d for d, lb in _date_labels.items() if lb == _label][0]
             st.session_state["price_date_val"] = _date_str
 
-        sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
-                                  index=_default_idx, key="price_date_sel",
-                                  on_change=_on_date_change)
+        # 日期选择器 + 同步按钮（同一行）
+        _col_date, _col_sync = st.columns([0.88, 0.12])
+        with _col_date:
+            sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
+                                      index=_default_idx, key="price_date_sel",
+                                      on_change=_on_date_change, label_visibility="collapsed")
+        with _col_sync:
+            _sync_clicked = st.button("同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+
         # 反查日期字符串
         sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
-        st.session_state["price_date_val"] = sel_date  # 存储实际日期字符串
-
-        # 同步按钮（紧跟日期选择器）
-        _col_spacer, _col_sync = st.columns([0.85, 0.15])
-        with _col_sync:
-            _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+        st.session_state["price_date_val"] = sel_date
 
         fig = go.Figure()
         has_data = False
