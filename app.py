@@ -55,66 +55,29 @@ st.markdown("""
         max-width: 100% !important;
     }
 
-    /* 标题栏 - 科技梯形横条 */
+    /* 标题栏 - 简洁科技风 */
     .dash-header {
-        background: transparent;
-        border: none;
-        padding: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,242,245,0.95) 100%);
+        border: 1px solid #E5E5EA;
+        border-radius: 14px;
+        padding: 8px 16px;
         margin-bottom: 12px;
-        display: flex; align-items: center; justify-content: center; gap: 0;
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         position: relative;
-        height: 52px;
     }
     .dash-logo {
-        position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-        z-index: 10; height: 32px;
-    }
-    .dash-time {
-        position: absolute; right: 0; bottom: -14px;
-        font-size: 0.65rem; color: #86868B;
-    }
-    .dash-banner {
-        background: linear-gradient(180deg, #004d5c 0%, #007a8a 50%, #00bcd4 100%);
-        clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
-        padding: 10px 50px;
-        z-index: 2;
-        display: flex; align-items: center; justify-content: center;
-        min-width: 260px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        border: 1px solid rgba(0,255,255,0.25);
+        height: 28px; flex-shrink: 0;
     }
     .dash-title {
-        font-size: 1.1rem; font-weight: 700; color: #ffffff;
-        letter-spacing: 0.25em;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        font-size: 1.15rem; font-weight: 700; color: #1D1D1F;
+        letter-spacing: 0.2em;
         white-space: nowrap;
     }
-    .dash-deco-left {
-        display: flex; gap: 3px; align-items: flex-end;
-        margin-right: -1px; z-index: 1; height: 52px;
+    .dash-time {
+        position: absolute; right: 16px;
+        font-size: 0.65rem; color: #86868B;
     }
-    .dash-deco-left span {
-        display: block;
-        background: linear-gradient(180deg, #004d5c 0%, #00bcd4 100%);
-        border: 1px solid rgba(0,255,255,0.2);
-        border-right: none;
-    }
-    .dash-deco-left span:nth-child(1) { width: 10px; height: 52px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); }
-    .dash-deco-left span:nth-child(2) { width: 8px; height: 40px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); }
-    .dash-deco-left span:nth-child(3) { width: 6px; height: 30px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); opacity: 0.6; }
-    .dash-deco-right {
-        display: flex; gap: 3px; align-items: flex-end;
-        margin-left: -1px; z-index: 1; height: 52px;
-    }
-    .dash-deco-right span {
-        display: block;
-        background: linear-gradient(180deg, #004d5c 0%, #00bcd4 100%);
-        border: 1px solid rgba(0,255,255,0.2);
-        border-left: none;
-    }
-    .dash-deco-right span:nth-child(1) { width: 10px; height: 52px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); }
-    .dash-deco-right span:nth-child(2) { width: 8px; height: 40px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); }
-    .dash-deco-right span:nth-child(3) { width: 6px; height: 30px; clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%); opacity: 0.6; }
 
     /* KPI 行 */
     .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; }
@@ -601,7 +564,7 @@ else:
     _logo_html = ''
 
 # 标题栏（logo + 标题 + 状态栏）
-st.markdown(f'<div class="dash-header">{_logo_html}<div class="dash-deco-left"><span></span><span></span><span></span></div><div class="dash-banner"><span class="dash-title">电力市场多源数据监控大屏</span></div><div class="dash-deco-right"><span></span><span></span><span></span></div><span class="dash-time"><span class="data-live">气象:{sw} 燃料:{sf} 电价:{sp}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time"><span class="data-live">气象:{sw} 燃料:{sf} 电价:{sp}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
