@@ -62,8 +62,8 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.6);
         border-bottom: 2px solid rgba(13,122,63,0.15);
         border-radius: 14px;
-        padding: 0.5rem 1rem;
-        margin-bottom: 0.6rem;
+        padding: 8px 16px;
+        margin-bottom: 12px;
         display: flex; align-items: center; justify-content: center; gap: 0;
         box-shadow: 0 2px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
         position: relative;
@@ -89,17 +89,17 @@ st.markdown("""
     }
 
     /* KPI 行 */
-    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; }
     .kpi-card {
         flex: 1;
         background: rgba(255,255,255,0.78);
         backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255,255,255,0.5);
         border-radius: 14px;
-        padding: 0.35rem 0.6rem 0.25rem;
+        padding: 8px 12px 6px;
         text-align: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 12px rgba(255,255,255,0.3);
-        transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+        transition: all 0.15s cubic-bezier(0.25,0.1,0.25,1);
         position: relative;
         overflow: hidden;
     }
@@ -149,10 +149,10 @@ st.markdown("""
         backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 14px;
-        padding: 0.6rem;
-        margin-bottom: 0.6rem;
+        padding: 12px;
+        margin-bottom: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        transition: all 0.3s ease;
+        transition: all 0.25s cubic-bezier(0.25,0.1,0.25,1);
     }
     .mod-card:hover {
         box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
@@ -231,9 +231,9 @@ st.markdown("""
         from { opacity: 0; transform: translateY(12px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .mod-card { animation: fade-in-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
-    .kpi-card { animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
-    .dash-header { animation: fade-in-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+    .mod-card { animation: fade-in-up 0.25s cubic-bezier(0.25,0.1,0.25,1) backwards; }
+    .kpi-card { animation: fade-in-up 0.25s cubic-bezier(0.25,0.1,0.25,1) backwards; }
+    .dash-header { animation: fade-in-up 0.15s cubic-bezier(0.25,0.1,0.25,1) backwards; }
     .kpi-card:nth-child(1) { animation-delay: 0.05s; }
     .kpi-card:nth-child(2) { animation-delay: 0.08s; }
     .kpi-card:nth-child(3) { animation-delay: 0.11s; }
@@ -245,6 +245,27 @@ st.markdown("""
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); border-radius: 3px; }
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+    /* 按钮组件 */
+    .stButton > button {
+        background: linear-gradient(180deg, #007AFF 0%, #0066D6 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 999px !important;
+        padding: 6px 16px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 1px 3px rgba(0,122,255,0.3) !important;
+        transition: all 0.15s cubic-bezier(0.25,0.1,0.25,1) !important;
+    }
+    .stButton > button:hover {
+        filter: brightness(1.05) !important;
+        box-shadow: 0 4px 12px rgba(0,122,255,0.3) !important;
+    }
+    .stButton > button:active {
+        filter: brightness(0.95) !important;
+        transform: scale(0.98) !important;
+    }
 
     /* 数据更新指示器 */
     .data-live::before {
