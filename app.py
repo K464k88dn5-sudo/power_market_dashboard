@@ -570,7 +570,23 @@ else:
     _logo_html = ''
 
 # 标题栏（logo + 标题 + 状态栏）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time"><span class="data-live">气象:{sw} 燃料:{sf} 电价:{sp}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+# 状态栏数值
+_status_parts = []
+if _real_temp is not None:
+    _status_parts.append(f"🌡{_real_temp:.0f}℃")
+if fuel_summary.get("煤价最新"):
+    _coal_val = fuel_summary["煤价最新"]
+    _status_parts.append(f"煤{_coal_val:.0f}")
+if fuel_summary.get("LNG出厂价"):
+    _lng_val = fuel_summary["LNG出厂价"]
+    _status_parts.append(f"LNG{_lng_val:.0f}")
+if not pdf.empty and "参考电价(元/MWh)" in pdf.columns:
+    _ld = pdf["日期"].max()
+    _da = pdf[pdf["日期"] == _ld]["参考电价(元/MWh)"].mean()
+    _status_parts.append(f"电{_da:.0f}")
+_status_text = " | ".join(_status_parts) if _status_parts else "数据加载中"
+
+st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time"><span class="data-live">{_status_text}</span> | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
 
 # ============================================================
 # KPI 行（实时数据）
@@ -1165,6 +1181,11 @@ with col3:
                     mode="lines+markers", marker=dict(size=5, color="#ffffff", line=dict(color="#007bff", width=1.5)),
                     fill="tozeroy", fillcolor="rgba(0,123,255,0.1)"))
                 has_data = True
+                # 峰谷标注
+                _pk_idx = _vals.index(max(_vals))
+                _vl_idx = _vals.index(min(_vals))
+                _chart_annotation(fig, _pk_idx, max(_vals), f'{max(_vals):.0f}', '#dc3545', 'top center')
+                _chart_annotation(fig, _vl_idx, min(_vals), f'{min(_vals):.0f}', '#0D7A3F', 'bottom center')
 
         # Excel预测电价（校准后）
         if not _forecast_df.empty:
