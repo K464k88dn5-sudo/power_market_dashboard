@@ -1064,25 +1064,10 @@ with col3:
         _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     os.makedirs(_disclosure_dir, exist_ok=True)
 
-    # 上传信息披露文件 + 同步按钮（同行）
-    _col_upload, _col_sync = st.columns([0.7, 0.3])
-    with _col_upload:
-        with st.expander("📤 上传信息披露文件", expanded=False):
-            _upload_file = st.file_uploader(
-                "选择信息披露查询预测信息文件",
-                type=["xlsx", "xls"],
-                key="disclosure_upload",
-                help="文件名格式：信息披露查询预测信息(YYYY-MM-DD).xlsx"
-            )
-        if _upload_file is not None:
-            _save_path = os.path.join(_disclosure_dir, _upload_file.name)
-            with open(_save_path, "wb") as f:
-                f.write(_upload_file.getbuffer())
-            st.success(f"✅ 已保存: {_upload_file.name}")
-    with _col_sync:
-        _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+    # 同步逻辑变量初始化
+    _sync_clicked = False
 
-    # 同步逻辑
+    # 同步逻辑（在按钮之后立即执行）
     if _sync_clicked:
         with st.spinner("同步中..."):
             import subprocess
@@ -1151,6 +1136,11 @@ with col3:
         # 反查日期字符串
         sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
         st.session_state["price_date_val"] = sel_date  # 存储实际日期字符串
+
+        # 同步按钮（紧跟日期选择器）
+        _col_spacer, _col_sync = st.columns([0.85, 0.15])
+        with _col_sync:
+            _sync_clicked = st.button("☁️ 同步", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
         fig = go.Figure()
         has_data = False
