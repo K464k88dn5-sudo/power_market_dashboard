@@ -136,18 +136,16 @@ st.markdown("""
 
     /* 模块卡片 */
     .mod-card {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 14px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
         transition: all 0.25s cubic-bezier(0.25,0.1,0.25,1);
     }
     .mod-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
-        border-color: rgba(13,122,63,0.15);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
     }
     .mod-head {
         font-size: 0.7rem; font-weight: 600;
