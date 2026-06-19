@@ -368,9 +368,9 @@ pio.templates.default = "neumorphic"  # 所有新 Figure 自动使用
 # ============================================================
 # 数据文件路径（优先本地实际路径，兜底项目目录）
 # ============================================================
-_ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
+_ACTUAL_PRICE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
 if not os.path.exists(_ACTUAL_PRICE_PATH):
-    _ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
+    _ACTUAL_PRICE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
 
 # ============================================================
 # 常量 & 工具函数
@@ -417,9 +417,9 @@ def parse_maintenance_from_disclosure(target_date: str) -> dict:
     """
     import pandas as _pd
     # 优先从用户本地目录查找，兜底从项目 disclosure/ 目录
-    disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     if not os.path.exists(disclosure_dir):
-        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
 
     result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
@@ -494,7 +494,7 @@ with st.sidebar:
         st.success("✅ 广东日前电价预测.xlsx 已上传")
 
     if disclosure_file:
-        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
         os.makedirs(disclosure_dir, exist_ok=True)
         with open(os.path.join(disclosure_dir, disclosure_file.name), "wb") as f:
             f.write(disclosure_file.getbuffer())
@@ -1074,9 +1074,9 @@ with col3:
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
 
     # 信息披露文件上传
-    _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     if not os.path.exists(_disclosure_dir):
-        _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     os.makedirs(_disclosure_dir, exist_ok=True)
 
     # 同步逻辑变量初始化
@@ -1344,9 +1344,9 @@ with col3:
     # ============================================================
     # 统调负荷预测（电价分析模块内）
     # ============================================================
-    _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+    _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     if not os.path.exists(_disclosure_dir_load):
-        _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
+        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
     _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
     if os.path.exists(_load_fp):
         try:
