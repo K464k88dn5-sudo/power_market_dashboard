@@ -136,16 +136,25 @@ st.markdown("""
 
     /* 模块卡片 */
     .mod-card {
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        border: 1px solid #d8d8d8;
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+        box-shadow: 
+            0 1px 2px rgba(0,0,0,0.04),
+            0 2px 4px rgba(0,0,0,0.06),
+            0 4px 8px rgba(0,0,0,0.08),
+            0 8px 16px rgba(0,0,0,0.06);
         transition: all 0.25s cubic-bezier(0.25,0.1,0.25,1);
     }
     .mod-card:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+        box-shadow: 
+            0 2px 4px rgba(0,0,0,0.06),
+            0 4px 8px rgba(0,0,0,0.08),
+            0 8px 16px rgba(0,0,0,0.1),
+            0 16px 32px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
     }
     .mod-head {
         font-size: 0.7rem; font-weight: 600;
