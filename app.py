@@ -892,7 +892,7 @@ with col1:
 # ===== 第二列：广东地图 + 燃料价格 =====
 with col2:
     # ----- 广东地图 -----
-    st.markdown('<div class="mod-card mod-card-map"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="mod-card"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
     if city_temps.empty:
         st.warning("数据获取失败")
     else:
