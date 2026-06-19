@@ -370,7 +370,7 @@ pio.templates.default = "neumorphic"  # 所有新 Figure 自动使用
 # ============================================================
 _ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
 if not os.path.exists(_ACTUAL_PRICE_PATH):
-    _ACTUAL_PRICE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "日前节点电价.xlsx")
+    _ACTUAL_PRICE_PATH = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/日前节点电价.xlsx")
 
 # ============================================================
 # 常量 & 工具函数
@@ -419,7 +419,7 @@ def parse_maintenance_from_disclosure(target_date: str) -> dict:
     # 优先从用户本地目录查找，兜底从项目 disclosure/ 目录
     disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     if not os.path.exists(disclosure_dir):
-        disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({target_date}).xlsx")
 
     result = {"机组检修": _pd.DataFrame(), "输变电检修": _pd.DataFrame(), "检修容量": {}}
@@ -1074,7 +1074,7 @@ with col3:
     st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
 
     # 信息披露文件上传
-    _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     if not os.path.exists(_disclosure_dir):
         _disclosure_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     os.makedirs(_disclosure_dir, exist_ok=True)
@@ -1346,7 +1346,7 @@ with col3:
     # ============================================================
     _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     if not os.path.exists(_disclosure_dir_load):
-        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        _disclosure_dir_load = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前")
     _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
     if os.path.exists(_load_fp):
         try:
