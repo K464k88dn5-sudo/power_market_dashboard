@@ -5,7 +5,7 @@
 # 定时: launchd 每天 09:00 自动执行
 # ============================================================
 
-REPO_DIR="/Users/duchaochao/Documents/power_market_dashboard"
+REPO_DIR="/Users/duchaochao/Desktop/power_market_dashboard"
 LOG_FILE="$REPO_DIR/sync_data.log"
 SRC_DISCLOSURE="$HOME/Desktop/能源电力资料/日前训练数据/信息披露日前"
 
