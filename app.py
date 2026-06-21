@@ -190,17 +190,19 @@ st.markdown("""
         border-radius: 10px !important;
         border: 1px solid rgba(0,0,0,0.06) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        overflow: hidden !important;
     }
-    .stPlotlyChart > div { background: transparent !important; }
+    .stPlotlyChart > div { background: transparent !important; overflow: hidden !important; }
     .stPlotlyChart .plotly .main-svg { background: transparent !important; }
-    [data-testid="stChart"] { background: transparent !important; }
+    [data-testid="stChart"] { background: transparent !important; overflow: hidden !important; }
     [data-testid="stMetricValue"] { font-size: 0.8rem !important; color: #1a1a1a !important; }
     [data-testid="stMetricLabel"] { font-size: 0.55rem !important; color: #666 !important; }
     [data-testid="stMetricDelta"] { font-size: 0.55rem !important; }
     [data-testid="stMetric"] { padding: 0.05rem 0 !important; }
 
     /* 卡片内图表透明化 — 融入卡片背景 */
-    .mod-card .stPlotlyChart {
+    .mod-card .stPlotlyChart,
+    [data-testid="stVerticalBlockBorderWrapper"] .stPlotlyChart {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
