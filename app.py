@@ -148,6 +148,20 @@ st.markdown("""
             0 8px 16px rgba(0,0,0,0.06);
         transition: all 0.25s cubic-bezier(0.25,0.1,0.25,1);
     }
+
+    /* st.container(border=True) 复用 mod-card 样式 */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+        border: 1px solid #d8d8d8 !important;
+        border-radius: 12px !important;
+        padding: 12px 12px 24px 12px !important;
+        margin-bottom: 12px !important;
+        box-shadow: 
+            0 1px 2px rgba(0,0,0,0.04),
+            0 2px 4px rgba(0,0,0,0.06),
+            0 4px 8px rgba(0,0,0,0.08),
+            0 8px 16px rgba(0,0,0,0.06) !important;
+    }
     .mod-card:hover {
         box-shadow: 
             0 2px 4px rgba(0,0,0,0.06),
@@ -158,10 +172,12 @@ st.markdown("""
     }
     .mod-head {
         font-size: 0.7rem; font-weight: 600;
-        padding-bottom: 0.25rem; margin-bottom: 0.3rem;
+        padding: 0.35rem 0.5rem; margin-bottom: 0.3rem;
         border-bottom: 2px solid #e5e5e7;
         color: #1D1D1F;
         display: flex; align-items: baseline; gap: 8px;
+        background: #ffffff;
+        border-radius: 8px;
     }
     .mod-sub {
         font-size: 0.5rem; font-weight: 400; color: #C7C7CC;
@@ -182,6 +198,14 @@ st.markdown("""
     [data-testid="stMetricLabel"] { font-size: 0.55rem !important; color: #666 !important; }
     [data-testid="stMetricDelta"] { font-size: 0.55rem !important; }
     [data-testid="stMetric"] { padding: 0.05rem 0 !important; }
+
+    /* 卡片内图表透明化 — 融入卡片背景 */
+    .mod-card .stPlotlyChart {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0.15rem !important;
+    }
 
     /* Streamlit 隐藏 */
     #MainMenu, footer { visibility: hidden; }
@@ -700,6 +724,36 @@ if not ld and not pdf.empty and "参考电价(元/MWh)" in pdf.columns:
 _elec_pulse = ' kpi-pulse' if da > 500 else ''
 kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价均价</div><div class="kpi-value" style="color:#0D7A3F">{da:.0f}元/MWh</div><div class="kpi-delta" style="color:#888">{ld} {_elec_arrow}</div>{_elec_sp}</div>'
 
+# --- 统调负荷最大值 KPI ---
+_load_max_val = None
+_load_peak_hour = None
+if ld:
+    _disclosure_dir_kpi = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+    _load_fp_kpi = os.path.join(_disclosure_dir_kpi, f"信息披露查询预测信息({ld}).xlsx")
+    if os.path.exists(_load_fp_kpi):
+        try:
+            _load_sheets_kpi = [s for s in pd.ExcelFile(_load_fp_kpi).sheet_names if "负荷预测" in s]
+            if _load_sheets_kpi:
+                _load_df_kpi = pd.read_excel(_load_fp_kpi, sheet_name=_load_sheets_kpi[0], header=None, skiprows=1)
+                if len(_load_df_kpi) > 0:
+                    _load_row_kpi = _load_df_kpi.iloc[0]
+                    _load_vals_kpi = _load_row_kpi[2:].tolist()
+                    if len(_load_vals_kpi) == 96:
+                        _load_hourly_kpi = [_load_vals_kpi[i*4] for i in range(24)]
+                    elif len(_load_vals_kpi) == 24:
+                        _load_hourly_kpi = _load_vals_kpi
+                    else:
+                        _load_hourly_kpi = _load_vals_kpi[:24]
+                    _load_max_val = max(_load_hourly_kpi)
+                    _load_peak_hour = _load_hourly_kpi.index(_load_max_val)
+        except Exception:
+            pass
+
+if _load_max_val is not None:
+    kpi += f'<div class="kpi-card"><div class="kpi-label">⚡ 统调负荷</div><div class="kpi-value" style="color:#dc3545">{_load_max_val:.0f}MW</div><div class="kpi-delta" style="color:#888">峰值{_load_peak_hour}时</div></div>'
+else:
+    kpi += '<div class="kpi-card"><div class="kpi-label">⚡ 统调负荷</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
+
 # --- 安全裕度 KPI（脉冲=紧张）---
 _margin_pulse = ' kpi-pulse' if margin_lv == "紧张" else ''
 kpi += f'<div class="kpi-card{_margin_pulse}"><div class="kpi-label">🛡️ 安全裕度</div><div class="kpi-value" style="color:{margin_color}">{margin_val:.1f}%</div><div class="kpi-delta" style="color:{margin_color}">{margin_lv}</div></div></div>'
@@ -713,803 +767,803 @@ col1, col2, col3 = st.columns(3)
 # ===== 第一列：气象监测 + 检修计划 =====
 with col1:
     # ----- 气象监测 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-w">🌤️ 气象监测<span class="mod-sub">实时数据 · 7天预报</span></div>', unsafe_allow_html=True)
-    if weather_df.empty:
-        st.warning("数据获取失败")
-    else:
-        today = _date.today()
-        today_df = weather_df[weather_df["时间"].dt.date == today].copy()
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-w">🌤️ 气象监测<span class="mod-sub">实时数据 · 7天预报</span></div>', unsafe_allow_html=True)
+        if weather_df.empty:
+            st.warning("数据获取失败")
+        else:
+            today = _date.today()
+            today_df = weather_df[weather_df["时间"].dt.date == today].copy()
 
-        daily = weather_df.copy(); daily["日期"]=daily["时间"].dt.date
-        agg = daily.groupby("日期").agg(
-            最高=("温度(℃)","max"),最低=("温度(℃)","min"),均温=("温度(℃)","mean"),
-            风速=("风速(m/s)","mean") if "风速(m/s)" in daily.columns else ("温度(℃)","mean"),
-            湿度=("湿度(%)","mean") if "湿度(%)" in daily.columns else ("温度(℃)","mean"),
-        ).reset_index()
-        agg["标签"]=agg["日期"].apply(fmt_date)
+            daily = weather_df.copy(); daily["日期"]=daily["时间"].dt.date
+            agg = daily.groupby("日期").agg(
+                最高=("温度(℃)","max"),最低=("温度(℃)","min"),均温=("温度(℃)","mean"),
+                风速=("风速(m/s)","mean") if "风速(m/s)" in daily.columns else ("温度(℃)","mean"),
+                湿度=("湿度(%)","mean") if "湿度(%)" in daily.columns else ("温度(℃)","mean"),
+            ).reset_index()
+            agg["标签"]=agg["日期"].apply(fmt_date)
 
-        wc_left, wc_right = st.columns(2)
+            wc_left, wc_right = st.columns(2)
 
-        with wc_left:
-            fig1 = go.Figure()
-            if not today_df.empty:
-                fig1.add_trace(go.Scatter(x=today_df["时间"],y=today_df["温度(℃)"],
-                    mode="lines+markers",line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=2),
-                    name="气温",fill="tozeroy",fillcolor="rgba(255,107,107,0.1)"))
-                for idx,clr,sym in [(today_df["温度(℃)"].idxmax(),"#ff4444","triangle-up"),
-                                     (today_df["温度(℃)"].idxmin(),"#4488ff","triangle-down")]:
-                    r=today_df.loc[idx]
-                    fig1.add_trace(go.Scatter(x=[r["时间"]],y=[r["温度(℃)"]],mode="markers+text",
-                        marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
-                        textposition="top center" if clr=="#ff4444" else "bottom center",
-                        textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
-            fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
-                title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
-            fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
-            # Y轴自适应
-            if not today_df.empty:
-                _t_min = today_df["温度(℃)"].min()
-                _t_max = today_df["温度(℃)"].max()
-                _t_pad = max((_t_max - _t_min) * 0.15, 1)
-                fig1.update_yaxes(range=[_t_min - _t_pad, _t_max + _t_pad], dtick=2)
-            st.plotly_chart(fig1,use_container_width=True)
+            with wc_left:
+                fig1 = go.Figure()
+                if not today_df.empty:
+                    fig1.add_trace(go.Scatter(x=today_df["时间"],y=today_df["温度(℃)"],
+                        mode="lines+markers",line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=2),
+                        name="气温",fill="tozeroy",fillcolor="rgba(255,107,107,0.1)"))
+                    for idx,clr,sym in [(today_df["温度(℃)"].idxmax(),"#ff4444","triangle-up"),
+                                         (today_df["温度(℃)"].idxmin(),"#4488ff","triangle-down")]:
+                        r=today_df.loc[idx]
+                        fig1.add_trace(go.Scatter(x=[r["时间"]],y=[r["温度(℃)"]],mode="markers+text",
+                            marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
+                            textposition="top center" if clr=="#ff4444" else "bottom center",
+                            textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
+                fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
+                    title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
+                fig1.update_xaxes(dtick=3600000*3,tickformat="%H")
+                # Y轴自适应
+                if not today_df.empty:
+                    _t_min = today_df["温度(℃)"].min()
+                    _t_max = today_df["温度(℃)"].max()
+                    _t_pad = max((_t_max - _t_min) * 0.15, 1)
+                    fig1.update_yaxes(range=[_t_min - _t_pad, _t_max + _t_pad], dtick=2)
+                st.plotly_chart(fig1,use_container_width=True)
 
-            fig2 = go.Figure()
-            fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最高"],name="最高",mode="lines+markers",
-                line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=3)))
-            fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["均温"],name="均温",mode="lines+markers",
-                line=dict(color="#ffd93d",width=1.5,dash="dot",shape="spline"),marker=dict(size=2)))
-            fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最低"],name="最低",mode="lines+markers",
-                line=dict(color="#54a0ff",width=1.5,shape="spline"),marker=dict(size=3)))
-            fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
-                y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
-                line=dict(width=0),showlegend=False,hoverinfo="skip"))
-            fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
-                title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
-            fig2.update_xaxes(tickfont=dict(size=6, color="#000000"))
-            st.plotly_chart(fig2,use_container_width=True)
+                fig2 = go.Figure()
+                fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最高"],name="最高",mode="lines+markers",
+                    line=dict(color="#ff6b6b",width=1.5,shape="spline"),marker=dict(size=3)))
+                fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["均温"],name="均温",mode="lines+markers",
+                    line=dict(color="#ffd93d",width=1.5,dash="dot",shape="spline"),marker=dict(size=2)))
+                fig2.add_trace(go.Scatter(x=agg["标签"],y=agg["最低"],name="最低",mode="lines+markers",
+                    line=dict(color="#54a0ff",width=1.5,shape="spline"),marker=dict(size=3)))
+                fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
+                    y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
+                    line=dict(width=0),showlegend=False,hoverinfo="skip"))
+                fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
+                    title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
+                fig2.update_xaxes(tickfont=dict(size=6, color="#000000"))
+                st.plotly_chart(fig2,use_container_width=True)
 
-        with wc_right:
-            fig3 = go.Figure()
-            if "风速(m/s)" in daily.columns:
-                fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
-                    line=dict(color="#6bcb77",width=1.5,shape="spline"),marker=dict(size=4),
-                    fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-            fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
-                title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
-            fig3.update_xaxes(tickfont=dict(size=6, color="#000000"))
-            st.plotly_chart(fig3,use_container_width=True)
+            with wc_right:
+                fig3 = go.Figure()
+                if "风速(m/s)" in daily.columns:
+                    fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
+                        line=dict(color="#6bcb77",width=1.5,shape="spline"),marker=dict(size=4),
+                        fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
+                fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
+                    title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
+                fig3.update_xaxes(tickfont=dict(size=6, color="#000000"))
+                st.plotly_chart(fig3,use_container_width=True)
 
-            fig4 = go.Figure()
-            if "湿度(%)" in daily.columns:
-                fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
-                    line=dict(color="#a29bfe",width=1.5,shape="spline"),marker=dict(size=4),
-                    fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-            fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
-                title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
-            fig4.update_xaxes(tickfont=dict(size=6, color="#000000"))
-            st.plotly_chart(fig4,use_container_width=True)
+                fig4 = go.Figure()
+                if "湿度(%)" in daily.columns:
+                    fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
+                        line=dict(color="#a29bfe",width=1.5,shape="spline"),marker=dict(size=4),
+                        fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
+                fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
+                    title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
+                fig4.update_xaxes(tickfont=dict(size=6, color="#000000"))
+                st.plotly_chart(fig4,use_container_width=True)
 
-        _obs = _fco(selected_city)
-        _cur_t = _obs.get("温度", 0)
-        _cur_h = _obs.get("湿度", 0)
-        _cur_w = _obs.get("风速", 0)
-        _cur_wx = _obs.get("天气", "")
-        _min_t = weather_df["温度(℃)"].min()
-        _max_t = weather_df["温度(℃)"].max()
-        _avg_t = weather_df["温度(℃)"].mean()
+            _obs = _fco(selected_city)
+            _cur_t = _obs.get("温度", 0)
+            _cur_h = _obs.get("湿度", 0)
+            _cur_w = _obs.get("风速", 0)
+            _cur_wx = _obs.get("天气", "")
+            _min_t = weather_df["温度(℃)"].min()
+            _max_t = weather_df["温度(℃)"].max()
+            _avg_t = weather_df["温度(℃)"].mean()
 
-        _wx_html = '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">'
-        for _label,_val,_sub in [("实况温度",f"{_cur_t:.1f}℃",f"{_cur_wx}"),
-                                  ("预报均温",f"{_avg_t:.1f}℃",""),
-                                  ("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃",""),
-                                  ("实况湿度",f"{_cur_h:.0f}%",""),
-                                  ("实况风速",f"{_cur_w:.1f}m/s","")]:
-            _sub_s = f'<span style="font-size:0.45rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
-            _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#666">{_label}</div><div style="font-size:0.7rem;color:#1a1a1a">{_val}{_sub_s}</div></div>'
-        _wx_html += '</div>'
-        st.markdown(_wx_html, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+            _wx_html = '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">'
+            for _label,_val,_sub in [("实况温度",f"{_cur_t:.1f}℃",f"{_cur_wx}"),
+                                      ("预报均温",f"{_avg_t:.1f}℃",""),
+                                      ("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃",""),
+                                      ("实况湿度",f"{_cur_h:.0f}%",""),
+                                      ("实况风速",f"{_cur_w:.1f}m/s","")]:
+                _sub_s = f'<span style="font-size:0.45rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
+                _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#666">{_label}</div><div style="font-size:0.7rem;color:#1a1a1a">{_val}{_sub_s}</div></div>'
+            _wx_html += '</div>'
+            st.markdown(_wx_html, unsafe_allow_html=True)
 
     # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-m">🔧 检修计划<span class="mod-sub">信息披露 · 机组+输变电</span></div>', unsafe_allow_html=True)
-    _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
-    _maint_data = parse_maintenance_from_disclosure(_price_date)
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-m">🔧 检修计划<span class="mod-sub">信息披露 · 机组+输变电</span></div>', unsafe_allow_html=True)
+        _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
+        _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-    # 数据来源日期（橙色）+ 检修容量（紧凑两行）
-    st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
-    if _maint_data["检修容量"]:
-        _cap = _maint_data["检修容量"]
-        st.markdown(
-            f'<div style="display:flex;gap:8px;margin-bottom:2px;">'
-            f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
-            f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
-            f'</div>', unsafe_allow_html=True)
+        # 数据来源日期（橙色）+ 检修容量（紧凑两行）
+        st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
+        if _maint_data["检修容量"]:
+            _cap = _maint_data["检修容量"]
+            st.markdown(
+                f'<div style="display:flex;gap:8px;margin-bottom:2px;">'
+                f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
+                f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+                f'</div>', unsafe_allow_html=True)
 
-    _mach = _maint_data.get("机组检修", pd.DataFrame())
-    _line = _maint_data.get("输变电检修", pd.DataFrame())
+        _mach = _maint_data.get("机组检修", pd.DataFrame())
+        _line = _maint_data.get("输变电检修", pd.DataFrame())
 
-    # 表格深色主题样式（HTML表格，循环滚动展示）
-    def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
-        """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-        th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
-        td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
+        # 表格深色主题样式（HTML表格，循环滚动展示）
+        def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
+            """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
+            th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
+            td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
 
-        row_count = len(df)
-        anim_duration = max(row_count * 3, 10)
+            row_count = len(df)
+            anim_duration = max(row_count * 3, 10)
 
-        # 计算列宽比例
-        col_count = len(df.columns)
-        if col_widths:
-            widths = col_widths
-        else:
-            widths = [f'{100/col_count:.1f}%'] * col_count
+            # 计算列宽比例
+            col_count = len(df.columns)
+            if col_widths:
+                widths = col_widths
+            else:
+                widths = [f'{100/col_count:.1f}%'] * col_count
 
-        # 单表格：表头sticky + 表体滚动
-        body_height = max_height - 20
-        html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
-        html += '<style>tbody tr:hover td{background:rgba(13,122,63,0.12)!important;transition:background 0.2s ease}</style>'
+            # 单表格：表头sticky + 表体滚动
+            body_height = max_height - 20
+            html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
+            html += '<style>tbody tr:hover td{background:rgba(13,122,63,0.12)!important;transition:background 0.2s ease}</style>'
 
-        if scroll and row_count > 3:
-            html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
+            if scroll and row_count > 3:
+                html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
 
-        html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><thead><tr>'
-        for i, col in enumerate(df.columns):
-            w = widths[i] if i < len(widths) else widths[-1]
-            html += f'<th style="{th_style}width:{w};">{col}</th>'
-        html += '</tr></thead><tbody>'
-
-        for _, row in df.iterrows():
-            _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
-            html += f'<tr style="{_row_bg}">'
-            for i, val in enumerate(row):
+            html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><thead><tr>'
+            for i, col in enumerate(df.columns):
                 w = widths[i] if i < len(widths) else widths[-1]
-                html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
-            html += '</tr>'
+                html += f'<th style="{th_style}width:{w};">{col}</th>'
+            html += '</tr></thead><tbody>'
 
-        html += '</tbody></table>'
+            for _, row in df.iterrows():
+                _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
+                html += f'<tr style="{_row_bg}">'
+                for i, val in enumerate(row):
+                    w = widths[i] if i < len(widths) else widths[-1]
+                    html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
+                html += '</tr>'
 
-        if scroll and row_count > 3:
+            html += '</tbody></table>'
+
+            if scroll and row_count > 3:
+                html += '</div>'
+
             html += '</div>'
+            return html
 
-        html += '</div>'
-        return html
+        if not _mach.empty:
+            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
+            st.markdown(_df_to_dark_html(_mach, 150, col_widths=["30%", "15%", "15%", "20%", "20%"]), unsafe_allow_html=True)
 
-    if not _mach.empty:
-        st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-        st.markdown(_df_to_dark_html(_mach, 150, col_widths=["30%", "15%", "15%", "20%", "20%"]), unsafe_allow_html=True)
+        if not _line.empty:
+            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
+            st.markdown(_df_to_dark_html(_line, 140), unsafe_allow_html=True)
 
-    if not _line.empty:
-        st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
-        st.markdown(_df_to_dark_html(_line, 140), unsafe_allow_html=True)
+        if _mach.empty and _line.empty and not _maint_data["检修容量"]:
+            st.info(f"{_price_date} 无检修数据，请先上传披露文件")
 
-    if _mach.empty and _line.empty and not _maint_data["检修容量"]:
-        st.info(f"{_price_date} 无检修数据，请先上传披露文件")
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ===== 第二列：广东地图 + 燃料价格 =====
 with col2:
     # ----- 广东地图 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
-    if city_temps.empty:
-        st.warning("数据获取失败")
-    else:
-        import folium
-        from folium.features import GeoJsonTooltip
-        from streamlit_folium import st_folium
-        from branca.colormap import LinearColormap
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
+        if city_temps.empty:
+            st.warning("数据获取失败")
+        else:
+            import folium
+            from folium.features import GeoJsonTooltip
+            from streamlit_folium import st_folium
+            from branca.colormap import LinearColormap
 
-        temp_map = {int(r["adcode"]):r["温度"] for _,r in city_temps.iterrows()}
-        gd_temp = copy.deepcopy(GD_GEOJSON)
-        for f in gd_temp["features"]: f["properties"]["温度"] = temp_map.get(f["properties"]["adcode"],0)
+            temp_map = {int(r["adcode"]):r["温度"] for _,r in city_temps.iterrows()}
+            gd_temp = copy.deepcopy(GD_GEOJSON)
+            for f in gd_temp["features"]: f["properties"]["温度"] = temp_map.get(f["properties"]["adcode"],0)
 
-        cmap = LinearColormap(colors=["#2196F3","#00BCD4","#FFC107","#FF9800","#F44336","#B71C1C","#9C27B0"],vmin=18,vmax=40)
+            cmap = LinearColormap(colors=["#2196F3","#00BCD4","#FFC107","#FF9800","#F44336","#B71C1C","#9C27B0"],vmin=18,vmax=40)
 
-        all_c = []
-        def ext(c):
-            if isinstance(c[0],(int,float)): all_c.append(c)
-            else:
-                for x in c: ext(x)
-        for feat in GD_GEOJSON["features"]: ext(feat["geometry"]["coordinates"])
-        lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
+            all_c = []
+            def ext(c):
+                if isinstance(c[0],(int,float)): all_c.append(c)
+                else:
+                    for x in c: ext(x)
+            for feat in GD_GEOJSON["features"]: ext(feat["geometry"]["coordinates"])
+            lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
 
-        m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
-                       attr=" ", max_zoom=10)
+            m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
+                           attr=" ", max_zoom=10)
 
-        # 注入浅色背景CSS到地图内部（作用于iframe内）
-        dark_css = """
-        <style>
-            body, .leaflet-container { background: transparent !important; }
-            .leaflet-control-zoom a { background: #ffffff !important; color: #666 !important; border-color: #e5e5e7 !important; }
-            /* 平滑缩放过渡 */
-            .leaflet-zoom-anim .leaflet-zoom-animated {
-                transition: transform 0.3s ease-out;
-            }
-            .leaflet-tile { transition: opacity 0.3s ease; }
-            /* 高温脉冲动画 */
-            @keyframes map-pulse {
-                0%, 100% { transform: scale(1); opacity: 1; }
-                50%      { transform: scale(1.15); opacity: 0.8; }
-            }
-                    /* 标签淡入 */
-            .leaflet-marker-icon {
-                animation: label-fade-in 0.5s ease-out;
-            }
-            @keyframes label-fade-in {
-                from { opacity: 0; transform: scale(0.8); }
-                to { opacity: 1; transform: scale(1); }
-            }
-        </style>
-        """
-        m.get_root().html.add_child(folium.Element(dark_css))
-        # 自适应窗口：计算边界 + padding
-        _bounds = [[min(lats),min(lons)],[max(lats),max(lons)]]
-        m.fit_bounds(_bounds, padding=(30, 20))
+            # 注入浅色背景CSS到地图内部（作用于iframe内）
+            dark_css = """
+            <style>
+                body, .leaflet-container { background: transparent !important; }
+                .leaflet-control-zoom a { background: #ffffff !important; color: #666 !important; border-color: #e5e5e7 !important; }
+                /* 平滑缩放过渡 */
+                .leaflet-zoom-anim .leaflet-zoom-animated {
+                    transition: transform 0.3s ease-out;
+                }
+                .leaflet-tile { transition: opacity 0.3s ease; }
+                /* 高温脉冲动画 */
+                @keyframes map-pulse {
+                    0%, 100% { transform: scale(1); opacity: 1; }
+                    50%      { transform: scale(1.15); opacity: 0.8; }
+                }
+                        /* 标签淡入 */
+                .leaflet-marker-icon {
+                    animation: label-fade-in 0.5s ease-out;
+                }
+                @keyframes label-fade-in {
+                    from { opacity: 0; transform: scale(0.8); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            </style>
+            """
+            m.get_root().html.add_child(folium.Element(dark_css))
+            # 自适应窗口：计算边界 + padding
+            _bounds = [[min(lats),min(lons)],[max(lats),max(lons)]]
+            m.fit_bounds(_bounds, padding=(30, 20))
 
-        folium.GeoJson(gd_temp,
-            style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
-            tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
-                style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid #e5e5e7;"),
-            highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
+            folium.GeoJson(gd_temp,
+                style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
+                tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
+                    style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid #e5e5e7;"),
+                highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
 
-        for feat in GD_GEOJSON["features"]:
-            ac=feat["properties"]["adcode"]; temp=temp_map.get(ac)
-            if temp is None: continue
-            ctr=feat["properties"].get("centroid") or feat["properties"].get("center",[0,0])
-            nm=feat["properties"]["name"].replace("市","")
+            for feat in GD_GEOJSON["features"]:
+                ac=feat["properties"]["adcode"]; temp=temp_map.get(ac)
+                if temp is None: continue
+                ctr=feat["properties"].get("centroid") or feat["properties"].get("center",[0,0])
+                nm=feat["properties"]["name"].replace("市","")
 
-            # 高温脉冲动画（>32℃）
-            if temp >= 35:
-                _pulse = 'animation:map-pulse 1.5s ease-in-out infinite;'
-                _temp_color = '#ff4444'
-                _glow = 'text-shadow:0 0 8px rgba(255,68,68,0.8),1px 1px 3px black,-1px -1px 3px black;'
-            elif temp >= 32:
-                _pulse = 'animation:map-pulse 2s ease-in-out infinite;'
-                _temp_color = '#ff9f43'
-                _glow = 'text-shadow:0 0 6px rgba(255,159,67,0.6),1px 1px 3px black,-1px -1px 3px black;'
-            else:
-                _pulse = ''
-                _temp_color = '#ffffff'
-                _glow = ''
+                # 高温脉冲动画（>32℃）
+                if temp >= 35:
+                    _pulse = 'animation:map-pulse 1.5s ease-in-out infinite;'
+                    _temp_color = '#ff4444'
+                    _glow = 'text-shadow:0 0 8px rgba(255,68,68,0.8),1px 1px 3px black,-1px -1px 3px black;'
+                elif temp >= 32:
+                    _pulse = 'animation:map-pulse 2s ease-in-out infinite;'
+                    _temp_color = '#ff9f43'
+                    _glow = 'text-shadow:0 0 6px rgba(255,159,67,0.6),1px 1px 3px black,-1px -1px 3px black;'
+                else:
+                    _pulse = ''
+                    _temp_color = '#ffffff'
+                    _glow = ''
 
-            folium.Marker(location=[ctr[1],ctr[0]],icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
-                icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
+                folium.Marker(location=[ctr[1],ctr[0]],icon=folium.DivIcon(
+                    html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
+                    icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
-        st_folium(m,width="100%",height=384,returned_objects=[])
-        # 色阶图例
-        _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
-            <span>18℃</span>
-            <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
-            <span>40℃</span>
-        </div>'''
-        st.markdown(_legend_html, unsafe_allow_html=True)
-        avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
-        st.markdown(f'<span style="font-size:0.55rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+            st_folium(m,width="100%",height=384,returned_objects=[])
+            # 色阶图例
+            _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
+                <span>18℃</span>
+                <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
+                <span>40℃</span>
+            </div>'''
+            st.markdown(_legend_html, unsafe_allow_html=True)
+            avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
+            st.markdown(f'<span style="font-size:0.55rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
 
     # ----- 燃料价格 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-f">⛽ 燃料价格<span class="mod-sub">CCTD煤价 · SHPGX气价</span></div>', unsafe_allow_html=True)
-    if fuel_df.empty: st.warning("数据获取失败")
-    else:
-        from datetime import timedelta as _td
-        fuel_df = fuel_df.copy()
-        _cutoff = _now().replace(tzinfo=None) - _td(days=30)
-        fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
-        fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-f">⛽ 燃料价格<span class="mod-sub">CCTD煤价 · SHPGX气价</span></div>', unsafe_allow_html=True)
+        if fuel_df.empty: st.warning("数据获取失败")
+        else:
+            from datetime import timedelta as _td
+            fuel_df = fuel_df.copy()
+            _cutoff = _now().replace(tzinfo=None) - _td(days=30)
+            fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
+            fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
 
-        # 煤价
-        if "动力煤价格(元/吨)" in fuel_df.columns:
-            fig_coal=go.Figure()
-            fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
-                mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
+            # 煤价
+            if "动力煤价格(元/吨)" in fuel_df.columns:
+                fig_coal=go.Figure()
+                fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
+                    mode="lines+markers",marker=dict(size=3),
+                    line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-            fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
-            fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
-            # Y轴自适应
-            _coal_vals = fuel_df["动力煤价格(元/吨)"].dropna().tolist()
-            if _coal_vals:
-                _c_min, _c_max = min(_coal_vals), max(_coal_vals)
-                _c_pad = max((_c_max - _c_min) * 0.1, 5)
-                fig_coal.update_yaxes(range=[_c_min - _c_pad, _c_max + _c_pad])
-            # 最新值标注
-            _coal_last = fuel_df["动力煤价格(元/吨)"].iloc[-1]
-            _coal_last_x = fuel_df["日期标签"].iloc[-1]
-            fig_coal.add_annotation(x=_coal_last_x, y=_coal_last, text=f'{_coal_last:.0f}',
-                showarrow=False, font=dict(size=7, color="#ff9f43"),
-                bgcolor="rgba(255,255,255,0.7)", bordercolor="#ff9f43", borderwidth=0.5, borderpad=2,
-                xshift=15, yshift=8)
-            st.plotly_chart(fig_coal,use_container_width=True)
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
+                    title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
+                fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
+                # Y轴自适应
+                _coal_vals = fuel_df["动力煤价格(元/吨)"].dropna().tolist()
+                if _coal_vals:
+                    _c_min, _c_max = min(_coal_vals), max(_coal_vals)
+                    _c_pad = max((_c_max - _c_min) * 0.1, 5)
+                    fig_coal.update_yaxes(range=[_c_min - _c_pad, _c_max + _c_pad])
+                # 最新值标注
+                _coal_last = fuel_df["动力煤价格(元/吨)"].iloc[-1]
+                _coal_last_x = fuel_df["日期标签"].iloc[-1]
+                fig_coal.add_annotation(x=_coal_last_x, y=_coal_last, text=f'{_coal_last:.0f}',
+                    showarrow=False, font=dict(size=7, color="#ff9f43"),
+                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#ff9f43", borderwidth=0.5, borderpad=2,
+                    xshift=15, yshift=8)
+                st.plotly_chart(fig_coal,use_container_width=True)
 
-        # LNG气价
-        if "LNG出厂价(元/吨)" in fuel_df.columns:
-            fig_lng=go.Figure()
-            fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
-                mode="lines+markers",marker=dict(size=3),
-                line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
+            # LNG气价
+            if "LNG出厂价(元/吨)" in fuel_df.columns:
+                fig_lng=go.Figure()
+                fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
+                    mode="lines+markers",marker=dict(size=3),
+                    line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-            fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
-                hovermode="x unified",
-                margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
-            fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
-            # Y轴自适应
-            _lng_vals = fuel_df["LNG出厂价(元/吨)"].dropna().tolist()
-            if _lng_vals:
-                _l_min, _l_max = min(_lng_vals), max(_lng_vals)
-                _l_pad = max((_l_max - _l_min) * 0.1, 50)
-                fig_lng.update_yaxes(range=[_l_min - _l_pad, _l_max + _l_pad])
-            # 最新值标注
-            _lng_last = fuel_df["LNG出厂价(元/吨)"].iloc[-1]
-            _lng_last_x = fuel_df["日期标签"].iloc[-1]
-            fig_lng.add_annotation(x=_lng_last_x, y=_lng_last, text=f'{_lng_last:.0f}',
-                showarrow=False, font=dict(size=7, color="#54a0ff"),
-                bgcolor="rgba(255,255,255,0.7)", bordercolor="#54a0ff", borderwidth=0.5, borderpad=2,
-                xshift=15, yshift=8)
-            st.plotly_chart(fig_lng,use_container_width=True)
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
+                    title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
+                fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
+                # Y轴自适应
+                _lng_vals = fuel_df["LNG出厂价(元/吨)"].dropna().tolist()
+                if _lng_vals:
+                    _l_min, _l_max = min(_lng_vals), max(_lng_vals)
+                    _l_pad = max((_l_max - _l_min) * 0.1, 50)
+                    fig_lng.update_yaxes(range=[_l_min - _l_pad, _l_max + _l_pad])
+                # 最新值标注
+                _lng_last = fuel_df["LNG出厂价(元/吨)"].iloc[-1]
+                _lng_last_x = fuel_df["日期标签"].iloc[-1]
+                fig_lng.add_annotation(x=_lng_last_x, y=_lng_last, text=f'{_lng_last:.0f}',
+                    showarrow=False, font=dict(size=7, color="#54a0ff"),
+                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#54a0ff", borderwidth=0.5, borderpad=2,
+                    xshift=15, yshift=8)
+                st.plotly_chart(fig_lng,use_container_width=True)
 
-        # 数据源信息
-        _coal_src = fuel_summary.get("煤价来源", "CCTD")
-        _lng_src = fuel_summary.get("LNG来源", "SHPGX")
-        _fuel_src_html = f'<div style="display:flex;gap:12px;font-size:0.5rem;color:#999;margin-top:2px;"><span>煤价来源: {_coal_src}</span><span>LNG来源: {_lng_src}</span></div>'
-        st.markdown(_fuel_src_html, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+            # 数据源信息
+            _coal_src = fuel_summary.get("煤价来源", "CCTD")
+            _lng_src = fuel_summary.get("LNG来源", "SHPGX")
+            _fuel_src_html = f'<div style="display:flex;gap:12px;font-size:0.5rem;color:#999;margin-top:2px;"><span>煤价来源: {_coal_src}</span><span>LNG来源: {_lng_src}</span></div>'
+            st.markdown(_fuel_src_html, unsafe_allow_html=True)
 
 # ===== 第三列：电价分析 =====
 with col3:
     # ----- 电价分析 -----
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
 
-    # 信息披露文件上传
-    _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    if not os.path.exists(_disclosure_dir):
+        # 信息披露文件上传
         _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    os.makedirs(_disclosure_dir, exist_ok=True)
+        if not os.path.exists(_disclosure_dir):
+            _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        os.makedirs(_disclosure_dir, exist_ok=True)
 
-    # 同步逻辑变量初始化
-    _sync_clicked = False
+        # 同步逻辑变量初始化
+        _sync_clicked = False
 
-    # 同步逻辑（在按钮之后立即执行）
-    if _sync_clicked:
-        with st.spinner("同步中..."):
-            import subprocess
-            _repo = os.path.dirname(os.path.abspath(__file__))
-            _result = subprocess.run(
-                ["bash", os.path.join(_repo, "sync_data.sh")],
-                capture_output=True, text=True, cwd=_repo, timeout=60
-            )
-            if _result.returncode == 0:
-                st.toast("✅ 同步成功", icon="☁️")
-            else:
-                st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
+        # 同步逻辑（在按钮之后立即执行）
+        if _sync_clicked:
+            with st.spinner("同步中..."):
+                import subprocess
+                _repo = os.path.dirname(os.path.abspath(__file__))
+                _result = subprocess.run(
+                    ["bash", os.path.join(_repo, "sync_data.sh")],
+                    capture_output=True, text=True, cwd=_repo, timeout=60
+                )
+                if _result.returncode == 0:
+                    st.toast("✅ 同步成功", icon="☁️")
+                else:
+                    st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
 
-    # 加载实际电价和预测电价
-    _actual_path = _ACTUAL_PRICE_PATH
-    _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
-    _actual_df = pd.read_excel(_actual_path) if os.path.exists(_actual_path) else pd.DataFrame()
-    _forecast_df = pd.read_excel(_forecast_path) if os.path.exists(_forecast_path) else pd.DataFrame()
+        # 加载实际电价和预测电价
+        _actual_path = _ACTUAL_PRICE_PATH
+        _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
+        _actual_df = pd.read_excel(_actual_path) if os.path.exists(_actual_path) else pd.DataFrame()
+        _forecast_df = pd.read_excel(_forecast_path) if os.path.exists(_forecast_path) else pd.DataFrame()
 
-    _hour_cols = [f"{i}时" for i in range(24)]
-    if not _actual_df.empty:
-        _actual_df["_日期"] = pd.to_datetime(_actual_df["日期"]).dt.strftime("%Y-%m-%d")
-    if not _forecast_df.empty:
-        _forecast_df["_日期"] = pd.to_datetime(_forecast_df["日期"]).dt.strftime("%Y-%m-%d")
-
-    # 合并可用日期 + 模型预测日期
-    _actual_dates = set()
-    _all_dates = []
-    if not _actual_df.empty:
-        _actual_dates = set(_actual_df["_日期"].unique().tolist())
-        _all_dates += list(_actual_dates)
-    if not _forecast_df.empty:
-        _all_dates += _forecast_df["_日期"].unique().tolist()
-    # 添加今天和明天（模型可预测）
-    _today = _now().strftime("%Y-%m-%d")
-    _tomorrow = (_now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    for _d in [_today, _tomorrow]:
-        if _d not in _all_dates:
-            _all_dates.append(_d)
-    _all_dates = sorted(set(_all_dates), reverse=True)
-
-    # 日期中文标签映射
-    def _fmt_cn(d_str):
-        _dt = pd.to_datetime(d_str)
-        _wd = CN_WEEKDAYS.get(_dt.weekday(), "")
-        return f"{_dt.month}月{_dt.day}日 {_wd}"
-
-    _date_labels = {d: _fmt_cn(d) for d in _all_dates}
-    # 默认选中最近有实际数据的日期（而非今天）
-    _default_idx = 0
-    for _i, _d in enumerate(_all_dates):
-        if _d in _actual_dates:
-            _default_idx = _i
-            break
-
-    if _all_dates:
-        # 回调：selectbox 变化时立即更新 session_state
-        def _on_date_change():
-            _label = st.session_state["price_date_sel"]
-            _date_str = [d for d, lb in _date_labels.items() if lb == _label][0]
-            st.session_state["price_date_val"] = _date_str
-
-        # 日期选择器 + 同步按钮（同一行齐平）
-        st.markdown('<div style="font-size:0.7rem;color:#86868B;margin-bottom:2px;">选择日期</div>', unsafe_allow_html=True)
-        _col_date, _col_sync = st.columns([0.7, 0.3])
-        with _col_date:
-            sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
-                                      index=_default_idx, key="price_date_sel",
-                                      on_change=_on_date_change, label_visibility="collapsed")
-        with _col_sync:
-            _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
-
-        # 反查日期字符串
-        sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
-        st.session_state["price_date_val"] = sel_date
-
-        fig = go.Figure()
-        has_data = False
-
-        # 实际电价
+        _hour_cols = [f"{i}时" for i in range(24)]
         if not _actual_df.empty:
-            _act = _actual_df[_actual_df["_日期"] == sel_date]
-            if not _act.empty:
-                _row = _act.iloc[0]
-                _vals = [_row[h] for h in _hour_cols]
-                fig.add_trace(go.Scattergl(
-                    x=list(range(24)), y=_vals, name="实际电价",
-                    line=dict(color="#007bff", width=2),
-                    mode="lines+markers", marker=dict(size=5, color="#ffffff", line=dict(color="#007bff", width=1.5)),
-                    fill="tozeroy", fillcolor="rgba(0,123,255,0.1)"))
-                has_data = True
-                # 峰谷标注
-                _pk_idx = _vals.index(max(_vals))
-                _vl_idx = _vals.index(min(_vals))
-                _chart_annotation(fig, _pk_idx, max(_vals), f'{max(_vals):.0f}', '#dc3545', 'top center')
-                _chart_annotation(fig, _vl_idx, min(_vals), f'{min(_vals):.0f}', '#0D7A3F', 'bottom center')
-
-        # Excel预测电价（校准后）
+            _actual_df["_日期"] = pd.to_datetime(_actual_df["日期"]).dt.strftime("%Y-%m-%d")
         if not _forecast_df.empty:
-            _fc = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准后")]
-            if not _fc.empty:
-                _row = _fc.iloc[0]
-                _vals = [_row[h] for h in _hour_cols]
-                fig.add_trace(go.Scattergl(
-                    x=list(range(24)), y=_vals, name="预测(校准后)",
-                    line=dict(color="#ff6b6b", width=2, dash="dot"),
-                    mode="lines+markers", marker=dict(size=3)))
-                has_data = True
+            _forecast_df["_日期"] = pd.to_datetime(_forecast_df["日期"]).dt.strftime("%Y-%m-%d")
 
-            _fc2 = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准前")]
-            if not _fc2.empty:
-                _row = _fc2.iloc[0]
-                _vals = [_row[h] for h in _hour_cols]
-                fig.add_trace(go.Scattergl(
-                    x=list(range(24)), y=_vals, name="预测(校准前)",
-                    line=dict(color="#ffd93d", width=1.5, dash="dash"),
-                    mode="lines+markers", marker=dict(size=2)))
+        # 合并可用日期 + 模型预测日期
+        _actual_dates = set()
+        _all_dates = []
+        if not _actual_df.empty:
+            _actual_dates = set(_actual_df["_日期"].unique().tolist())
+            _all_dates += list(_actual_dates)
+        if not _forecast_df.empty:
+            _all_dates += _forecast_df["_日期"].unique().tolist()
+        # 添加今天和明天（模型可预测）
+        _today = _now().strftime("%Y-%m-%d")
+        _tomorrow = (_now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        for _d in [_today, _tomorrow]:
+            if _d not in _all_dates:
+                _all_dates.append(_d)
+        _all_dates = sorted(set(_all_dates), reverse=True)
 
-        # 模型实时预测（当选择的日期无实际/Excel预测数据时）
-        # 从 session_state 获取已保存的预测结果
-        _fc_key = f"forecast_{sel_date}"
-        _saved_fc = st.session_state.get(_fc_key)
+        # 日期中文标签映射
+        def _fmt_cn(d_str):
+            _dt = pd.to_datetime(d_str)
+            _wd = CN_WEEKDAYS.get(_dt.weekday(), "")
+            return f"{_dt.month}月{_dt.day}日 {_wd}"
 
-        # 缓存预加载：session_state 没有时尝试从文件加载
-        if _saved_fc is None:
-            _pred_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predictions")
-            _pred_file = os.path.join(_pred_dir, f"forecast_{sel_date}.csv")
-            if os.path.exists(_pred_file):
-                try:
-                    _cached_df = pd.read_csv(_pred_file)
-                    _saved_fc = {"result": _cached_df, "log": "（从本地缓存加载）"}
-                    st.session_state[_fc_key] = _saved_fc
-                except Exception:
-                    pass
+        _date_labels = {d: _fmt_cn(d) for d in _all_dates}
+        # 默认选中最近有实际数据的日期（而非今天）
+        _default_idx = 0
+        for _i, _d in enumerate(_all_dates):
+            if _d in _actual_dates:
+                _default_idx = _i
+                break
 
-        if not has_data and _saved_fc is not None:
-            # 已有预测结果，直接显示
-            _fc_result = _saved_fc["result"]
-            _fc_log = _saved_fc.get("log", "")
-            fig.add_trace(go.Scattergl(
-                x=_fc_result["小时"], y=_fc_result["预测电价(元/MWh)"],
-                name="日前电价预测", line=dict(color="#ff6b6b", width=2),
-                mode="lines+markers", marker=dict(size=4),
-                fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
-            has_data = True
+        if _all_dates:
+            # 回调：selectbox 变化时立即更新 session_state
+            def _on_date_change():
+                _label = st.session_state["price_date_sel"]
+                _date_str = [d for d, lb in _date_labels.items() if lb == _label][0]
+                st.session_state["price_date_val"] = _date_str
 
-        # 显示预测详情（无论新预测还是已保存）
-        if _saved_fc is not None:
-            _fc_result = _saved_fc["result"]
-            _fc_log = _saved_fc.get("log", "")
-            st.markdown("**📋 预测结果详情**")
-            _pc1, _pc2, _pc3, _pc4 = st.columns(4)
-            _avg = _fc_result["预测电价(元/MWh)"].mean()
-            _peak = _fc_result["预测电价(元/MWh)"].max()
-            _valley = _fc_result["预测电价(元/MWh)"].min()
-            _peak_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmax(), "小时"])
-            _valley_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmin(), "小时"])
-            with _pc1: st.metric("均价", f"{_avg:.0f} 元/MWh")
-            with _pc2: st.metric("峰值", f"{_peak:.0f}", f"{_peak_h}时")
-            with _pc3: st.metric("谷值", f"{_valley:.0f}", f"{_valley_h}时")
-            with _pc4: st.metric("峰谷差", f"{_peak - _valley:.0f}")
+            # 日期选择器 + 同步按钮（同一行齐平）
+            st.markdown('<div style="font-size:0.7rem;color:#86868B;margin-bottom:2px;">选择日期</div>', unsafe_allow_html=True)
+            _col_date, _col_sync = st.columns([0.7, 0.3])
+            with _col_date:
+                sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
+                                          index=_default_idx, key="price_date_sel",
+                                          on_change=_on_date_change, label_visibility="collapsed")
+            with _col_sync:
+                _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
 
-            with st.expander("📊 逐时预测明细", expanded=False):
-                _display_df = _fc_result.copy()
-                _display_df.columns = ["小时", "预测电价(元/MWh)", "日期"]
-                st.dataframe(_display_df, use_container_width=True, hide_index=True, height=120)
+            # 反查日期字符串
+            sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
+            st.session_state["price_date_val"] = sel_date
 
-            with st.expander("🔍 预测过程日志", expanded=False):
-                st.code(_fc_log if _fc_log else "无详细日志", language="text")
+            fig = go.Figure()
+            has_data = False
 
-        if has_data:
-            # 峰谷区间着色
-            _shapes = []
-            # 谷时 0-6: 蓝色
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=-0.5, x1=6.5, y0=0, y1=1, fillcolor="rgba(84,160,255,0.06)", line_width=0))
-            # 平时 7: 无色
-            # 峰时 8-12, 14-17: 浅红
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=7.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=13.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
-            # 尖峰 10-12, 15-17: 深红
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=9.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=14.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
-            # 晚间 18-23: 浅灰
-            _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
-
-            fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=210, template="neumorphic",
-                title=dict(text=f"日前电价曲线 - {sel_date}", font=dict(size=10, color="#000000")),
-                hovermode="x unified",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
-                margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
-                shapes=_shapes,
-                xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
-                yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#000000")))
-            # Y轴自适应
-            _all_y = []
-            for _tr in fig.data:
-                if _tr.y is not None:
-                    _all_y.extend([v for v in _tr.y if v is not None])
-            if _all_y:
-                _y_min, _y_max = min(_all_y), max(_all_y)
-                _y_pad = max((_y_max - _y_min) * 0.1, 10)
-                fig.update_yaxes(range=[_y_min - _y_pad, _y_max + _y_pad])
-            st.plotly_chart(fig, use_container_width=True)
-
-            # 指标行
+            # 实际电价
             if not _actual_df.empty:
                 _act = _actual_df[_actual_df["_日期"] == sel_date]
                 if not _act.empty:
-                    _vals = [_act.iloc[0][h] for h in _hour_cols]
-                    pk_h = _vals.index(max(_vals))
-                    vl_h = _vals.index(min(_vals))
-                    _avg_v = sum(_vals)/len(_vals)
-
-                    # 前一天数据（用于对比）
-                    _prev_day = _actual_df[_actual_df["_日期"] < sel_date].tail(1)
-                    _pk_arrow = ""; _vl_arrow = ""; _pk_price_arrow = ""; _avg_arrow = ""
-                    if not _prev_day.empty:
-                        _prev_vals = [_prev_day.iloc[0][h] for h in _hour_cols]
-                        _prev_pk_h = _prev_vals.index(max(_prev_vals))
-                        _prev_vl_h = _prev_vals.index(min(_prev_vals))
-                        _prev_avg = sum(_prev_vals)/len(_prev_vals)
-                        # 峰时箭头：后移↑ 前移↓
-                        if pk_h > _prev_pk_h:
-                            _pk_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
-                        elif pk_h < _prev_pk_h:
-                            _pk_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
-                        # 谷时箭头：后移↑ 前移↓
-                        if vl_h > _prev_vl_h:
-                            _vl_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
-                        elif vl_h < _prev_vl_h:
-                            _vl_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
-                        # 峰值价格箭头
-                        _pk_diff = max(_vals) - max(_prev_vals)
-                        if _pk_diff > 5:
-                            _pk_price_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
-                        elif _pk_diff < -5:
-                            _pk_price_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
-                        # 均价箭头
-                        _avg_arrow = ""
-                        _avg_diff = _avg_v - _prev_avg
-                        if _avg_diff > 5:
-                            _avg_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
-                        elif _avg_diff < -5:
-                            _avg_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
-
-                    _metrics_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;margin-top:2px;">
-                        <span>均价 <b style="color:#0D7A3F;font-size:0.75rem;">{_avg_v:.0f}</b> {_avg_arrow}</span>
-                        <span>峰 <b style="color:#dc3545;font-size:0.75rem;">{max(_vals):.0f}</b>{_pk_price_arrow} {pk_h}时{_pk_arrow}</span>
-                        <span>谷 <b style="color:#007bff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
-                    </div>'''
-                    st.markdown(_metrics_html, unsafe_allow_html=True)
-        else:
-            st.info(f"{sel_date} 无电价数据，请进行日前电价预测")
-    else:
-        st.warning("无电价数据文件")
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ============================================================
-    # 统调负荷预测（电价分析模块内）
-    # ============================================================
-    _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    if not os.path.exists(_disclosure_dir_load):
-        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
-    if os.path.exists(_load_fp):
-        try:
-            _load_sheets = [s for s in pd.ExcelFile(_load_fp).sheet_names if "负荷预测" in s]
-            if _load_sheets:
-                _load_df = pd.read_excel(_load_fp, sheet_name=_load_sheets[0], header=None, skiprows=1)
-                if len(_load_df) > 0:
-                    _load_row = _load_df.iloc[0]
-                    _load_values = _load_row[2:].tolist()
-                    # 96个点(15分钟) → 24小时
-                    if len(_load_values) == 96:
-                        _load_hourly = [_load_values[i*4] for i in range(24)]
-                    elif len(_load_values) == 24:
-                        _load_hourly = _load_values
-                    else:
-                        _load_hourly = _load_values[:24]
-
-                    _load_fig = go.Figure()
-
-                    # 统调实际负荷（虚线）
-                    _actual_load_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前实际")
-                    _actual_load_hourly = None
-                    # 尝试两种文件格式
-                    for _alfp in [
-                        os.path.join(_actual_load_dir, f"信息披露查询实际信息({sel_date}).xlsx"),
-                        os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls"),
-                    ]:
-                        if os.path.exists(_alfp):
-                            try:
-                                _actual_load_df = pd.read_excel(_alfp, header=None, skiprows=1)
-                                if len(_actual_load_df) > 0:
-                                    _actual_load_vals = [v for v in _actual_load_df.iloc[0, 1:].tolist() if isinstance(v, (int, float))]
-                                    if len(_actual_load_vals) >= 96:
-                                        _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
-                                    elif len(_actual_load_vals) >= 24:
-                                        _actual_load_hourly = _actual_load_vals[:24]
-                                    else:
-                                        _actual_load_hourly = None
-                                    break
-                            except Exception:
-                                pass
-                    if _actual_load_hourly:
-                        _load_fig.add_trace(go.Scatter(
-                            x=list(range(24)), y=_actual_load_hourly,
-                            name="统调实际负荷", mode="lines+markers",
-                            line=dict(color="#888888", width=1.5, dash="dot"),
-                            marker=dict(size=2),
-                        ))
-
-                    # 统调预测负荷（实线）
-                    _load_fig.add_trace(go.Scatter(
-                        x=list(range(24)), y=_load_hourly,
-                        name="统调预测负荷", mode="lines+markers",
-                        line=dict(color="#0D7A3F", width=2, shape="spline"),
-                        marker=dict(size=3),
-                        fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
-                    ))
+                    _row = _act.iloc[0]
+                    _vals = [_row[h] for h in _hour_cols]
+                    fig.add_trace(go.Scattergl(
+                        x=list(range(24)), y=_vals, name="实际电价",
+                        line=dict(color="#007bff", width=2),
+                        mode="lines+markers", marker=dict(size=5, color="#ffffff", line=dict(color="#007bff", width=1.5)),
+                        fill="tozeroy", fillcolor="rgba(0,123,255,0.1)"))
+                    has_data = True
                     # 峰谷标注
-                    _lk_idx = _load_hourly.index(max(_load_hourly))
-                    _lv_idx = _load_hourly.index(min(_load_hourly))
-                    _chart_annotation(_load_fig, _lk_idx, max(_load_hourly), f'{max(_load_hourly):.0f}', '#dc3545', 'top center')
-                    _chart_annotation(_load_fig, _lv_idx, min(_load_hourly), f'{min(_load_hourly):.0f}', '#0D7A3F', 'bottom center')
+                    _pk_idx = _vals.index(max(_vals))
+                    _vl_idx = _vals.index(min(_vals))
+                    _chart_annotation(fig, _pk_idx, max(_vals), f'{max(_vals):.0f}', '#dc3545', 'top center')
+                    _chart_annotation(fig, _vl_idx, min(_vals), f'{min(_vals):.0f}', '#0D7A3F', 'bottom center')
 
-                    _load_fig.update_layout(
-                        transition=dict(duration=500, easing="cubic-in-out"),
-                        height=150, template="neumorphic",
-                        title=dict(text=f"统调负荷 - {sel_date}", font=dict(size=10, color="#000000")),
-                        margin=dict(l=30, r=10, t=40, b=25),
-                        font=dict(size=7, color="#000000"),
-                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
-                        xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
-                        yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
-                    )
-                    # Y轴自适应
-                    _load_min_y = min(_load_hourly)
-                    _load_max_y = max(_load_hourly)
-                    _load_pad = max((_load_max_y - _load_min_y) * 0.1, 1000)
-                    _load_fig.update_yaxes(range=[_load_min_y - _load_pad, _load_max_y + _load_pad])
-                    st.plotly_chart(_load_fig, use_container_width=True)
+            # Excel预测电价（校准后）
+            if not _forecast_df.empty:
+                _fc = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准后")]
+                if not _fc.empty:
+                    _row = _fc.iloc[0]
+                    _vals = [_row[h] for h in _hour_cols]
+                    fig.add_trace(go.Scattergl(
+                        x=list(range(24)), y=_vals, name="预测(校准后)",
+                        line=dict(color="#ff6b6b", width=2, dash="dot"),
+                        mode="lines+markers", marker=dict(size=3)))
+                    has_data = True
 
-                    # 负荷指标
-                    _load_max = max(_load_hourly)
-                    _load_min = min(_load_hourly)
-                    _load_avg = sum(_load_hourly) / len(_load_hourly)
-                    _load_peak_h = _load_hourly.index(_load_max)
-                    _load_valley_h = _load_hourly.index(_load_min)
-                    _load_html = f'''<div style="display:flex;gap:16px;font-size:0.55rem;color:#666;margin-top:2px;">
-                        <span>峰值 <b style="color:#dc3545;font-size:0.7rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
-                        <span>谷值 <b style="color:#0D7A3F;font-size:0.7rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
-                        <span>峰谷差 <b style="color:#1a1a1a;font-size:0.7rem;">{_load_max-_load_min:.0f}</b> MW</span>
-                    </div>'''
-                    st.markdown(_load_html, unsafe_allow_html=True)
-        except Exception as e:
-            st.warning(f"负荷数据加载失败: {e}")
-    else:
-        st.info(f"{sel_date} 无负荷预测数据")
+                _fc2 = _forecast_df[(_forecast_df["_日期"] == sel_date) & (_forecast_df["模型"] == "校准前")]
+                if not _fc2.empty:
+                    _row = _fc2.iloc[0]
+                    _vals = [_row[h] for h in _hour_cols]
+                    fig.add_trace(go.Scattergl(
+                        x=list(range(24)), y=_vals, name="预测(校准前)",
+                        line=dict(color="#ffd93d", width=1.5, dash="dash"),
+                        mode="lines+markers", marker=dict(size=2)))
+
+            # 模型实时预测（当选择的日期无实际/Excel预测数据时）
+            # 从 session_state 获取已保存的预测结果
+            _fc_key = f"forecast_{sel_date}"
+            _saved_fc = st.session_state.get(_fc_key)
+
+            # 缓存预加载：session_state 没有时尝试从文件加载
+            if _saved_fc is None:
+                _pred_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predictions")
+                _pred_file = os.path.join(_pred_dir, f"forecast_{sel_date}.csv")
+                if os.path.exists(_pred_file):
+                    try:
+                        _cached_df = pd.read_csv(_pred_file)
+                        _saved_fc = {"result": _cached_df, "log": "（从本地缓存加载）"}
+                        st.session_state[_fc_key] = _saved_fc
+                    except Exception:
+                        pass
+
+            if not has_data and _saved_fc is not None:
+                # 已有预测结果，直接显示
+                _fc_result = _saved_fc["result"]
+                _fc_log = _saved_fc.get("log", "")
+                fig.add_trace(go.Scattergl(
+                    x=_fc_result["小时"], y=_fc_result["预测电价(元/MWh)"],
+                    name="日前电价预测", line=dict(color="#ff6b6b", width=2),
+                    mode="lines+markers", marker=dict(size=4),
+                    fill="tozeroy", fillcolor="rgba(255,107,107,0.1)"))
+                has_data = True
+
+            # 显示预测详情（无论新预测还是已保存）
+            if _saved_fc is not None:
+                _fc_result = _saved_fc["result"]
+                _fc_log = _saved_fc.get("log", "")
+                st.markdown("**📋 预测结果详情**")
+                _pc1, _pc2, _pc3, _pc4 = st.columns(4)
+                _avg = _fc_result["预测电价(元/MWh)"].mean()
+                _peak = _fc_result["预测电价(元/MWh)"].max()
+                _valley = _fc_result["预测电价(元/MWh)"].min()
+                _peak_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmax(), "小时"])
+                _valley_h = int(_fc_result.loc[_fc_result["预测电价(元/MWh)"].idxmin(), "小时"])
+                with _pc1: st.metric("均价", f"{_avg:.0f} 元/MWh")
+                with _pc2: st.metric("峰值", f"{_peak:.0f}", f"{_peak_h}时")
+                with _pc3: st.metric("谷值", f"{_valley:.0f}", f"{_valley_h}时")
+                with _pc4: st.metric("峰谷差", f"{_peak - _valley:.0f}")
+
+                with st.expander("📊 逐时预测明细", expanded=False):
+                    _display_df = _fc_result.copy()
+                    _display_df.columns = ["小时", "预测电价(元/MWh)", "日期"]
+                    st.dataframe(_display_df, use_container_width=True, hide_index=True, height=120)
+
+                with st.expander("🔍 预测过程日志", expanded=False):
+                    st.code(_fc_log if _fc_log else "无详细日志", language="text")
+
+            if has_data:
+                # 峰谷区间着色
+                _shapes = []
+                # 谷时 0-6: 蓝色
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=-0.5, x1=6.5, y0=0, y1=1, fillcolor="rgba(84,160,255,0.06)", line_width=0))
+                # 平时 7: 无色
+                # 峰时 8-12, 14-17: 浅红
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=7.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=13.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
+                # 尖峰 10-12, 15-17: 深红
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=9.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=14.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
+                # 晚间 18-23: 浅灰
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
+
+                fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=210, template="neumorphic",
+                    title=dict(text=f"日前电价曲线 - {sel_date}", font=dict(size=10, color="#000000")),
+                    hovermode="x unified",
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
+                    margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
+                    shapes=_shapes,
+                    xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
+                    yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#000000")))
+                # Y轴自适应
+                _all_y = []
+                for _tr in fig.data:
+                    if _tr.y is not None:
+                        _all_y.extend([v for v in _tr.y if v is not None])
+                if _all_y:
+                    _y_min, _y_max = min(_all_y), max(_all_y)
+                    _y_pad = max((_y_max - _y_min) * 0.1, 10)
+                    fig.update_yaxes(range=[_y_min - _y_pad, _y_max + _y_pad])
+                st.plotly_chart(fig, use_container_width=True)
+
+                # 指标行
+                if not _actual_df.empty:
+                    _act = _actual_df[_actual_df["_日期"] == sel_date]
+                    if not _act.empty:
+                        _vals = [_act.iloc[0][h] for h in _hour_cols]
+                        pk_h = _vals.index(max(_vals))
+                        vl_h = _vals.index(min(_vals))
+                        _avg_v = sum(_vals)/len(_vals)
+
+                        # 前一天数据（用于对比）
+                        _prev_day = _actual_df[_actual_df["_日期"] < sel_date].tail(1)
+                        _pk_arrow = ""; _vl_arrow = ""; _pk_price_arrow = ""; _avg_arrow = ""
+                        if not _prev_day.empty:
+                            _prev_vals = [_prev_day.iloc[0][h] for h in _hour_cols]
+                            _prev_pk_h = _prev_vals.index(max(_prev_vals))
+                            _prev_vl_h = _prev_vals.index(min(_prev_vals))
+                            _prev_avg = sum(_prev_vals)/len(_prev_vals)
+                            # 峰时箭头：后移↑ 前移↓
+                            if pk_h > _prev_pk_h:
+                                _pk_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                            elif pk_h < _prev_pk_h:
+                                _pk_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                            # 谷时箭头：后移↑ 前移↓
+                            if vl_h > _prev_vl_h:
+                                _vl_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                            elif vl_h < _prev_vl_h:
+                                _vl_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                            # 峰值价格箭头
+                            _pk_diff = max(_vals) - max(_prev_vals)
+                            if _pk_diff > 5:
+                                _pk_price_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                            elif _pk_diff < -5:
+                                _pk_price_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+                            # 均价箭头
+                            _avg_arrow = ""
+                            _avg_diff = _avg_v - _prev_avg
+                            if _avg_diff > 5:
+                                _avg_arrow = '<span style="color:#ff4757;font-size:0.5rem;">↑</span>'
+                            elif _avg_diff < -5:
+                                _avg_arrow = '<span style="color:#2ecc71;font-size:0.5rem;">↓</span>'
+
+                        _metrics_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;margin-top:2px;">
+                            <span>均价 <b style="color:#0D7A3F;font-size:0.75rem;">{_avg_v:.0f}</b> {_avg_arrow}</span>
+                            <span>峰 <b style="color:#dc3545;font-size:0.75rem;">{max(_vals):.0f}</b>{_pk_price_arrow} {pk_h}时{_pk_arrow}</span>
+                            <span>谷 <b style="color:#007bff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
+                        </div>'''
+                        st.markdown(_metrics_html, unsafe_allow_html=True)
+            else:
+                st.info(f"{sel_date} 无电价数据，请进行日前电价预测")
+        else:
+            st.warning("无电价数据文件")
+
+
+        # ============================================================
+        # 统调负荷预测（电价分析模块内）
+        # ============================================================
+        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        if not os.path.exists(_disclosure_dir_load):
+            _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+        _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
+        if os.path.exists(_load_fp):
+            try:
+                _load_sheets = [s for s in pd.ExcelFile(_load_fp).sheet_names if "负荷预测" in s]
+                if _load_sheets:
+                    _load_df = pd.read_excel(_load_fp, sheet_name=_load_sheets[0], header=None, skiprows=1)
+                    if len(_load_df) > 0:
+                        _load_row = _load_df.iloc[0]
+                        _load_values = _load_row[2:].tolist()
+                        # 96个点(15分钟) → 24小时
+                        if len(_load_values) == 96:
+                            _load_hourly = [_load_values[i*4] for i in range(24)]
+                        elif len(_load_values) == 24:
+                            _load_hourly = _load_values
+                        else:
+                            _load_hourly = _load_values[:24]
+
+                        _load_fig = go.Figure()
+
+                        # 统调实际负荷（虚线）
+                        _actual_load_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前实际")
+                        _actual_load_hourly = None
+                        # 尝试两种文件格式
+                        for _alfp in [
+                            os.path.join(_actual_load_dir, f"信息披露查询实际信息({sel_date}).xlsx"),
+                            os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls"),
+                        ]:
+                            if os.path.exists(_alfp):
+                                try:
+                                    _actual_load_df = pd.read_excel(_alfp, header=None, skiprows=1)
+                                    if len(_actual_load_df) > 0:
+                                        _actual_load_vals = [v for v in _actual_load_df.iloc[0, 1:].tolist() if isinstance(v, (int, float))]
+                                        if len(_actual_load_vals) >= 96:
+                                            _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
+                                        elif len(_actual_load_vals) >= 24:
+                                            _actual_load_hourly = _actual_load_vals[:24]
+                                        else:
+                                            _actual_load_hourly = None
+                                        break
+                                except Exception:
+                                    pass
+                        if _actual_load_hourly:
+                            _load_fig.add_trace(go.Scatter(
+                                x=list(range(24)), y=_actual_load_hourly,
+                                name="统调实际负荷", mode="lines+markers",
+                                line=dict(color="#888888", width=1.5, dash="dot"),
+                                marker=dict(size=2),
+                            ))
+
+                        # 统调预测负荷（实线）
+                        _load_fig.add_trace(go.Scatter(
+                            x=list(range(24)), y=_load_hourly,
+                            name="统调预测负荷", mode="lines+markers",
+                            line=dict(color="#0D7A3F", width=2, shape="spline"),
+                            marker=dict(size=3),
+                            fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
+                        ))
+                        # 峰谷标注
+                        _lk_idx = _load_hourly.index(max(_load_hourly))
+                        _lv_idx = _load_hourly.index(min(_load_hourly))
+                        _chart_annotation(_load_fig, _lk_idx, max(_load_hourly), f'{max(_load_hourly):.0f}', '#dc3545', 'top center')
+                        _chart_annotation(_load_fig, _lv_idx, min(_load_hourly), f'{min(_load_hourly):.0f}', '#0D7A3F', 'bottom center')
+
+                        _load_fig.update_layout(
+                            transition=dict(duration=500, easing="cubic-in-out"),
+                            height=150, template="neumorphic",
+                            title=dict(text=f"统调负荷 - {sel_date}", font=dict(size=10, color="#000000")),
+                            margin=dict(l=30, r=10, t=40, b=25),
+                            font=dict(size=7, color="#000000"),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
+                            xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
+                            yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
+                        )
+                        # Y轴自适应
+                        _load_min_y = min(_load_hourly)
+                        _load_max_y = max(_load_hourly)
+                        _load_pad = max((_load_max_y - _load_min_y) * 0.1, 1000)
+                        _load_fig.update_yaxes(range=[_load_min_y - _load_pad, _load_max_y + _load_pad])
+                        st.plotly_chart(_load_fig, use_container_width=True)
+
+                        # 负荷指标
+                        _load_max = max(_load_hourly)
+                        _load_min = min(_load_hourly)
+                        _load_avg = sum(_load_hourly) / len(_load_hourly)
+                        _load_peak_h = _load_hourly.index(_load_max)
+                        _load_valley_h = _load_hourly.index(_load_min)
+                        _load_html = f'''<div style="display:flex;gap:16px;font-size:0.55rem;color:#666;margin-top:2px;">
+                            <span>峰值 <b style="color:#dc3545;font-size:0.7rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
+                            <span>谷值 <b style="color:#0D7A3F;font-size:0.7rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
+                            <span>峰谷差 <b style="color:#1a1a1a;font-size:0.7rem;">{_load_max-_load_min:.0f}</b> MW</span>
+                        </div>'''
+                        st.markdown(_load_html, unsafe_allow_html=True)
+            except Exception as e:
+                st.warning(f"负荷数据加载失败: {e}")
+        else:
+            st.info(f"{sel_date} 无负荷预测数据")
 
     # ============================================================
     # 历史电价热力图（24h × 30d）
     # ============================================================
-    st.markdown('<div class="mod-card"><div class="mod-head mod-head-p">🔥 历史电价热力图<span class="mod-sub">近30天 · 24h×30d</span></div>', unsafe_allow_html=True)
-    _actual_path = _ACTUAL_PRICE_PATH
-    if os.path.exists(_actual_path):
-        try:
-            _heat_df = pd.read_excel(_actual_path)
-            _hour_cols = [f"{i}时" for i in range(24)]
-            # 日期列标准化
-            _heat_df["_date"] = pd.to_datetime(_heat_df["日期"], errors="coerce")
-            _heat_df = _heat_df.dropna(subset=["_date"]).sort_values("_date")
-            # 取最近30天
-            _heat_df = _heat_df.tail(30).copy()
-            _heat_df["_label"] = _heat_df["_date"].apply(lambda d: f"{d.month}月{d.day}日")
-            # 构建矩阵 (行=小时, 列=日期)
-            _z = _heat_df[_hour_cols].values.T.tolist()  # 24 × N
-            _x = _heat_df["_label"].tolist()
-            _y = [f"{i}时" for i in range(24)]
-            # 自定义色阶：绿(低)→黄→红(高)
-            _colorscale = [
-                [0.0, "#0D7A3F"],
-                [0.2, "#4CAF50"],
-                [0.4, "#8BC34A"],
-                [0.6, "#FFC107"],
-                [0.8, "#FF5722"],
-                [1.0, "#dc3545"],
-            ]
-            _heat_fig = go.Figure(data=go.Heatmap(
-                z=_z, x=_x, y=_y,
-                colorscale=_colorscale,
-                colorbar=dict(title=dict(text="元/MWh", font=dict(size=8, color="#000000")), tickfont=dict(size=7, color="#000000"), len=0.8, thickness=8),
-                hovertemplate="日期: %{x}<br时段: %{y}<br电价: %{z:.0f} 元/MWh<extra></extra>",
-            ))
+    with st.container(border=True):
+        st.markdown('<div class="mod-head mod-head-p">🔥 历史电价热力图<span class="mod-sub">近30天 · 24h×30d</span></div>', unsafe_allow_html=True)
+        _actual_path = _ACTUAL_PRICE_PATH
+        if os.path.exists(_actual_path):
+            try:
+                _heat_df = pd.read_excel(_actual_path)
+                _hour_cols = [f"{i}时" for i in range(24)]
+                # 日期列标准化
+                _heat_df["_date"] = pd.to_datetime(_heat_df["日期"], errors="coerce")
+                _heat_df = _heat_df.dropna(subset=["_date"]).sort_values("_date")
+                # 取最近30天
+                _heat_df = _heat_df.tail(30).copy()
+                _heat_df["_label"] = _heat_df["_date"].apply(lambda d: f"{d.month}月{d.day}日")
+                # 构建矩阵 (行=小时, 列=日期)
+                _z = _heat_df[_hour_cols].values.T.tolist()  # 24 × N
+                _x = _heat_df["_label"].tolist()
+                _y = [f"{i}时" for i in range(24)]
+                # 自定义色阶：绿(低)→黄→红(高)
+                _colorscale = [
+                    [0.0, "#0D7A3F"],
+                    [0.2, "#4CAF50"],
+                    [0.4, "#8BC34A"],
+                    [0.6, "#FFC107"],
+                    [0.8, "#FF5722"],
+                    [1.0, "#dc3545"],
+                ]
+                _heat_fig = go.Figure(data=go.Heatmap(
+                    z=_z, x=_x, y=_y,
+                    colorscale=_colorscale,
+                    colorbar=dict(title=dict(text="元/MWh", font=dict(size=8, color="#000000")), tickfont=dict(size=7, color="#000000"), len=0.8, thickness=8),
+                    hovertemplate="日期: %{x}<br时段: %{y}<br电价: %{z:.0f} 元/MWh<extra></extra>",
+                ))
 
-            # 当前时刻标记线
-            _now_hour = _now().hour
-            _now_label = f"{_now_hour}时"
-            if _now_label in _y:
-                _hour_idx = _y.index(_now_label)
-                _heat_fig.add_hline(y=_hour_idx, line_dash="dash", line_color="rgba(0,210,211,0.6)", line_width=1,
-                    annotation_text="当前", annotation_position="right",
-                    annotation_font=dict(color="#00d2d3", size=8))
+                # 当前时刻标记线
+                _now_hour = _now().hour
+                _now_label = f"{_now_hour}时"
+                if _now_label in _y:
+                    _hour_idx = _y.index(_now_label)
+                    _heat_fig.add_hline(y=_hour_idx, line_dash="dash", line_color="rgba(0,210,211,0.6)", line_width=1,
+                        annotation_text="当前", annotation_position="right",
+                        annotation_font=dict(color="#00d2d3", size=8))
 
-            # 今日标记线
-            _today_str = _now().strftime("%-m月%-d日")
-            for _xi, _xl in enumerate(_x):
-                if _today_str in _xl:
-                    _heat_fig.add_vline(x=_xi, line_dash="dash", line_color="rgba(0,210,211,0.4)", line_width=1)
-                    break
+                # 今日标记线
+                _today_str = _now().strftime("%-m月%-d日")
+                for _xi, _xl in enumerate(_x):
+                    if _today_str in _xl:
+                        _heat_fig.add_vline(x=_xi, line_dash="dash", line_color="rgba(0,210,211,0.4)", line_width=1)
+                        break
 
-            _heat_fig.update_layout(
-                height=200, template="neumorphic",
-                margin=dict(l=35, r=10, t=5, b=30),
-                font=dict(size=7, color="#000000"),
-                xaxis=dict( tickfont=dict(size=6, color="#000000"), side="bottom"),
-                yaxis=dict(tickfont=dict(size=6, color="#000000"), autorange="reversed"),
-            )
-            st.plotly_chart(_heat_fig, use_container_width=True)
-            # 底部统计
-            _all_vals = _np.array(_heat_df[_hour_cols].values, dtype=float).flatten()
-            _all_vals = _all_vals[~_np.isnan(_all_vals)]
-            if len(_all_vals) > 0:
-                st.markdown(f'<span style="font-size:0.55rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
-        except Exception as e:
-            st.warning(f"热力图数据加载失败: {e}")
-    else:
-        st.info("未找到日前节点电价.xlsx，无法生成热力图")
-    st.markdown('</div>', unsafe_allow_html=True)
+                _heat_fig.update_layout(
+                    height=200, template="neumorphic",
+                    margin=dict(l=35, r=10, t=5, b=30),
+                    font=dict(size=7, color="#000000"),
+                    xaxis=dict( tickfont=dict(size=6, color="#000000"), side="bottom"),
+                    yaxis=dict(tickfont=dict(size=6, color="#000000"), autorange="reversed"),
+                )
+                st.plotly_chart(_heat_fig, use_container_width=True)
+                # 底部统计
+                _all_vals = _np.array(_heat_df[_hour_cols].values, dtype=float).flatten()
+                _all_vals = _all_vals[~_np.isnan(_all_vals)]
+                if len(_all_vals) > 0:
+                    st.markdown(f'<span style="font-size:0.55rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
+            except Exception as e:
+                st.warning(f"热力图数据加载失败: {e}")
+        else:
+            st.info("未找到日前节点电价.xlsx，无法生成热力图")
