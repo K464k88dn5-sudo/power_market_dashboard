@@ -1569,3 +1569,18 @@ with col3:
                 st.warning(f"热力图数据加载失败: {e}")
         else:
             st.info("未找到日前节点电价.xlsx，无法生成热力图")
+
+# ============================================================
+# 页脚
+# ============================================================
+st.markdown("""
+<div style="margin-top:24px;padding:16px 0 8px;border-top:1px solid #e5e5e7;text-align:center;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;">
+        <span style="font-size:0.6rem;color:#888;">📊 数据来源: Open-Meteo · CCTD · SHPGX · 广东电力交易中心</span>
+        <span style="font-size:0.6rem;color:#888;">🔄 更新周期: 气象10分钟 · 燃料1小时 · 电价实时</span>
+    </div>
+    <div style="margin-top:8px;font-size:0.55rem;color:#aaa;">
+        © 2024-2026 电力市场多源数据监控大屏 v2.0 | Powered by Streamlit
+    </div>
+</div>
+""", unsafe_allow_html=True)
