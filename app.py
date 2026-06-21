@@ -51,7 +51,7 @@ st.markdown("""
         background: #F5F5F7 !important;
     }
     .block-container {
-        padding: 0.8rem 1.2rem !important;
+        padding: 0 1.2rem 0.8rem !important;
         max-width: 100% !important;
     }
 
@@ -154,7 +154,7 @@ st.markdown("""
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
         border: 1px solid #d8d8d8 !important;
         border-radius: 12px !important;
-        padding: 12px 12px 24px 12px !important;
+        padding: 12px 12px 20px 12px !important;
         margin-bottom: 12px !important;
         box-shadow: 
             0 1px 2px rgba(0,0,0,0.04),
@@ -212,9 +212,43 @@ st.markdown("""
     /* Streamlit 隐藏 */
     #MainMenu, footer { visibility: hidden; }
     .stSpinner, [data-testid="stStatusWidget"] { display: none !important; }
-    header[data-testid="stHeader"] { display: none !important; }
+    header[data-testid="stHeader"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
     [data-testid="stToolbar"] { display: none !important; }
     [data-testid="stDecoration"] { display: none !important; }
+    
+    /* 完全移除顶部间距 */
+    .stApp > header { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    section[data-testid="stMain"] { padding-top: 0 !important; margin-top: 0 !important; }
+    .stApp > div { padding-top: 0 !important; margin-top: 0 !important; }
+    div[data-testid="stAppViewContainer"] > section { padding-top: 0 !important; margin-top: 0 !important; }
+    div[data-testid="stAppViewContainer"] { padding-top: 0 !important; margin-top: 0 !important; }
+    div[data-testid="stHeader"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 隐藏侧边栏头部区域 */
+    [data-testid="stSidebarHeader"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    [data-testid="stLogoSpacer"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    [data-testid="stSidebarCollapseButton"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 隐藏侧边栏导航区域 */
+    [data-testid="stSidebarNav"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    [data-testid="stSidebarNavItems"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 移除侧边栏用户内容区域的padding */
+    [data-testid="stSidebarUserContent"] { padding-top: 0 !important; margin-top: 0 !important; }
+    
+    /* 隐藏刷新进度条和CSS样式块的容器 */
+    .refresh-bar-wrap { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 隐藏autorefresh iframe */
+    iframe[title*="autorefresh"] { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 隐藏包含autorefresh的容器 */
+    .st-key-auto_refresh { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 隐藏包含refresh-bar-wrap和CSS样式块的容器 */
+    .stElementContainer:has(.refresh-bar-wrap) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    .stElementContainer:has(.stMarkdownContainer style) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+    .stElementContainer:has(.stMarkdown style) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
 
     /* folium 地图 */
     .stFolium > iframe, .stFolium > div, .stFolium {
@@ -870,8 +904,8 @@ with col1:
                                       ("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃",""),
                                       ("实况湿度",f"{_cur_h:.0f}%",""),
                                       ("实况风速",f"{_cur_w:.1f}m/s","")]:
-                _sub_s = f'<span style="font-size:0.45rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
-                _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.5rem;color:#666">{_label}</div><div style="font-size:0.7rem;color:#1a1a1a">{_val}{_sub_s}</div></div>'
+                _sub_s = f'<span style="font-size:0.5rem;color:#888;margin-left:2px">{_sub}</span>' if _sub else ''
+                _wx_html += f'<div style="flex:1;text-align:center"><div style="font-size:0.6rem;color:#666">{_label}</div><div style="font-size:0.75rem;color:#1a1a1a">{_val}{_sub_s}</div></div>'
             _wx_html += '</div>'
             st.markdown(_wx_html, unsafe_allow_html=True)
 
@@ -881,12 +915,23 @@ with col1:
         _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
         _maint_data = parse_maintenance_from_disclosure(_price_date)
 
+        # 如果当前日期无数据，回退到最近可用日期
+        if not _maint_data["检修容量"] and _maint_data["机组检修"].empty and _maint_data["输变电检修"].empty:
+            _disclosure_dir_fallback = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+            if os.path.exists(_disclosure_dir_fallback):
+                _avail_files = sorted([f.replace("信息披露查询预测信息(","").replace(").xlsx","") 
+                                       for f in os.listdir(_disclosure_dir_fallback) 
+                                       if f.startswith("信息披露查询预测信息(") and f.endswith(").xlsx")])
+                if _avail_files:
+                    _price_date = _avail_files[-1]
+                    _maint_data = parse_maintenance_from_disclosure(_price_date)
+
         # 数据来源日期（橙色）+ 检修容量（紧凑两行）
         st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
         if _maint_data["检修容量"]:
             _cap = _maint_data["检修容量"]
             st.markdown(
-                f'<div style="display:flex;gap:8px;margin-bottom:2px;">'
+                f'<div style="display:flex;gap:8px;margin:1px 0 3px 0;">'
                 f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
                 f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
                 f'</div>', unsafe_allow_html=True)
@@ -913,7 +958,6 @@ with col1:
             # 单表格：表头sticky + 表体滚动
             body_height = max_height - 20
             html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
-            html += '<style>tbody tr:hover td{background:rgba(13,122,63,0.12)!important;transition:background 0.2s ease}</style>'
 
             if scroll and row_count > 3:
                 html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
@@ -941,12 +985,13 @@ with col1:
             return html
 
         if not _mach.empty:
-            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-            st.markdown(_df_to_dark_html(_mach, 150, col_widths=["30%", "15%", "15%", "20%", "20%"]), unsafe_allow_html=True)
+            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;margin-bottom:-1px;display:block">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
+            st.markdown(_df_to_dark_html(_mach, 175, col_widths=["30%", "15%", "15%", "20%", "20%"]), unsafe_allow_html=True)
 
         if not _line.empty:
             st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
-            st.markdown(_df_to_dark_html(_line, 140), unsafe_allow_html=True)
+            st.markdown(_df_to_dark_html(_line, 190), unsafe_allow_html=True)
+            st.markdown('<div style="height:1px"></div>', unsafe_allow_html=True)
 
         if _mach.empty and _line.empty and not _maint_data["检修容量"]:
             st.info(f"{_price_date} 无检修数据，请先上传披露文件")
@@ -1042,7 +1087,9 @@ with col2:
                     html=f'<div style="font-size:10px;font-weight:bold;color:#fff;text-align:center;text-shadow:1px 1px 3px black,-1px -1px 3px black,1px -1px 3px black,-1px 1px 3px black;{_glow}{_pulse}">{nm}<br><span style="font-size:12px;color:{_temp_color}">{temp:.0f}℃</span></div>',
                     icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
-            st_folium(m,width="100%",height=384,returned_objects=[])
+            # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
+            _map_height = 380
+            st_folium(m,width="100%",height=_map_height,returned_objects=[])
             # 色阶图例
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
                 <span>18℃</span>
@@ -1051,7 +1098,7 @@ with col2:
             </div>'''
             st.markdown(_legend_html, unsafe_allow_html=True)
             avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
-            st.markdown(f'<span style="font-size:0.55rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
+            st.markdown(f'<span style="font-size:0.6rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
 
     # ----- 燃料价格 -----
     with st.container(border=True):
@@ -1071,7 +1118,7 @@ with col2:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=123,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
@@ -1098,7 +1145,7 @@ with col2:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=110,template="neumorphic",showlegend=False,
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=123,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
@@ -1121,7 +1168,7 @@ with col2:
             # 数据源信息
             _coal_src = fuel_summary.get("煤价来源", "CCTD")
             _lng_src = fuel_summary.get("LNG来源", "SHPGX")
-            _fuel_src_html = f'<div style="display:flex;gap:12px;font-size:0.5rem;color:#999;margin-top:2px;"><span>煤价来源: {_coal_src}</span><span>LNG来源: {_lng_src}</span></div>'
+            _fuel_src_html = f'<span style="font-size:0.6rem;color:#666">煤价来源: **{_coal_src}** | LNG来源: **{_lng_src}**</span>'
             st.markdown(_fuel_src_html, unsafe_allow_html=True)
 
 # ===== 第三列：电价分析 =====
@@ -1420,6 +1467,18 @@ with col3:
                         else:
                             _load_hourly = _load_values[:24]
 
+                        # 省内B类电源（Row 3）
+                        _b_load_hourly = None
+                        if len(_load_df) > 2:
+                            _b_load_row = _load_df.iloc[2]
+                            _b_load_values = _b_load_row[2:].tolist()
+                            if len(_b_load_values) == 96:
+                                _b_load_hourly = [_b_load_values[i*4] for i in range(24)]
+                            elif len(_b_load_values) == 24:
+                                _b_load_hourly = _b_load_values
+                            else:
+                                _b_load_hourly = _b_load_values[:24]
+
                         _load_fig = go.Figure()
 
                         # 统调实际负荷（虚线）
@@ -1460,6 +1519,21 @@ with col3:
                             marker=dict(size=3),
                             fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
                         ))
+
+                        # 省内B类电源负荷
+                        if _b_load_hourly:
+                            _load_fig.add_trace(go.Scatter(
+                                x=list(range(24)), y=_b_load_hourly,
+                                name="省内B类电源", mode="lines+markers",
+                                line=dict(color="#ff9f43", width=1.5, shape="spline"),
+                                marker=dict(size=2),
+                            ))
+                            # B类电源峰谷标注
+                            _b_max_idx = _b_load_hourly.index(max(_b_load_hourly))
+                            _b_min_idx = _b_load_hourly.index(min(_b_load_hourly))
+                            _chart_annotation(_load_fig, _b_max_idx, max(_b_load_hourly), f'{max(_b_load_hourly):.0f}', '#ff9f43', 'top center')
+                            _chart_annotation(_load_fig, _b_min_idx, min(_b_load_hourly), f'{min(_b_load_hourly):.0f}', '#ff9f43', 'bottom center')
+
                         # 峰谷标注
                         _lk_idx = _load_hourly.index(max(_load_hourly))
                         _lv_idx = _load_hourly.index(min(_load_hourly))
@@ -1469,7 +1543,7 @@ with col3:
                         _load_fig.update_layout(
                             transition=dict(duration=500, easing="cubic-in-out"),
                             height=150, template="neumorphic",
-                            title=dict(text=f"统调负荷 - {sel_date}", font=dict(size=10, color="#000000")),
+                            title=dict(text=f"预测负荷曲线 - {sel_date}", font=dict(size=10, color="#000000")),
                             margin=dict(l=30, r=10, t=40, b=25),
                             font=dict(size=7, color="#000000"),
                             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
@@ -1477,8 +1551,9 @@ with col3:
                             yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
                         )
                         # Y轴自适应
-                        _load_min_y = min(_load_hourly)
-                        _load_max_y = max(_load_hourly)
+                        _all_load_vals = _load_hourly + (_b_load_hourly if _b_load_hourly else [])
+                        _load_min_y = min(_all_load_vals)
+                        _load_max_y = max(_all_load_vals)
                         _load_pad = max((_load_max_y - _load_min_y) * 0.1, 1000)
                         _load_fig.update_yaxes(range=[_load_min_y - _load_pad, _load_max_y + _load_pad])
                         st.plotly_chart(_load_fig, use_container_width=True)
@@ -1489,10 +1564,10 @@ with col3:
                         _load_avg = sum(_load_hourly) / len(_load_hourly)
                         _load_peak_h = _load_hourly.index(_load_max)
                         _load_valley_h = _load_hourly.index(_load_min)
-                        _load_html = f'''<div style="display:flex;gap:16px;font-size:0.55rem;color:#666;margin-top:2px;">
-                            <span>峰值 <b style="color:#dc3545;font-size:0.7rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
-                            <span>谷值 <b style="color:#0D7A3F;font-size:0.7rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
-                            <span>峰谷差 <b style="color:#1a1a1a;font-size:0.7rem;">{_load_max-_load_min:.0f}</b> MW</span>
+                        _load_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;color:#666;margin-top:2px;">
+                            <span>峰值 <b style="color:#dc3545;font-size:0.75rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
+                            <span>谷值 <b style="color:#0D7A3F;font-size:0.75rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
+                            <span>峰谷差 <b style="color:#1a1a1a;font-size:0.75rem;">{_load_max-_load_min:.0f}</b> MW</span>
                         </div>'''
                         st.markdown(_load_html, unsafe_allow_html=True)
             except Exception as e:
@@ -1564,7 +1639,7 @@ with col3:
                 _all_vals = _np.array(_heat_df[_hour_cols].values, dtype=float).flatten()
                 _all_vals = _all_vals[~_np.isnan(_all_vals)]
                 if len(_all_vals) > 0:
-                    st.markdown(f'<span style="font-size:0.55rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
+                    st.markdown(f'<span style="font-size:0.6rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
             except Exception as e:
                 st.warning(f"热力图数据加载失败: {e}")
         else:
