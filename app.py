@@ -1217,20 +1217,6 @@ with col3:
         # 同步逻辑变量初始化
         _sync_clicked = False
 
-        # 同步逻辑（在按钮之后立即执行）
-        if _sync_clicked:
-            with st.spinner("同步中..."):
-                import subprocess
-                _repo = os.path.dirname(os.path.abspath(__file__))
-                _result = subprocess.run(
-                    ["bash", os.path.join(_repo, "sync_data.sh")],
-                    capture_output=True, text=True, cwd=_repo, timeout=60
-                )
-                if _result.returncode == 0:
-                    st.toast("✅ 同步成功", icon="☁️")
-                else:
-                    st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
-
         # 加载实际电价和预测电价
         _actual_path = _ACTUAL_PRICE_PATH
         _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
@@ -1289,6 +1275,20 @@ with col3:
                                           on_change=_on_date_change, label_visibility="collapsed")
             with _col_sync:
                 _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
+
+            # 同步逻辑（按钮点击后执行）
+            if _sync_clicked:
+                with st.spinner("同步中..."):
+                    import subprocess
+                    _repo = os.path.dirname(os.path.abspath(__file__))
+                    _result = subprocess.run(
+                        ["bash", os.path.join(_repo, "sync_data.sh")],
+                        capture_output=True, text=True, cwd=_repo, timeout=60
+                    )
+                    if _result.returncode == 0:
+                        st.toast("✅ 同步成功", icon="☁️")
+                    else:
+                        st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
 
             # 反查日期字符串
             sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
@@ -1404,6 +1404,7 @@ with col3:
                 _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
 
                 fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=210, template="neumorphic",
+                    showlegend=True,
                     title=dict(text=f"日前电价曲线 - {sel_date}", font=dict(size=10, color="#000000")),
                     hovermode="x unified",
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
