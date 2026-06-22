@@ -262,6 +262,15 @@ st.markdown("""
     .stFolium iframe {
         background: transparent !important;
     }
+    /* 隐藏iframe内的缩放控件 */
+    .stFolium iframe {
+        overflow: hidden !important;
+    }
+    .stFolium iframe .leaflet-control-zoom,
+    .stFolium iframe .leaflet-control-attribution {
+        display: none !important;
+        visibility: hidden !important;
+    }
     /* 地图卡片背景透明，保留边框和阴影 */
     .mod-card-map {
         background: transparent !important;
@@ -1082,11 +1091,25 @@ with col2:
                     to { opacity: 1; transform: scale(1); }
                 }
             </style>
+            <script>
+                // 延迟移除zoom控件
+                setTimeout(function() {
+                    var zoomControls = document.querySelectorAll('.leaflet-control-zoom');
+                    zoomControls.forEach(function(el) { el.remove(); });
+                    var attributions = document.querySelectorAll('.leaflet-control-attribution');
+                    attributions.forEach(function(el) { el.remove(); });
+                }, 500);
+            </script>
             """
             m.get_root().html.add_child(folium.Element(dark_css))
             # 自适应窗口：计算边界 + padding
             _bounds = [[min(lats),min(lons)],[max(lats),max(lons)]]
             m.fit_bounds(_bounds, padding=(30, 20))
+
+            # 移除zoom控件
+            for key in list(m._children.keys()):
+                if 'zoom' in str(type(m._children[key])).lower():
+                    del m._children[key]
 
             folium.GeoJson(gd_temp,
                 style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
