@@ -57,6 +57,7 @@ st.markdown("""
 
     /* 标题栏 - 简洁科技风 */
     .dash-header {
+        margin-top: 6px;
         background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,242,245,0.95) 100%);
         border: 1px solid #E5E5EA;
         border-radius: 14px;
@@ -254,16 +255,26 @@ st.markdown("""
     .stElementContainer:has(.stMarkdownContainer style) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
     .stElementContainer:has(.stMarkdown style) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
 
-    /* folium 地图 */
-    .stFolium > iframe, .stFolium > div, .stFolium {
+    /* folium 地图 — 全面覆盖所有wrapper */
+    .stFolium, .stFolium > iframe, .stFolium > div,
+    [data-testid="stFolium"], [data-testid="stFolium"] > div,
+    [data-testid="stFolium"] > iframe,
+    iframe[src*="st_folium"], iframe[src*="st_folium"] + div,
+    iframe[src*="streamlit_folium"] {
         background: transparent !important;
         border-radius: 14px;
+        overflow: hidden !important;
     }
-    .stFolium iframe {
-        background: transparent !important;
+    /* 隐藏iframe外层所有sibling元素（folium组件常在iframe后追加div） */
+    iframe[src*="streamlit_folium"] ~ * {
+        display: none !important;
+        height: 0 !important;
+        width: 0 !important;
     }
-    /* 隐藏iframe内的缩放控件 */
-    .stFolium iframe {
+    /* 隐藏iframe内所有控件 */
+    .stFolium iframe,
+    [data-testid="stFolium"] iframe,
+    iframe[src*="streamlit_folium"] {
         overflow: hidden !important;
     }
     .stFolium iframe .leaflet-control-zoom,
@@ -304,7 +315,8 @@ st.markdown("""
     }
     .mod-card { animation: fade-in-up 0.25s cubic-bezier(0.25,0.1,0.25,1) backwards; }
     .kpi-card { animation: fade-in-up 0.25s cubic-bezier(0.25,0.1,0.25,1) backwards; }
-    .dash-header { animation: fade-in-up 0.15s cubic-bezier(0.25,0.1,0.25,1) backwards; }
+    .dash-header {
+        margin-top: 6px; animation: fade-in-up 0.15s cubic-bezier(0.25,0.1,0.25,1) backwards; }
     .kpi-card:nth-child(1) { animation-delay: 0.05s; }
     .kpi-card:nth-child(2) { animation-delay: 0.08s; }
     .kpi-card:nth-child(3) { animation-delay: 0.11s; }
@@ -390,7 +402,8 @@ st.markdown("""
         .kpi-bar { flex-direction: column; gap: 0.3rem; }
         .kpi-card { width: 100%; }
         .kpi-sparkline { display: none; }
-        .dash-header { flex-direction: column; gap: 3px; padding: 0.4rem 0.6rem; }
+        .dash-header {
+        margin-top: 6px; flex-direction: column; gap: 3px; padding: 0.4rem 0.6rem; }
         .dash-title { font-size: 0.85rem; }
         .dash-time { font-size: 0.5rem; position: static; text-align: center; }
     }
