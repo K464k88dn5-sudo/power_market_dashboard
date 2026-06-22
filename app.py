@@ -1657,7 +1657,7 @@ with col3:
 
                 _heat_fig.update_layout(
                     height=200, template="neumorphic",
-                    margin=dict(l=35, r=10, t=5, b=30),
+                    margin=dict(l=35, r=10, t=5, b=50),
                     font=dict(size=7, color="#000000"),
                     xaxis=dict( tickfont=dict(size=6, color="#000000"), side="bottom"),
                     yaxis=dict(tickfont=dict(size=6, color="#000000"), autorange="reversed"),
