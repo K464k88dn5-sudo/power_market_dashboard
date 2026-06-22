@@ -1065,6 +1065,9 @@ with col2:
                     transition: transform 0.3s ease-out;
                 }
                 .leaflet-tile { transition: opacity 0.3s ease; }
+                /* 隐藏右下角控件 */
+                .leaflet-control-attribution { display: none !important; }
+                .leaflet-control-zoom { display: none !important; }
                 /* 高温脉冲动画 */
                 @keyframes map-pulse {
                     0%, 100% { transform: scale(1); opacity: 1; }
