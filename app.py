@@ -959,7 +959,7 @@ with col1:
         if _maint_data["检修容量"]:
             _cap = _maint_data["检修容量"]
             st.markdown(
-                f'<div style="display:flex;gap:8px;margin:1px 0 3px 0;">'
+                f'<div style="display:flex;gap:8px;margin:2px 0 3px 0;">'
                 f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
                 f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
                 f'</div>', unsafe_allow_html=True)
@@ -1052,7 +1052,7 @@ with col2:
             for feat in GD_GEOJSON["features"]: ext(feat["geometry"]["coordinates"])
             lons=[c[0] for c in all_c]; lats=[c[1] for c in all_c]
 
-            m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,
+            m = folium.Map(tiles="CartoDB positron",control_scale=False,prefer_canvas=True,zoom_control=False,
                            attr=" ", max_zoom=10)
 
             # 注入浅色背景CSS到地图内部（作用于iframe内）
@@ -1066,7 +1066,7 @@ with col2:
                 }
                 .leaflet-tile { transition: opacity 0.3s ease; }
                 /* 隐藏右下角控件 */
-                .leaflet-control-attribution { display: none !important; }
+                .leaflet-control-attribution { display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; overflow: hidden !important; }
                 .leaflet-control-zoom { display: none !important; }
                 /* 高温脉冲动画 */
                 @keyframes map-pulse {
