@@ -36,10 +36,10 @@ if [ -f "广东日前电价预测.xlsx" ]; then
     fi
 fi
 
-# 3. 同步检修数据（最近14天）
+# 3. 同步检修数据（最近14天 + 明天，覆盖D+1预测）
 mkdir -p disclosure
-for i in $(seq 0 13); do
-    D=$(date -v-${i}d '+%Y-%m-%d')
+for i in $(seq -1 13); do
+    D=$(date -v+${i}d '+%Y-%m-%d')
     SRC="$SRC_DISCLOSURE/信息披露查询预测信息($D).xlsx"
     DST="disclosure/信息披露查询预测信息($D).xlsx"
     if [ -f "$SRC" ]; then
