@@ -14,7 +14,7 @@ cd "$REPO_DIR" || exit 1
 
 CHANGED=false
 
-# 1. 同步电价数据
+# 1. 同步电价数据（只读源文件 → 仓库）
 for f in "日前节点电价.xlsx"; do
     SRC="$SRC_PRICE/$f"
     if [ -f "$SRC" ]; then
@@ -27,11 +27,9 @@ for f in "日前节点电价.xlsx"; do
     fi
 done
 
-# 2. 同步预测电价（如有）
-PRED="$SRC_PRICE/广东日前电价预测.xlsx"
-if [ -f "$PRED" ]; then
-    if [ ! -f "广东日前电价预测.xlsx" ] || ! cmp -s "$PRED" "广东日前电价预测.xlsx"; then
-        cp "$PRED" "广东日前电价预测.xlsx"
+# 2. 同步预测电价（仓库内文件，直接add）
+if [ -f "广东日前电价预测.xlsx" ]; then
+    if ! git diff --quiet "广东日前电价预测.xlsx" 2>/dev/null; then
         git add "广东日前电价预测.xlsx"
         CHANGED=true
         echo "[$(date '+%H:%M:%S')] 更新: 广东日前电价预测.xlsx" >> "$LOG_FILE"
