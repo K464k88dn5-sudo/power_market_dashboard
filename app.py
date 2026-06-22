@@ -1068,7 +1068,6 @@ with col2:
             dark_css = """
             <style>
                 body, .leaflet-container { background: transparent !important; }
-                .leaflet-control-zoom a { background: #ffffff !important; color: #666 !important; border-color: #e5e5e7 !important; }
                 /* 平滑缩放过渡 */
                 .leaflet-zoom-anim .leaflet-zoom-animated {
                     transition: transform 0.3s ease-out;
@@ -1092,13 +1091,27 @@ with col2:
                 }
             </style>
             <script>
-                // 延迟移除zoom控件
-                setTimeout(function() {
+                // 强制移除所有控件
+                function removeControls() {
+                    // 移除zoom控件
                     var zoomControls = document.querySelectorAll('.leaflet-control-zoom');
                     zoomControls.forEach(function(el) { el.remove(); });
+                    // 移除attribution控件
                     var attributions = document.querySelectorAll('.leaflet-control-attribution');
                     attributions.forEach(function(el) { el.remove(); });
-                }, 500);
+                    // 移除所有control容器
+                    var controlContainers = document.querySelectorAll('.leaflet-control-container');
+                    controlContainers.forEach(function(el) { el.remove(); });
+                }
+                // 立即执行
+                removeControls();
+                // 延迟执行（确保DOM完全加载）
+                setTimeout(removeControls, 100);
+                setTimeout(removeControls, 500);
+                setTimeout(removeControls, 1000);
+                // 监听DOM变化
+                var observer = new MutationObserver(removeControls);
+                observer.observe(document.body, { childList: true, subtree: true });
             </script>
             """
             m.get_root().html.add_child(folium.Element(dark_css))
