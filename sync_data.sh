@@ -2,22 +2,24 @@
 # ============================================================
 # 电力市场数据自动同步到 GitHub
 # 用法: ./sync_data.sh
-# 定时: launchd 每天 09:00 自动执行
 # ============================================================
 
 REPO_DIR="/Users/duchaochao/Desktop/power_market_dashboard"
 LOG_FILE="$REPO_DIR/sync_data.log"
-SRC_DISCLOSURE="$HOME/Desktop/能源电力资料/日前训练数据/信息披露日前"
+SRC_PRICE="$HOME/projects/能源电力资料/日前训练数据"
+SRC_DISCLOSURE="$SRC_PRICE/信息披露日前"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 开始同步..." >> "$LOG_FILE"
 cd "$REPO_DIR" || exit 1
 
 CHANGED=false
 
-# 1. 同步电价数据文件
-for f in "日前节点电价.xlsx" "广东日前电价预测.xlsx"; do
-    if [ -f "$f" ]; then
-        if ! git diff --quiet "$f" 2>/dev/null; then
+# 1. 同步电价数据
+for f in "日前节点电价.xlsx"; do
+    SRC="$SRC_PRICE/$f"
+    if [ -f "$SRC" ]; then
+        if [ ! -f "$f" ] || ! cmp -s "$SRC" "$f"; then
+            cp "$SRC" "$f"
             git add "$f"
             CHANGED=true
             echo "[$(date '+%H:%M:%S')] 更新: $f" >> "$LOG_FILE"
@@ -25,9 +27,20 @@ for f in "日前节点电价.xlsx" "广东日前电价预测.xlsx"; do
     fi
 done
 
-# 2. 同步检修数据（复制最近7天到仓库 disclosure/ 目录）
+# 2. 同步预测电价（如有）
+PRED="$SRC_PRICE/广东日前电价预测.xlsx"
+if [ -f "$PRED" ]; then
+    if [ ! -f "广东日前电价预测.xlsx" ] || ! cmp -s "$PRED" "广东日前电价预测.xlsx"; then
+        cp "$PRED" "广东日前电价预测.xlsx"
+        git add "广东日前电价预测.xlsx"
+        CHANGED=true
+        echo "[$(date '+%H:%M:%S')] 更新: 广东日前电价预测.xlsx" >> "$LOG_FILE"
+    fi
+fi
+
+# 3. 同步检修数据（最近14天）
 mkdir -p disclosure
-for i in $(seq 0 6); do
+for i in $(seq 0 13); do
     D=$(date -v-${i}d '+%Y-%m-%d')
     SRC="$SRC_DISCLOSURE/信息披露查询预测信息($D).xlsx"
     DST="disclosure/信息披露查询预测信息($D).xlsx"
@@ -41,7 +54,7 @@ for i in $(seq 0 6); do
     fi
 done
 
-# 3. 推送
+# 4. 推送
 if [ "$CHANGED" = true ]; then
     DATE_STR=$(date '+%Y-%m-%d')
     git commit -m "data: ${DATE_STR} 更新电价+检修数据"
