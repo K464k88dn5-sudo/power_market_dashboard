@@ -24,7 +24,7 @@ from data_sources import (
     save_maintenance_template, calculate_security_margin,
     generate_guangdong_price_template,
 )
-from data_sources.fuel_api import build_fuel_display_data, get_fuel_latest_summary
+from data_sources.fuel_manager import build_fuel_display_data, get_fuel_latest_summary
 
 # ============================================================
 # 页面配置 & 自动刷新
@@ -137,7 +137,7 @@ st.markdown("""
     /* 模块卡片 */
     .mod-card {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-        border: 1px solid #d8d8d8;
+        border: 1px solid #ffffff;
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
@@ -150,9 +150,13 @@ st.markdown("""
     }
 
     /* st.container(border=True) 复用 mod-card 样式 */
+    [data-testid="stVerticalBlockBorderWrapper"],
+    .stVerticalBlock[style*="border"],
+    .stVerticalBlock {
+        border-color: #ffffff !important;
+    }
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
-        border: 1px solid #d8d8d8 !important;
         border-radius: 12px !important;
         padding: 12px 12px 20px 12px !important;
         margin-bottom: 12px !important;
@@ -463,7 +467,9 @@ def cached_all_cities_temp():
     return fetch_all_cities_current()
 
 @st.cache_data(ttl=3600)
-def cached_fuel(days): return build_fuel_display_data(days)
+def cached_fuel(days):
+    """获取燃料价格数据，带缓存和备用方案"""
+    return build_fuel_display_data(days)
 @st.cache_data(ttl=3600)
 def cached_fuel_summary(): return get_fuel_latest_summary()
 @st.cache_data(ttl=900)
@@ -562,6 +568,28 @@ with st.sidebar:
 
     st.markdown("---")
     maint_file = st.file_uploader("🔧 导入检修Excel", type=["xlsx","xls","csv"])
+    
+    # 燃料价格手动更新
+    st.markdown("---")
+    st.markdown("### ⛽ 燃料价格手动更新")
+    fuel_date = st.date_input("日期", value=datetime.now())
+    coal_price = st.number_input("煤价 (元/吨)", value=863, min_value=0, max_value=2000)
+    lng_price = st.number_input("LNG出厂价 (元/吨)", value=6200, min_value=0, max_value=10000)
+    
+    if st.button("💾 更新燃料价格", use_container_width=True):
+        from data_sources.fuel_manager import update_manual_coal_price, update_manual_lng_price
+        date_str = fuel_date.strftime("%Y-%m-%d")
+        
+        coal_ok = update_manual_coal_price(date_str, coal_price)
+        lng_ok = update_manual_lng_price(date_str, lng_price)
+        
+        if coal_ok and lng_ok:
+            st.success(f"✅ 燃料价格已更新: 煤价{coal_price}元/吨, LNG{lng_price}元/吨")
+            st.cache_data.clear()
+            st.rerun()
+        else:
+            st.error("❌ 更新失败")
+    
     if st.button("🔄 刷新全部", use_container_width=True):
         st.cache_data.clear(); st.rerun()
     st.caption(f"⏱ {_now().strftime('%H:%M:%S')}")
