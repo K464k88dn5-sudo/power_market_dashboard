@@ -1170,6 +1170,41 @@ with col2:
             # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
             _map_height = 380
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
+            # 修复公网streamlit-folium wrapper白色背景
+            st.markdown('''
+            <script>
+            (function() {
+                function fixFoliumBg() {
+                    // 找到folium iframe
+                    var iframes = document.querySelectorAll('iframe[src*="streamlit_folium"]');
+                    iframes.forEach(function(iframe) {
+                        // 遍历父级元素，全部设为透明
+                        var el = iframe;
+                        for (var i = 0; i < 10; i++) {
+                            el = el.parentElement;
+                            if (!el) break;
+                            el.style.background = 'transparent';
+                            el.style.backgroundColor = 'transparent';
+                            // 隐藏兄弟元素（可能是空白div）
+                            var siblings = el.parentElement ? el.parentElement.children : [];
+                            for (var j = 0; j < siblings.length; j++) {
+                                if (siblings[j] !== el && siblings[j].tagName === 'DIV') {
+                                    var cs = window.getComputedStyle(siblings[j]);
+                                    if (cs.width === '0px' || cs.height === '0px' ||
+                                        siblings[j].children.length === 0) {
+                                        siblings[j].style.display = 'none';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                fixFoliumBg();
+                setTimeout(fixFoliumBg, 500);
+                setTimeout(fixFoliumBg, 1500);
+            })();
+            </script>
+            ''' + 
             # 色阶图例
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
                 <span>18℃</span>
