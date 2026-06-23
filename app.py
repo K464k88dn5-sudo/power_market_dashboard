@@ -1175,17 +1175,14 @@ with col2:
             <script>
             (function() {
                 function fixFoliumBg() {
-                    // 找到folium iframe
                     var iframes = document.querySelectorAll('iframe[src*="streamlit_folium"]');
                     iframes.forEach(function(iframe) {
-                        // 遍历父级元素，全部设为透明
                         var el = iframe;
                         for (var i = 0; i < 10; i++) {
                             el = el.parentElement;
                             if (!el) break;
                             el.style.background = 'transparent';
                             el.style.backgroundColor = 'transparent';
-                            // 隐藏兄弟元素（可能是空白div）
                             var siblings = el.parentElement ? el.parentElement.children : [];
                             for (var j = 0; j < siblings.length; j++) {
                                 if (siblings[j] !== el && siblings[j].tagName === 'DIV') {
@@ -1204,7 +1201,7 @@ with col2:
                 setTimeout(fixFoliumBg, 1500);
             })();
             </script>
-            ''' + 
+            ''', unsafe_allow_html=True)
             # 色阶图例
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
                 <span>18℃</span>
