@@ -1168,10 +1168,14 @@ with col2:
                     icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
             # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
-            _map_height = 380
+            _map_height = 370
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
-            # 修复公网streamlit-folium wrapper白色背景
-            st.markdown('''
+            # 色阶图例 + 修复公网白色背景JS
+            _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
+                <span>18℃</span>
+                <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
+                <span>40℃</span>
+            </div>
             <script>
             (function() {
                 function fixFoliumBg() {
@@ -1200,14 +1204,7 @@ with col2:
                 setTimeout(fixFoliumBg, 500);
                 setTimeout(fixFoliumBg, 1500);
             })();
-            </script>
-            ''', unsafe_allow_html=True)
-            # 色阶图例
-            _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
-                <span>18℃</span>
-                <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
-                <span>40℃</span>
-            </div>'''
+            </script>'''
             st.markdown(_legend_html, unsafe_allow_html=True)
             avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
             st.markdown(f'<span style="font-size:0.6rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
@@ -1230,7 +1227,7 @@ with col2:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=123,template="neumorphic",showlegend=False,
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=128,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
@@ -1257,7 +1254,7 @@ with col2:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=123,template="neumorphic",showlegend=False,
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=128,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
