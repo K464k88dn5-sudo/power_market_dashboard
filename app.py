@@ -55,6 +55,41 @@ st.markdown("""
         max-width: 100% !important;
     }
 
+    /* 隐藏侧边栏导航，改为顶部显示 */
+    [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+    section[data-testid="stSidebar"] {
+        display: none !important;
+    }
+    /* 自定义顶部导航栏 */
+    .top-nav {
+        display: flex;
+        gap: 8px;
+        padding: 6px 0;
+        margin-bottom: 8px;
+    }
+    .top-nav a {
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        color: #1D1D1F;
+        text-decoration: none;
+        background: rgba(255,255,255,0.8);
+        border: 1px solid #E5E5EA;
+        transition: all 0.2s;
+    }
+    .top-nav a:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .top-nav a.active {
+        background: #0D7A3F;
+        color: white;
+        border-color: #0D7A3F;
+    }
+
     /* 标题栏 - 简洁科技风 */
     .dash-header {
         margin-top: 6px;
@@ -686,8 +721,13 @@ if os.path.exists(_logo_path):
 else:
     _logo_html = ''
 
-# 标题栏（先渲染，状态栏数值后续更新）
-st.markdown(f'<div class="dash-header">{_logo_html}<span class="dash-title">电力市场多源数据监控大屏</span><span class="dash-time">气象:{sw} 燃料:{sf} 电价:{sp} | {_now().strftime("%Y-%m-%d %H:%M")}</span></div>', unsafe_allow_html=True)
+# 注入共享样式
+from styles import inject_styles
+inject_styles()
+
+# 标题栏和导航栏（使用共享模块）
+from header_nav import render_header_nav
+render_header_nav("电力大屏")
 
 # ============================================================
 # KPI 行（实时数据）
@@ -850,7 +890,7 @@ st.markdown(kpi, unsafe_allow_html=True)
 # ============================================================
 col1, col2, col3 = st.columns(3)
 
-# ===== 第一列：气象监测 + 检修计划 =====
+# ===== 第一列：气象监测 + 燃料价格 =====
 with col1:
     # ----- 气象监测 -----
     with st.container(border=True):
@@ -937,6 +977,12 @@ with col1:
                     margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                     title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
                 fig4.update_xaxes(tickfont=dict(size=6, color="#000000"))
+                # Y轴自适应
+                _hum_vals = agg["湿度"].dropna().tolist() if "湿度" in agg.columns else []
+                if _hum_vals:
+                    _h_min, _h_max = min(_hum_vals), max(_hum_vals)
+                    _h_pad = max((_h_max - _h_min) * 0.15, 2)
+                    fig4.update_yaxes(range=[max(0, _h_min - _h_pad), min(100, _h_max + _h_pad)])
                 st.plotly_chart(fig4,use_container_width=True)
 
             _obs = _fco(selected_city)
@@ -959,95 +1005,79 @@ with col1:
             _wx_html += '</div>'
             st.markdown(_wx_html, unsafe_allow_html=True)
 
-    # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
+    # ----- 燃料价格 -----
     with st.container(border=True):
-        st.markdown('<div class="mod-head mod-head-m">🔧 检修计划<span class="mod-sub">信息披露 · 机组+输变电</span></div>', unsafe_allow_html=True)
-        _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
-        _maint_data = parse_maintenance_from_disclosure(_price_date)
+        st.markdown('<div class="mod-head mod-head-f">⛽ 燃料价格<span class="mod-sub">CCTD煤价 · SHPGX气价</span></div>', unsafe_allow_html=True)
+        if fuel_df.empty: st.warning("数据获取失败")
+        else:
+            from datetime import timedelta as _td
+            fuel_df = fuel_df.copy()
+            _cutoff = _now().replace(tzinfo=None) - _td(days=30)
+            fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
+            fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
 
-        # 如果当前日期无数据，回退到最近可用日期
-        if not _maint_data["检修容量"] and _maint_data["机组检修"].empty and _maint_data["输变电检修"].empty:
-            _disclosure_dir_fallback = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-            if os.path.exists(_disclosure_dir_fallback):
-                _avail_files = sorted([f.replace("信息披露查询预测信息(","").replace(").xlsx","") 
-                                       for f in os.listdir(_disclosure_dir_fallback) 
-                                       if f.startswith("信息披露查询预测信息(") and f.endswith(").xlsx")])
-                if _avail_files:
-                    _price_date = _avail_files[-1]
-                    _maint_data = parse_maintenance_from_disclosure(_price_date)
+            # 煤价
+            if "动力煤价格(元/吨)" in fuel_df.columns:
+                fig_coal=go.Figure()
+                fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
+                    mode="lines+markers",marker=dict(size=3),
+                    line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-        # 数据来源日期（橙色）+ 检修容量（紧凑两行）
-        st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
-        if _maint_data["检修容量"]:
-            _cap = _maint_data["检修容量"]
-            st.markdown(
-                f'<div style="display:flex;gap:8px;margin:2px 0 3px 0;">'
-                f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
-                f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
-                f'</div>', unsafe_allow_html=True)
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=120,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
+                    title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
+                fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
+                # Y轴自适应
+                _coal_vals = fuel_df["动力煤价格(元/吨)"].dropna().tolist()
+                if _coal_vals:
+                    _c_min, _c_max = min(_coal_vals), max(_coal_vals)
+                    _c_pad = max((_c_max - _c_min) * 0.1, 5)
+                    fig_coal.update_yaxes(range=[_c_min - _c_pad, _c_max + _c_pad])
+                # 最新值标注
+                _coal_last = fuel_df["动力煤价格(元/吨)"].iloc[-1]
+                _coal_last_x = fuel_df["日期标签"].iloc[-1]
+                fig_coal.add_annotation(x=_coal_last_x, y=_coal_last, text=f'{_coal_last:.0f}',
+                    showarrow=False, font=dict(size=7, color="#ff9f43"),
+                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#ff9f43", borderwidth=0.5, borderpad=2,
+                    xshift=15, yshift=8)
+                st.plotly_chart(fig_coal,use_container_width=True)
 
-        _mach = _maint_data.get("机组检修", pd.DataFrame())
-        _line = _maint_data.get("输变电检修", pd.DataFrame())
+            # LNG气价
+            if "LNG出厂价(元/吨)" in fuel_df.columns:
+                fig_lng=go.Figure()
+                fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
+                    mode="lines+markers",marker=dict(size=3),
+                    line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-        # 表格深色主题样式（HTML表格，循环滚动展示）
-        def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
-            """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-            th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
-            td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=120,template="neumorphic",showlegend=False,
+                    hovermode="x unified",
+                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
+                    title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
+                fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
+                # Y轴自适应
+                _lng_vals = fuel_df["LNG出厂价(元/吨)"].dropna().tolist()
+                if _lng_vals:
+                    _l_min, _l_max = min(_lng_vals), max(_lng_vals)
+                    _l_pad = max((_l_max - _l_min) * 0.1, 50)
+                    fig_lng.update_yaxes(range=[_l_min - _l_pad, _l_max + _l_pad])
+                # 最新值标注
+                _lng_last = fuel_df["LNG出厂价(元/吨)"].iloc[-1]
+                _lng_last_x = fuel_df["日期标签"].iloc[-1]
+                fig_lng.add_annotation(x=_lng_last_x, y=_lng_last, text=f'{_lng_last:.0f}',
+                    showarrow=False, font=dict(size=7, color="#54a0ff"),
+                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#54a0ff", borderwidth=0.5, borderpad=2,
+                    xshift=15, yshift=8)
+                st.plotly_chart(fig_lng,use_container_width=True)
 
-            row_count = len(df)
-            anim_duration = max(row_count * 3, 10)
-
-            # 计算列宽比例
-            col_count = len(df.columns)
-            if col_widths:
-                widths = col_widths
-            else:
-                widths = [f'{100/col_count:.1f}%'] * col_count
-
-            # 单表格：表头sticky + 表体滚动
-            body_height = max_height - 20
-            html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
-
-            if scroll and row_count > 3:
-                html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
-
-            html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><thead><tr>'
-            for i, col in enumerate(df.columns):
-                w = widths[i] if i < len(widths) else widths[-1]
-                html += f'<th style="{th_style}width:{w};">{col}</th>'
-            html += '</tr></thead><tbody>'
-
-            for _, row in df.iterrows():
-                _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
-                html += f'<tr style="{_row_bg}">'
-                for i, val in enumerate(row):
-                    w = widths[i] if i < len(widths) else widths[-1]
-                    html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
-                html += '</tr>'
-
-            html += '</tbody></table>'
-
-            if scroll and row_count > 3:
-                html += '</div>'
-
-            html += '</div>'
-            return html
-
-        if not _mach.empty:
-            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;margin-bottom:-1px;display:block">🔩 机组检修（{len(_mach)}台）</span>', unsafe_allow_html=True)
-            st.markdown(_df_to_dark_html(_mach, 175, col_widths=["30%", "15%", "15%", "20%", "20%"]), unsafe_allow_html=True)
-
-        if not _line.empty:
-            st.markdown(f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43">⚡ 输变电检修（{len(_line)}条）</span>', unsafe_allow_html=True)
-            st.markdown(_df_to_dark_html(_line, 190), unsafe_allow_html=True)
-            st.markdown('<div style="height:1px"></div>', unsafe_allow_html=True)
-
-        if _mach.empty and _line.empty and not _maint_data["检修容量"]:
-            st.info(f"{_price_date} 无检修数据，请先上传披露文件")
+            # 数据源信息
+            _coal_src = fuel_summary.get("煤价来源", "CCTD")
+            _lng_src = fuel_summary.get("LNG来源", "SHPGX")
+            _fuel_src_html = f'<span style="font-size:0.6rem;color:#666">煤价来源: **{_coal_src}** | LNG来源: **{_lng_src}**</span>'
+            st.markdown(_fuel_src_html, unsafe_allow_html=True)
 
 
-# ===== 第二列：广东地图 + 燃料价格 =====
+# ===== 第二列：广东地图 + 检修计划 =====
 with col2:
     # ----- 广东地图 -----
     with st.container(border=True):
@@ -1168,7 +1198,7 @@ with col2:
                     icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
             # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
-            _map_height = 370
+            _map_height = 330
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
             # 色阶图例 + 修复公网白色背景JS
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
@@ -1209,82 +1239,105 @@ with col2:
             avg_t=city_temps["温度"].mean(); mx=city_temps.loc[city_temps["温度"].idxmax()]; mn=city_temps.loc[city_temps["温度"].idxmin()]
             st.markdown(f'<span style="font-size:0.6rem;color:#666">均温**{avg_t:.1f}℃** | 最高{mx["城市"]}**{mx["温度"]:.1f}℃** | 最低{mn["城市"]}**{mn["温度"]:.1f}℃**</span>', unsafe_allow_html=True)
 
-    # ----- 燃料价格 -----
+
+    # ----- 检修计划（来自披露文件，日期与电价模块联动）-----
     with st.container(border=True):
-        st.markdown('<div class="mod-head mod-head-f">⛽ 燃料价格<span class="mod-sub">CCTD煤价 · SHPGX气价</span></div>', unsafe_allow_html=True)
-        if fuel_df.empty: st.warning("数据获取失败")
-        else:
-            from datetime import timedelta as _td
-            fuel_df = fuel_df.copy()
-            _cutoff = _now().replace(tzinfo=None) - _td(days=30)
-            fuel_df = fuel_df[fuel_df["日期"] >= _cutoff].copy()
-            fuel_df["日期标签"] = fuel_df["日期"].apply(fmt_date_short)
+        st.markdown('<div class="mod-head mod-head-m">🔧 检修计划<span class="mod-sub">信息披露 · 机组+输变电</span></div>', unsafe_allow_html=True)
+        _price_date = st.session_state.get("price_date_val", datetime.now().strftime("%Y-%m-%d"))
+        _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-            # 煤价
-            if "动力煤价格(元/吨)" in fuel_df.columns:
-                fig_coal=go.Figure()
-                fig_coal.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["动力煤价格(元/吨)"],
-                    mode="lines+markers",marker=dict(size=3),
-                    line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
+        # 如果当前日期无数据，回退到最近可用日期
+        if not _maint_data["检修容量"] and _maint_data["机组检修"].empty and _maint_data["输变电检修"].empty:
+            _disclosure_dir_fallback = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+            if os.path.exists(_disclosure_dir_fallback):
+                _avail_files = sorted([f.replace("信息披露查询预测信息(","").replace(").xlsx","") 
+                                       for f in os.listdir(_disclosure_dir_fallback) 
+                                       if f.startswith("信息披露查询预测信息(") and f.endswith(").xlsx")])
+                if _avail_files:
+                    _price_date = _avail_files[-1]
+                    _maint_data = parse_maintenance_from_disclosure(_price_date)
 
-                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=128,template="neumorphic",showlegend=False,
-                    hovermode="x unified",
-                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                    title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
-                fig_coal.update_xaxes(tickfont=dict(size=7, color="#000000"))
-                # Y轴自适应
-                _coal_vals = fuel_df["动力煤价格(元/吨)"].dropna().tolist()
-                if _coal_vals:
-                    _c_min, _c_max = min(_coal_vals), max(_coal_vals)
-                    _c_pad = max((_c_max - _c_min) * 0.1, 5)
-                    fig_coal.update_yaxes(range=[_c_min - _c_pad, _c_max + _c_pad])
-                # 最新值标注
-                _coal_last = fuel_df["动力煤价格(元/吨)"].iloc[-1]
-                _coal_last_x = fuel_df["日期标签"].iloc[-1]
-                fig_coal.add_annotation(x=_coal_last_x, y=_coal_last, text=f'{_coal_last:.0f}',
-                    showarrow=False, font=dict(size=7, color="#ff9f43"),
-                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#ff9f43", borderwidth=0.5, borderpad=2,
-                    xshift=15, yshift=8)
-                st.plotly_chart(fig_coal,use_container_width=True)
+        # 数据来源日期（橙色）+ 检修容量（紧凑两行）
+        st.markdown(f'<div style="font-size:0.6rem;color:#ff9f43;font-weight:bold;margin-bottom:2px">📅 数据日期：{_price_date}</div>', unsafe_allow_html=True)
+        if _maint_data["检修容量"]:
+            _cap = _maint_data["检修容量"]
+            st.markdown(
+                f'<div style="display:flex;gap:8px;margin:2px 0 3px 0;">'
+                f'<span style="font-size:0.6rem;color:#666">总检修容量 <b style="color:#1a1a1a">{_cap["总容量"]:.0f}</b> MW</span>'
+                f'<span style="font-size:0.6rem;color:#666">市场机组 <b style="color:#1a1a1a">{_cap["市场机组容量"]:.0f}</b> MW</span>'
+                f'</div>', unsafe_allow_html=True)
 
-            # LNG气价
-            if "LNG出厂价(元/吨)" in fuel_df.columns:
-                fig_lng=go.Figure()
-                fig_lng.add_trace(go.Scatter(x=fuel_df["日期标签"],y=fuel_df["LNG出厂价(元/吨)"],
-                    mode="lines+markers",marker=dict(size=3),
-                    line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
+        _mach = _maint_data.get("机组检修", pd.DataFrame())
+        _line = _maint_data.get("输变电检修", pd.DataFrame())
 
-                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=128,template="neumorphic",showlegend=False,
-                    hovermode="x unified",
-                    margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
-                    title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
-                fig_lng.update_xaxes(tickfont=dict(size=7, color="#000000"))
-                # Y轴自适应
-                _lng_vals = fuel_df["LNG出厂价(元/吨)"].dropna().tolist()
-                if _lng_vals:
-                    _l_min, _l_max = min(_lng_vals), max(_lng_vals)
-                    _l_pad = max((_l_max - _l_min) * 0.1, 50)
-                    fig_lng.update_yaxes(range=[_l_min - _l_pad, _l_max + _l_pad])
-                # 最新值标注
-                _lng_last = fuel_df["LNG出厂价(元/吨)"].iloc[-1]
-                _lng_last_x = fuel_df["日期标签"].iloc[-1]
-                fig_lng.add_annotation(x=_lng_last_x, y=_lng_last, text=f'{_lng_last:.0f}',
-                    showarrow=False, font=dict(size=7, color="#54a0ff"),
-                    bgcolor="rgba(255,255,255,0.7)", bordercolor="#54a0ff", borderwidth=0.5, borderpad=2,
-                    xshift=15, yshift=8)
-                st.plotly_chart(fig_lng,use_container_width=True)
+        # 表格深色主题样式（HTML表格，循环滚动展示）
+        def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
+            """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
+            th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
+            td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
 
-            # 数据源信息
-            _coal_src = fuel_summary.get("煤价来源", "CCTD")
-            _lng_src = fuel_summary.get("LNG来源", "SHPGX")
-            _fuel_src_html = f'<span style="font-size:0.6rem;color:#666">煤价来源: **{_coal_src}** | LNG来源: **{_lng_src}**</span>'
-            st.markdown(_fuel_src_html, unsafe_allow_html=True)
+            row_count = len(df)
+            anim_duration = max(row_count * 3, 10)
 
-# ===== 第三列：电价分析 =====
+            # 计算列宽比例
+            col_count = len(df.columns)
+            if col_widths:
+                widths = col_widths
+            else:
+                widths = [f'{100/col_count:.1f}%'] * col_count
+
+            # 单表格：表头sticky + 表体滚动
+            body_height = max_height - 20
+            html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
+
+            if scroll and row_count > 3:
+                html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'
+
+            html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;"><thead><tr>'
+            for i, col in enumerate(df.columns):
+                w = widths[i] if i < len(widths) else widths[-1]
+                html += f'<th style="{th_style}width:{w};">{col}</th>'
+            html += '</tr></thead><tbody>'
+
+            for _, row in df.iterrows():
+                _row_bg = '' if _ % 2 == 0 else 'background:#f8f9fa;'
+                html += f'<tr style="{_row_bg}">'
+                for i, val in enumerate(row):
+                    w = widths[i] if i < len(widths) else widths[-1]
+                    html += f'<td style="{td_style}width:{w};{_row_bg}">{val}</td>'
+                html += '</tr>'
+
+            html += '</tbody></table>'
+
+            if scroll and row_count > 3:
+                html += '</div>'
+
+            html += '</div>'
+            return html
+
+        if not _mach.empty:
+            _mach_html = f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;display:block;margin-bottom:2px;">🔩 机组检修（{len(_mach)}台）</span>'
+            _mach_html += _df_to_dark_html(_mach, 175, col_widths=["30%", "15%", "15%", "20%", "20%"])
+            st.markdown(_mach_html, unsafe_allow_html=True)
+
+        if not _line.empty:
+            _line_html = f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;display:block;margin-bottom:2px;">⚡ 输变电检修（{len(_line)}条）</span>'
+            _line_html += _df_to_dark_html(_line, 180)
+            st.markdown(_line_html, unsafe_allow_html=True)
+            st.markdown('<div style="height:1px"></div>', unsafe_allow_html=True)
+
+        if _mach.empty and _line.empty and not _maint_data["检修容量"]:
+            st.info(f"{_price_date} 无检修数据，请先上传披露文件")
+
+
+# ============================================================
+
+
+# ===== 第三列：电价数据 =====
 with col3:
     # ----- 电价分析 -----
     with st.container(border=True):
-        st.markdown('<div class="mod-head mod-head-p">📊 电价分析<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="mod-head mod-head-p">📊 电价数据<span class="mod-sub">实际+预测 · 统调负荷</span></div>', unsafe_allow_html=True)
 
         # 信息披露文件上传
         _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
@@ -1344,29 +1397,11 @@ with col3:
                 _date_str = [d for d, lb in _date_labels.items() if lb == _label][0]
                 st.session_state["price_date_val"] = _date_str
 
-            # 日期选择器 + 同步按钮（同一行齐平）
+            # 日期选择器
             st.markdown('<div style="font-size:0.7rem;color:#86868B;margin-bottom:2px;">选择日期</div>', unsafe_allow_html=True)
-            _col_date, _col_sync = st.columns([0.7, 0.3])
-            with _col_date:
-                sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
-                                          index=_default_idx, key="price_date_sel",
-                                          on_change=_on_date_change, label_visibility="collapsed")
-            with _col_sync:
-                _sync_clicked = st.button("☁️ 同步公网", key="sync_btn", help="同步数据到公网 GitHub", use_container_width=True)
-
-            # 同步逻辑（按钮点击后执行）
-            if _sync_clicked:
-                with st.spinner("同步中..."):
-                    import subprocess
-                    _repo = os.path.dirname(os.path.abspath(__file__))
-                    _result = subprocess.run(
-                        ["bash", os.path.join(_repo, "sync_data.sh")],
-                        capture_output=True, text=True, cwd=_repo, timeout=60
-                    )
-                    if _result.returncode == 0:
-                        st.toast("✅ 同步成功", icon="☁️")
-                    else:
-                        st.toast(f"❌ 同步失败: {_result.stderr[:100]}", icon="⚠️")
+            sel_label = st.selectbox("选择日期", [_date_labels[d] for d in _all_dates],
+                                      index=_default_idx, key="price_date_sel",
+                                      on_change=_on_date_change, label_visibility="collapsed")
 
             # 反查日期字符串
             sel_date = [d for d, lb in _date_labels.items() if lb == sel_label][0]
@@ -1548,214 +1583,177 @@ with col3:
                             <span>谷 <b style="color:#007bff;font-size:0.75rem;">{min(_vals):.0f}</b> {vl_h}时{_vl_arrow}</span>
                         </div>'''
                         st.markdown(_metrics_html, unsafe_allow_html=True)
+
+                # ===== 实时电价曲线图表 =====
+                # 实时电价单独日期选择器
+                _rt_date_options = [d for d in _all_dates]
+                _rt_sel_date = st.selectbox("实时电价日期", _rt_date_options, index=0, key="rt_price_date_sel", label_visibility="collapsed")
+                
+                _rt_fig = go.Figure()
+                _rt_has_data = False
+                _rt_hour_cols = [f"{i}时" for i in range(24)]
+                _rt_hourly = None
+                _rt_fc_vals = None
+
+                # 实际实时电价（从披露数据读取96点，转换为24点）
+                _rt_actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
+                _rt_actual_month = _rt_sel_date[:7]  # 格式: 2026-06
+                _rt_actual_path = os.path.join(_rt_actual_dir, str(int(_rt_actual_month.split("-")[1])))
+                if os.path.exists(_rt_actual_path):
+                    _rt_file = os.path.join(_rt_actual_path, f"实时节点电价查询({_rt_sel_date}).xlsx")
+                    if os.path.exists(_rt_file):
+                        try:
+                            _rt_df = pd.read_excel(_rt_file)
+                            _rt_time_cols = [c for c in _rt_df.columns if ':' in str(c)]
+                            if len(_rt_time_cols) >= 96:
+                                # 对所有节点求平均
+                                _rt_avg = _rt_df[_rt_time_cols].mean()
+                                # 96点转24点（每4点取平均）
+                                _rt_hourly = []
+                                for h in range(24):
+                                    _quarter_cols = [f'{h:02d}:{m:02d}' for m in [0, 15, 30, 45]]
+                                    _vals = [_rt_avg[c] for c in _quarter_cols if c in _rt_avg.index]
+                                    _rt_hourly.append(float(np.mean(_vals)) if _vals else np.nan)
+                                _rt_fig.add_trace(go.Scattergl(
+                                    x=list(range(24)), y=_rt_hourly,
+                                    name=f"实际电价 {sel_date}",
+                                    line=dict(color="#007bff", width=2),
+                                    mode="lines+markers",
+                                    marker=dict(size=4, color="#ffffff", line=dict(color="#007bff", width=1.5)),
+                                    fill="tozeroy", fillcolor="rgba(0,123,255,0.08)"
+                                ))
+                                _rt_has_data = True
+                        except Exception as e:
+                            pass
+
+                # 预测实时电价
+                _rt_forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东实时电价预测.xlsx")
+                if os.path.exists(_rt_forecast_path):
+                    try:
+                        _rt_fc_df = pd.read_excel(_rt_forecast_path)
+                        _rt_fc_df["_date"] = pd.to_datetime(_rt_fc_df["日期"]).dt.strftime("%Y-%m-%d")
+                        _rt_fc_sel = _rt_fc_df[(_rt_fc_df["_date"] == _rt_sel_date) & (_rt_fc_df["模型"] == "校准后")]
+                        if not _rt_fc_sel.empty:
+                            _rt_fc_vals = [_rt_fc_sel.iloc[0][h] for h in _rt_hour_cols]
+                            _rt_fig.add_trace(go.Scattergl(
+                                x=list(range(24)), y=_rt_fc_vals,
+                                name=f"预测电价 {_rt_sel_date}",
+                                line=dict(color="#ff6b6b", width=2, dash="dot"),
+                                mode="lines+markers", marker=dict(size=3)
+                            ))
+                            _rt_has_data = True
+                    except Exception as e:
+                        pass
+
+                # 始终显示图表（即使无数据）
+                _rt_fig.update_layout(
+                    height=200, template="neumorphic", showlegend=True,
+                    title=dict(text=f"实时电价曲线 - {_rt_sel_date}", font=dict(size=10, color="#000000")),
+                    hovermode="x unified",
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
+                    margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
+                    xaxis=dict(dtick=3, tickvals=list(range(0, 24, 3)), ticktext=[f"{i}时" for i in range(0, 24, 3)]),
+                    yaxis=dict(title="元/MWh", title_font=dict(size=7, color="#000000"))
+                )
+                # Y轴自适应
+                _rt_all_y = []
+                for _tr in _rt_fig.data:
+                    if _tr.y is not None:
+                        _rt_all_y.extend([v for v in _tr.y if v is not None])
+                if _rt_all_y:
+                    _rt_y_min, _rt_y_max = min(_rt_all_y), max(_rt_all_y)
+                    _rt_pad = max((_rt_y_max - _rt_y_min) * 0.1, 10)
+                    _rt_fig.update_yaxes(range=[_rt_y_min - _rt_pad, _rt_y_max + _rt_pad])
+                st.plotly_chart(_rt_fig, use_container_width=True)
+                # 实时电价KPI
+                _rt_kpi_parts = []
+                if _rt_hourly is not None:
+                    _rt_actual_avg = np.nanmean(_rt_hourly)
+                    _rt_kpi_parts.append(f'实际均价 <b>{_rt_actual_avg:.0f}</b> 元/MWh')
+                if _rt_fc_vals is not None:
+                    _rt_fc_avg = np.nanmean(_rt_fc_vals)
+                    _rt_kpi_parts.append(f'预测均价 <b>{_rt_fc_avg:.0f}</b> 元/MWh')
+                if _rt_hourly is not None and _rt_fc_vals is not None:
+                    _rt_diff = _rt_actual_avg - _rt_fc_avg
+                    _rt_diff_pct = _rt_diff / _rt_fc_avg * 100 if _rt_fc_avg != 0 else 0
+                    _rt_arrow = "↑" if _rt_diff > 0 else "↓" if _rt_diff < 0 else "→"
+                    _rt_color = "#dc3545" if _rt_diff > 0 else "#0D7A3F" if _rt_diff < 0 else "#666"
+                    _rt_kpi_parts.append(f'偏差 <span style="color:{_rt_color};font-weight:bold">{_rt_arrow} {_rt_diff:+.0f} ({_rt_diff_pct:+.1f}%)</span>')
+                if _rt_kpi_parts:
+                    st.markdown(f'<span style="font-size:0.6rem;color:#666">{" | ".join(_rt_kpi_parts)}</span>', unsafe_allow_html=True)
+
+                # ===== 负荷曲线图表（省内B类电源）=====
+                _load_fig = go.Figure()
+                _load_has_data = False
+                
+                # 从披露数据读取省内B类电源
+                _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
+                _load_fp = os.path.join(_disclosure_dir, f"信息披露查询预测信息({sel_date}).xlsx")
+                
+                if os.path.exists(_load_fp):
+                    try:
+                        _load_xl = pd.ExcelFile(_load_fp)
+                        for s in _load_xl.sheet_names:
+                            if "负荷预测" in s:
+                                _load_df = pd.read_excel(_load_fp, sheet_name=s, header=None, skiprows=1)
+                                for _, row in _load_df.iterrows():
+                                    ch = str(row.iloc[1]) if len(row) > 1 else ""
+                                    if "B类电源" in ch:
+                                        _load_vals = []
+                                        for col_idx in range(2, min(98, len(row))):
+                                            try:
+                                                _load_vals.append(float(row.iloc[col_idx]))
+                                            except:
+                                                pass
+                                        if len(_load_vals) >= 96:
+                                            _load_hourly = [np.mean(_load_vals[h*4:(h+1)*4]) for h in range(24)]
+                                            _load_fig.add_trace(go.Scattergl(
+                                                x=list(range(24)), y=_load_hourly,
+                                                name=f"B类电源 {sel_date}",
+                                                line=dict(color="#54a0ff", width=2),
+                                                mode="lines+markers", marker=dict(size=4),
+                                                fill="tozeroy", fillcolor="rgba(84,160,255,0.08)"
+                                            ))
+                                            _load_has_data = True
+                                break
+                    except Exception as e:
+                        pass
+                
+                if _load_has_data:
+                    _load_fig.update_layout(
+                        height=200, template="neumorphic", showlegend=True,
+                        title=dict(text=f"负荷曲线 - {sel_date}", font=dict(size=10, color="#000000")),
+                        hovermode="x unified",
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
+                        margin=dict(l=30, r=10, t=20, b=8), font=dict(size=8, color="#000000"),
+                        xaxis=dict(dtick=3, tickvals=list(range(0, 24, 3)), ticktext=[f"{i}时" for i in range(0, 24, 3)]),
+                        yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
+                    )
+                    # Y轴自适应
+                    _load_all_y = []
+                    for _tr in _load_fig.data:
+                        if _tr.y is not None:
+                            _load_all_y.extend([v for v in _tr.y if v is not None])
+                    if _load_all_y:
+                        _load_y_min, _load_y_max = min(_load_all_y), max(_load_all_y)
+                        _load_pad = max((_load_y_max - _load_y_min) * 0.1, 1000)
+                        _load_fig.update_yaxes(range=[_load_y_min - _load_pad, _load_y_max + _load_pad])
+                    st.plotly_chart(_load_fig, use_container_width=True)
+                    
+                    # 负荷KPI
+                    _load_avg = np.nanmean(_load_hourly)
+                    _load_max = max(_load_hourly)
+                    _load_min = min(_load_hourly)
+                    _load_peak_h = _load_hourly.index(_load_max)
+                    _load_valley_h = _load_hourly.index(_load_min)
+                    st.markdown(f'<span style="font-size:0.6rem;color:#666">日均 <b>{_load_avg:.0f}</b> MW | 峰值 <b>{_load_max:.0f}</b> MW {_load_peak_h}时 | 谷值 <b>{_load_min:.0f}</b> MW {_load_valley_h}时</span>', unsafe_allow_html=True)
+
             else:
                 st.info(f"{sel_date} 无电价数据，请进行日前电价预测")
         else:
             st.warning("无电价数据文件")
 
 
-        # ============================================================
-        # 统调负荷预测（电价分析模块内）
-        # ============================================================
-        _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-        if not os.path.exists(_disclosure_dir_load):
-            _disclosure_dir_load = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-        _load_fp = os.path.join(_disclosure_dir_load, f"信息披露查询预测信息({sel_date}).xlsx")
-        if os.path.exists(_load_fp):
-            try:
-                _load_sheets = [s for s in pd.ExcelFile(_load_fp).sheet_names if "负荷预测" in s]
-                if _load_sheets:
-                    _load_df = pd.read_excel(_load_fp, sheet_name=_load_sheets[0], header=None, skiprows=1)
-                    if len(_load_df) > 0:
-                        _load_row = _load_df.iloc[0]
-                        _load_values = _load_row[2:].tolist()
-                        # 96个点(15分钟) → 24小时
-                        if len(_load_values) == 96:
-                            _load_hourly = [_load_values[i*4] for i in range(24)]
-                        elif len(_load_values) == 24:
-                            _load_hourly = _load_values
-                        else:
-                            _load_hourly = _load_values[:24]
-
-                        # 省内B类电源（Row 3）
-                        _b_load_hourly = None
-                        if len(_load_df) > 2:
-                            _b_load_row = _load_df.iloc[2]
-                            _b_load_values = _b_load_row[2:].tolist()
-                            if len(_b_load_values) == 96:
-                                _b_load_hourly = [_b_load_values[i*4] for i in range(24)]
-                            elif len(_b_load_values) == 24:
-                                _b_load_hourly = _b_load_values
-                            else:
-                                _b_load_hourly = _b_load_values[:24]
-
-                        _load_fig = go.Figure()
-
-                        # 统调实际负荷（虚线）
-                        _actual_load_dir = os.path.expanduser("~/Desktop/能源电力资料/日前训练数据/信息披露日前实际")
-                        _actual_load_hourly = None
-                        # 尝试两种文件格式
-                        for _alfp in [
-                            os.path.join(_actual_load_dir, f"信息披露查询实际信息({sel_date}).xlsx"),
-                            os.path.join(_actual_load_dir, f"电网运行实际信息({sel_date})", f"负荷实际信息({sel_date}).xls"),
-                        ]:
-                            if os.path.exists(_alfp):
-                                try:
-                                    _actual_load_df = pd.read_excel(_alfp, header=None, skiprows=1)
-                                    if len(_actual_load_df) > 0:
-                                        _actual_load_vals = [v for v in _actual_load_df.iloc[0, 1:].tolist() if isinstance(v, (int, float))]
-                                        if len(_actual_load_vals) >= 96:
-                                            _actual_load_hourly = [_actual_load_vals[i*4] for i in range(24)]
-                                        elif len(_actual_load_vals) >= 24:
-                                            _actual_load_hourly = _actual_load_vals[:24]
-                                        else:
-                                            _actual_load_hourly = None
-                                        break
-                                except Exception:
-                                    pass
-                        if _actual_load_hourly:
-                            _load_fig.add_trace(go.Scatter(
-                                x=list(range(24)), y=_actual_load_hourly,
-                                name="统调实际负荷", mode="lines+markers",
-                                line=dict(color="#888888", width=1.5, dash="dot"),
-                                marker=dict(size=2),
-                            ))
-
-                        # 统调预测负荷（实线）
-                        _load_fig.add_trace(go.Scatter(
-                            x=list(range(24)), y=_load_hourly,
-                            name="统调预测负荷", mode="lines+markers",
-                            line=dict(color="#0D7A3F", width=2, shape="spline"),
-                            marker=dict(size=3),
-                            fill="tozeroy", fillcolor="rgba(13,122,63,0.1)"
-                        ))
-
-                        # 省内B类电源负荷
-                        if _b_load_hourly:
-                            _load_fig.add_trace(go.Scatter(
-                                x=list(range(24)), y=_b_load_hourly,
-                                name="省内B类电源", mode="lines+markers",
-                                line=dict(color="#ff9f43", width=1.5, shape="spline"),
-                                marker=dict(size=2),
-                            ))
-                            # B类电源峰谷标注
-                            _b_max_idx = _b_load_hourly.index(max(_b_load_hourly))
-                            _b_min_idx = _b_load_hourly.index(min(_b_load_hourly))
-                            _chart_annotation(_load_fig, _b_max_idx, max(_b_load_hourly), f'{max(_b_load_hourly):.0f}', '#ff9f43', 'top center')
-                            _chart_annotation(_load_fig, _b_min_idx, min(_b_load_hourly), f'{min(_b_load_hourly):.0f}', '#ff9f43', 'bottom center')
-
-                        # 峰谷标注
-                        _lk_idx = _load_hourly.index(max(_load_hourly))
-                        _lv_idx = _load_hourly.index(min(_load_hourly))
-                        _chart_annotation(_load_fig, _lk_idx, max(_load_hourly), f'{max(_load_hourly):.0f}', '#dc3545', 'top center')
-                        _chart_annotation(_load_fig, _lv_idx, min(_load_hourly), f'{min(_load_hourly):.0f}', '#0D7A3F', 'bottom center')
-
-                        _load_fig.update_layout(
-                            transition=dict(duration=500, easing="cubic-in-out"),
-                            height=150, template="neumorphic",
-                            title=dict(text=f"预测负荷曲线 - {sel_date}", font=dict(size=10, color="#000000")),
-                            margin=dict(l=30, r=10, t=40, b=25),
-                            font=dict(size=7, color="#000000"),
-                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=7, color="#000000")),
-                            xaxis=dict(dtick=3, tickvals=list(range(0,24,3)), ticktext=[f"{i}时" for i in range(0,24,3)]),
-                            yaxis=dict(title="MW", title_font=dict(size=7, color="#000000"))
-                        )
-                        # Y轴自适应
-                        _all_load_vals = _load_hourly + (_b_load_hourly if _b_load_hourly else [])
-                        _load_min_y = min(_all_load_vals)
-                        _load_max_y = max(_all_load_vals)
-                        _load_pad = max((_load_max_y - _load_min_y) * 0.1, 1000)
-                        _load_fig.update_yaxes(range=[_load_min_y - _load_pad, _load_max_y + _load_pad])
-                        st.plotly_chart(_load_fig, use_container_width=True)
-
-                        # 负荷指标
-                        _load_max = max(_load_hourly)
-                        _load_min = min(_load_hourly)
-                        _load_avg = sum(_load_hourly) / len(_load_hourly)
-                        _load_peak_h = _load_hourly.index(_load_max)
-                        _load_valley_h = _load_hourly.index(_load_min)
-                        _load_html = f'''<div style="display:flex;gap:16px;font-size:0.6rem;color:#666;margin-top:2px;">
-                            <span>峰值 <b style="color:#dc3545;font-size:0.75rem;">{_load_max:.0f}</b> MW {_load_peak_h}时</span>
-                            <span>谷值 <b style="color:#0D7A3F;font-size:0.75rem;">{_load_min:.0f}</b> MW {_load_valley_h}时</span>
-                            <span>峰谷差 <b style="color:#1a1a1a;font-size:0.75rem;">{_load_max-_load_min:.0f}</b> MW</span>
-                        </div>'''
-                        st.markdown(_load_html, unsafe_allow_html=True)
-            except Exception as e:
-                st.warning(f"负荷数据加载失败: {e}")
-        else:
-            st.info(f"{sel_date} 无负荷预测数据")
-
-    # ============================================================
-    # 历史电价热力图（24h × 30d）
-    # ============================================================
-    with st.container(border=True):
-        st.markdown('<div class="mod-head mod-head-p">🔥 历史电价热力图<span class="mod-sub">近30天 · 24h×30d</span></div>', unsafe_allow_html=True)
-        _actual_path = _ACTUAL_PRICE_PATH
-        if os.path.exists(_actual_path):
-            try:
-                _heat_df = pd.read_excel(_actual_path)
-                _hour_cols = [f"{i}时" for i in range(24)]
-                # 日期列标准化
-                _heat_df["_date"] = pd.to_datetime(_heat_df["日期"], errors="coerce")
-                _heat_df = _heat_df.dropna(subset=["_date"]).sort_values("_date")
-                # 取最近30天
-                _heat_df = _heat_df.tail(30).copy()
-                _heat_df["_label"] = _heat_df["_date"].apply(lambda d: f"{d.month}月{d.day}日")
-                # 构建矩阵 (行=小时, 列=日期)
-                _z = _heat_df[_hour_cols].values.T.tolist()  # 24 × N
-                _x = _heat_df["_label"].tolist()
-                _y = [f"{i}时" for i in range(24)]
-                # 自定义色阶：绿(低)→黄→红(高)
-                _colorscale = [
-                    [0.0, "#0D7A3F"],
-                    [0.2, "#4CAF50"],
-                    [0.4, "#8BC34A"],
-                    [0.6, "#FFC107"],
-                    [0.8, "#FF5722"],
-                    [1.0, "#dc3545"],
-                ]
-                _heat_fig = go.Figure(data=go.Heatmap(
-                    z=_z, x=_x, y=_y,
-                    colorscale=_colorscale,
-                    colorbar=dict(title=dict(text="元/MWh", font=dict(size=8, color="#000000")), tickfont=dict(size=7, color="#000000"), len=0.8, thickness=8),
-                    hovertemplate="日期: %{x}<br时段: %{y}<br电价: %{z:.0f} 元/MWh<extra></extra>",
-                ))
-
-                # 当前时刻标记线
-                _now_hour = _now().hour
-                _now_label = f"{_now_hour}时"
-                if _now_label in _y:
-                    _hour_idx = _y.index(_now_label)
-                    _heat_fig.add_hline(y=_hour_idx, line_dash="dash", line_color="rgba(0,210,211,0.6)", line_width=1,
-                        annotation_text="当前", annotation_position="right",
-                        annotation_font=dict(color="#00d2d3", size=8))
-
-                # 今日标记线
-                _today_str = _now().strftime("%-m月%-d日")
-                for _xi, _xl in enumerate(_x):
-                    if _today_str in _xl:
-                        _heat_fig.add_vline(x=_xi, line_dash="dash", line_color="rgba(0,210,211,0.4)", line_width=1)
-                        break
-
-                _heat_fig.update_layout(
-                    height=200, template="neumorphic",
-                    margin=dict(l=35, r=10, t=5, b=50),
-                    font=dict(size=7, color="#000000"),
-                    xaxis=dict( tickfont=dict(size=6, color="#000000"), side="bottom"),
-                    yaxis=dict(tickfont=dict(size=6, color="#000000"), autorange="reversed"),
-                )
-                st.plotly_chart(_heat_fig, use_container_width=True)
-                # 底部统计
-                _all_vals = _np.array(_heat_df[_hour_cols].values, dtype=float).flatten()
-                _all_vals = _all_vals[~_np.isnan(_all_vals)]
-                if len(_all_vals) > 0:
-                    st.markdown(f'<span style="font-size:0.6rem;color:#666">近30天：均价**{_all_vals.mean():.0f}** | 峰值**{_all_vals.max():.0f}** | 谷值**{_all_vals.min():.0f}** | 峰谷差**{_all_vals.max()-_all_vals.min():.0f}** 元/MWh</span>', unsafe_allow_html=True)
-            except Exception as e:
-                st.warning(f"热力图数据加载失败: {e}")
-        else:
-            st.info("未找到日前节点电价.xlsx，无法生成热力图")
-
-# ============================================================
 # 页脚
 # ============================================================
 st.markdown("""
