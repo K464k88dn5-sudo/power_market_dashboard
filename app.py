@@ -116,7 +116,7 @@ st.markdown("""
     }
 
     /* KPI 行 */
-    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; }
+    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; margin-top: -28px; }
     .kpi-card {
         flex: 1;
         background: rgba(255,255,255,0.78);
@@ -1023,7 +1023,7 @@ with col1:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=120,template="neumorphic",showlegend=False,
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=200,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
@@ -1050,7 +1050,7 @@ with col1:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=120,template="neumorphic",showlegend=False,
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=200,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
@@ -1198,7 +1198,7 @@ with col2:
                     icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
             # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
-            _map_height = 330
+            _map_height = 318
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
             # 色阶图例 + 修复公网白色背景JS
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
@@ -1665,22 +1665,27 @@ with col3:
                     _rt_pad = max((_rt_y_max - _rt_y_min) * 0.1, 10)
                     _rt_fig.update_yaxes(range=[_rt_y_min - _rt_pad, _rt_y_max + _rt_pad])
                 st.plotly_chart(_rt_fig, use_container_width=True)
-                # 实时电价KPI
+                # 实时电价KPI（始终显示）
                 _rt_kpi_parts = []
                 if _rt_hourly is not None:
                     _rt_actual_avg = np.nanmean(_rt_hourly)
                     _rt_kpi_parts.append(f'实际均价 <b>{_rt_actual_avg:.0f}</b> 元/MWh')
+                else:
+                    _rt_kpi_parts.append('实际均价 <b>--</b> 元/MWh')
                 if _rt_fc_vals is not None:
                     _rt_fc_avg = np.nanmean(_rt_fc_vals)
                     _rt_kpi_parts.append(f'预测均价 <b>{_rt_fc_avg:.0f}</b> 元/MWh')
+                else:
+                    _rt_kpi_parts.append('预测均价 <b>--</b> 元/MWh')
                 if _rt_hourly is not None and _rt_fc_vals is not None:
                     _rt_diff = _rt_actual_avg - _rt_fc_avg
                     _rt_diff_pct = _rt_diff / _rt_fc_avg * 100 if _rt_fc_avg != 0 else 0
                     _rt_arrow = "↑" if _rt_diff > 0 else "↓" if _rt_diff < 0 else "→"
                     _rt_color = "#dc3545" if _rt_diff > 0 else "#0D7A3F" if _rt_diff < 0 else "#666"
                     _rt_kpi_parts.append(f'偏差 <span style="color:{_rt_color};font-weight:bold">{_rt_arrow} {_rt_diff:+.0f} ({_rt_diff_pct:+.1f}%)</span>')
-                if _rt_kpi_parts:
-                    st.markdown(f'<span style="font-size:0.6rem;color:#666">{" | ".join(_rt_kpi_parts)}</span>', unsafe_allow_html=True)
+                else:
+                    _rt_kpi_parts.append('偏差 <b>--</b>')
+                st.markdown(f'<span style="font-size:0.6rem;color:#666">{" | ".join(_rt_kpi_parts)}</span>', unsafe_allow_html=True)
 
                 # ===== 负荷曲线图表（省内B类电源）=====
                 _load_fig = go.Figure()
@@ -1740,13 +1745,15 @@ with col3:
                         _load_fig.update_yaxes(range=[_load_y_min - _load_pad, _load_y_max + _load_pad])
                     st.plotly_chart(_load_fig, use_container_width=True)
                     
-                    # 负荷KPI
+                    # 负荷KPI（始终显示）
                     _load_avg = np.nanmean(_load_hourly)
                     _load_max = max(_load_hourly)
                     _load_min = min(_load_hourly)
                     _load_peak_h = _load_hourly.index(_load_max)
                     _load_valley_h = _load_hourly.index(_load_min)
                     st.markdown(f'<span style="font-size:0.6rem;color:#666">日均 <b>{_load_avg:.0f}</b> MW | 峰值 <b>{_load_max:.0f}</b> MW {_load_peak_h}时 | 谷值 <b>{_load_min:.0f}</b> MW {_load_valley_h}时</span>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<span style="font-size:0.6rem;color:#666">日均 <b>--</b> MW | 峰值 <b>--</b> MW | 谷值 <b>--</b> MW</span>', unsafe_allow_html=True)
 
             else:
                 st.info(f"{sel_date} 无电价数据，请进行日前电价预测")
@@ -1757,7 +1764,7 @@ with col3:
 # 页脚
 # ============================================================
 st.markdown("""
-<div style="margin-top:24px;padding:16px 0 8px;border-top:1px solid #e5e5e7;text-align:center;">
+<div style="margin-top:4px;padding:16px 0 8px;border-top:1px solid #e5e5e7;text-align:center;">
     <div style="display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;">
         <span style="font-size:0.6rem;color:#888;">📊 数据来源: Open-Meteo · CCTD · SHPGX · 广东电力交易中心</span>
         <span style="font-size:0.6rem;color:#888;">🔄 更新周期: 气象10分钟 · 燃料1小时 · 电价实时</span>

@@ -56,7 +56,7 @@ SHARED_CSS = """
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
         border: 1px solid #ffffff !important;
         border-radius: 12px !important;
-        padding: 12px 12px 10px 12px !important;
+        padding: 12px 12px 20px 12px !important;
         margin-bottom: 12px !important;
         box-shadow: 
             0 1px 2px rgba(0,0,0,0.04),
@@ -69,7 +69,7 @@ SHARED_CSS = """
     .mod-head {
         font-size: 0.7rem; font-weight: 600;
         padding: 0.35rem 0.5rem; margin-bottom: 0.3rem;
-        border-bottom: 2px solid #ffffff;
+        border-bottom: 2px solid #e5e5e7;
         color: #1D1D1F;
         display: flex; align-items: baseline; gap: 8px;
         background: #ffffff;
