@@ -22,7 +22,6 @@ def _now(): return datetime.now(_CN_TZ)
 from header_nav import render_header_nav
 render_header_nav("报表管理")
 
-st.markdown("## 📋 报表管理")
 
 # 数据路径
 PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")

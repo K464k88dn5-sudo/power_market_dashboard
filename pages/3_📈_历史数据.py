@@ -82,7 +82,6 @@ with col_date:
     else:
         selected_date = _now().strftime('%Y-%m-%d')
 
-st.markdown("---")
 
 # ============================================================
 # 电价数据
