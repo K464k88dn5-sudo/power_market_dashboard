@@ -515,21 +515,21 @@ with open(GEO_PATH, "r", encoding="utf-8") as f:
 # ============================================================
 # 缓存
 # ============================================================
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=1800)
 def cached_weather(city, days): return fetch_weather_single(city, days)
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=1800)
 def cached_all_cities_temp():
     """获取广东21地市当前实时观测温度（wttr.in气象站实测数据）"""
     return fetch_all_cities_current()
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=7200)
 def cached_fuel(days):
     """获取燃料价格数据，带缓存和备用方案"""
     return build_fuel_display_data(days)
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=7200)
 def cached_fuel_summary(): return get_fuel_latest_summary()
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=1800)
 def cached_price(): return fetch_electricity_data()
 
 
@@ -924,7 +924,7 @@ with col1:
                             marker=dict(size=6,color=clr,symbol=sym),text=[f"{r['温度(℃)']:.0f}℃"],
                             textposition="top center" if clr=="#ff4444" else "bottom center",
                             textfont=dict(size=8, color=clr),showlegend=False,cliponaxis=False))
-                fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                fig1.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=136,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=6,t=32,b=22),font=dict(size=7, color="#000000"),
                     title=dict(text=f"📅 {today.month}月{today.day}日 {CN_WEEKDAYS.get(today.weekday(),'')} 逐时温度(℃)",font=dict(size=9, color="#000000")))
@@ -947,7 +947,7 @@ with col1:
                 fig2.add_trace(go.Scattergl(x=list(agg["标签"])+list(agg["标签"][::-1]),
                     y=list(agg["最高"])+list(agg["最低"][::-1]),fill="toself",fillcolor="rgba(255,107,107,0.08)",
                     line=dict(width=0),showlegend=False,hoverinfo="skip"))
-                fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                fig2.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=136,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                     title=dict(text="📊 预报温度趋势(℃)",font=dict(size=9, color="#000000")))
@@ -960,7 +960,7 @@ with col1:
                     fig3.add_trace(go.Scatter(x=agg["标签"],y=agg["风速"],name="风速",mode="lines+markers",
                         line=dict(color="#6bcb77",width=1.5,shape="spline"),marker=dict(size=4),
                         fill="tozeroy",fillcolor="rgba(107,203,119,0.1)"))
-                fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                fig3.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=136,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                     title=dict(text="🌬️ 预报风速(m/s)",font=dict(size=9, color="#000000")))
@@ -972,7 +972,7 @@ with col1:
                     fig4.add_trace(go.Scatter(x=agg["标签"],y=agg["湿度"],name="湿度",mode="lines+markers",
                         line=dict(color="#a29bfe",width=1.5,shape="spline"),marker=dict(size=4),
                         fill="tozeroy",fillcolor="rgba(162,155,254,0.1)"))
-                fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=130,template="neumorphic",showlegend=False,
+                fig4.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=136,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=6,t=26,b=22),font=dict(size=7, color="#000000"),
                     title=dict(text="💧 预报湿度(%)",font=dict(size=9, color="#000000")))
@@ -1170,7 +1170,7 @@ with col2:
             folium.GeoJson(gd_temp,
                 style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
                 tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
-                    style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid #e5e5e7;"),
+                    style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid transparent;"),
                 highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
 
             for feat in GD_GEOJSON["features"]:
@@ -1273,8 +1273,8 @@ with col2:
         # 表格深色主题样式（HTML表格，循环滚动展示）
         def _df_to_dark_html(df, max_height=120, scroll=True, col_widths=None):
             """DataFrame → 深色主题 HTML 表格（表头固定，内容循环滚动）"""
-            th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid #d0d0d0;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
-            td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid #e5e5e7;transition:background 0.2s;'
+            th_style = 'background:linear-gradient(180deg,#f0f2f5,#e8eaef);color:#1a1a1a;font-size:0.45rem;padding:3px 6px;border:1px solid transparent;font-weight:600;line-height:1.5;position:sticky;top:0;z-index:1;'
+            td_style = 'background:#ffffff;color:#1a1a1a;font-size:0.45rem;padding:2px 6px;border:1px solid transparent;transition:background 0.2s;'
 
             row_count = len(df)
             anim_duration = max(row_count * 3, 10)
@@ -1288,7 +1288,7 @@ with col2:
 
             # 单表格：表头sticky + 表体滚动
             body_height = max_height - 20
-            html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid #d0d0d0;">'
+            html = f'<div style="max-height:{body_height}px;overflow-y:auto;overflow-x:hidden;border-radius:8px;border:1px solid transparent;">'
 
             if scroll and row_count > 3:
                 html += f'<div style="animation:table-scroll {anim_duration}s linear infinite;">'

@@ -29,8 +29,8 @@ def render_header_nav(current_page="电力大屏"):
     # 标题栏
     _header_html = f'''<div style="margin-top:6px;margin-bottom:6px;background:linear-gradient(135deg,rgba(255,255,255,0.9) 0%,rgba(240,242,245,0.95) 100%);border:1px solid #ffffff;border-radius:14px;padding:8px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06);height:54px;">
         {_logo_html}
-        <span style="font-size:1.15rem;font-weight:700;color:#1D1D1F;letter-spacing:0.2em;white-space:nowrap;">电力市场多源数据监控大屏</span>
-        <span style="font-size:0.65rem;color:#666;margin-left:auto;">{_now().strftime("%Y-%m-%d %H:%M")}</span>
+        <span style="font-size:1.5rem;font-weight:700;color:#00d2d3;letter-spacing:0.2em;white-space:nowrap;text-align:center;flex:1;">电力市场多源数据监控大屏</span>
+        <span style="font-size:1.0rem;color:#666;margin-left:auto;">{_now().strftime("%Y-%m-%d %H:%M")}</span>
     </div>'''
     st.markdown(_header_html, unsafe_allow_html=True)
     
@@ -39,7 +39,8 @@ def render_header_nav(current_page="电力大屏"):
         ("📊", "电力大屏", "app.py"),
         ("📈", "数据分析", "pages/2_📊_数据分析.py"),
         ("📋", "历史数据", "pages/3_📈_历史数据.py"),
-        ("📰", "资讯", "pages/1_📰_资讯.py"),
+        ("📡", "实时数据", "pages/1_📡_实时数据.py"),
+        ("📝", "报表管理", "pages/4_📋_报表管理.py"),
     ]
     
     # 导航按钮 + 同步按钮（最右侧）
@@ -73,9 +74,9 @@ def render_header_nav(current_page="电力大屏"):
     var btns = parent.document.querySelectorAll('button');
     btns.forEach(function(btn) {{
         if (btn.textContent.includes('{current_page}')) {{
-            btn.style.setProperty('background', '#007bff', 'important');
-            btn.style.setProperty('color', 'white', 'important');
-            btn.style.setProperty('border-color', '#007bff', 'important');
+            btn.style.setProperty('background', '#87CEEB', 'important');
+            btn.style.setProperty('color', '#1D1D1F', 'important');
+            btn.style.setProperty('border-color', '#87CEEB', 'important');
         }}
     }});
     </script>

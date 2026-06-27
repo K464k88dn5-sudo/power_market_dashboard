@@ -27,7 +27,7 @@ SHARED_CSS = """
     .dash-header {
         margin-top: 6px;
         background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,242,245,0.95) 100%);
-        border: 1px solid #ffffff;
+        border: 1px solid #E5E5EA;
         border-radius: 14px;
         padding: 8px 16px;
         margin-bottom: 12px;
@@ -39,7 +39,7 @@ SHARED_CSS = """
     /* 模块卡片 */
     .mod-card {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-        border: 1px solid #ffffff;
+        border: 1px solid #E5E5EA;
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
@@ -54,7 +54,7 @@ SHARED_CSS = """
     /* st.container(border=True) 样式 */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
-        border: 1px solid #ffffff !important;
+        border: 1px solid #E5E5EA !important;
         border-radius: 12px !important;
         padding: 12px 12px 20px 12px !important;
         margin-bottom: 12px !important;
@@ -84,7 +84,7 @@ SHARED_CSS = """
         margin: 0 !important; padding: 0.3rem !important;
         background: transparent !important;
         border-radius: 10px !important;
-        border: 1px solid #ffffff !important;
+        border: 1px solid rgba(0,0,0,0.06) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         overflow: hidden !important;
     }
@@ -103,7 +103,7 @@ SHARED_CSS = """
     .stButton > button {
         border-radius: 8px !important;
         font-size: 0.75rem !important;
-        border: 1px solid #ffffff !important;
+        border: 1px solid #E5E5EA !important;
         background: rgba(255,255,255,0.8) !important;
         color: #1D1D1F !important;
         transition: all 0.2s !important;
@@ -127,48 +127,6 @@ SHARED_CSS = """
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
-    /* 强制所有容器边框为白色 */
-    div[data-testid="stVerticalBlockBorderWrapper"],
-    div[data-testid="stVerticalBlockBorderWrapper"] > div,
-    div[data-testid="stVerticalBlockBorderWrapper"] > div > div {
-        border-color: #ffffff !important;
-        border: 1px solid #ffffff !important;
-    }
-    
-    /* 强制所有卡片边框为白色 */
-    .stMarkdown,
-    .stMarkdown > div,
-    .stMarkdown > div > div {
-        border-color: #ffffff !important;
-    }
-
-    /* 确保图表背景透明 */
-    .stPlotlyChart > div {
-        background: transparent !important;
-        overflow: hidden !important;
-    }
-    .stPlotlyChart .plotly .main-svg {
-        background: transparent !important;
-    }
-    .stPlotlyChart .plotly .svg-container {
-        background: transparent !important;
-    }
-    button.nav-active {
-        background: #007bff !important;
-        color: white !important;
-        border-color: #007bff !important;
-    }
-    button.nav-active:hover {
-        background: #0056b3 !important;
-        color: white !important;
-        border-color: #0056b3 !important;
-    }
-    /* 减少检修模块标题与表格的间距 */
-    .stMarkdown:has(span:contains("机组检修")) + .stMarkdown,
-    .stMarkdown:has(span:contains("输变电检修")) + .stMarkdown {
-        margin-top: -15px !important;
-    }
 </style>
 """
 
@@ -176,4 +134,3 @@ def inject_styles():
     """注入共享样式"""
     import streamlit as st
     st.markdown(SHARED_CSS, unsafe_allow_html=True)
-
