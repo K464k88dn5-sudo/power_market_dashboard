@@ -1166,7 +1166,7 @@ with col2:
             m.get_root().html.add_child(folium.Element(dark_css))
             # 自适应窗口：计算边界 + padding
             _bounds = [[min(lats),min(lons)],[max(lats),max(lons)]]
-            m.fit_bounds(_bounds, padding=(30, 20))
+            m.fit_bounds(_bounds, padding=(10, 10))
 
             # 移除zoom控件
             for key in list(m._children.keys()):
