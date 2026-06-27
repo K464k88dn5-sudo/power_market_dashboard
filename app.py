@@ -24,6 +24,9 @@ from data_sources import (
     save_maintenance_template, calculate_security_margin,
     generate_guangdong_price_template,
 )
+from data.weather_cache import load_city_weather, load_all_cities_weather, is_cache_fresh
+from data_sources.weather_api import fetch_all_cities_parallel
+from data.data_manager import get_weather_data, get_all_cities_weather, get_current_city_temps, get_fuel_data, get_fuel_summary
 from data_sources.fuel_manager import build_fuel_display_data, get_fuel_latest_summary
 
 # ============================================================
@@ -516,19 +519,19 @@ with open(GEO_PATH, "r", encoding="utf-8") as f:
 # 缓存
 # ============================================================
 @st.cache_data(ttl=1800)
-def cached_weather(city, days): return fetch_weather_single(city, days)
+def cached_weather(city, days):
+    return get_weather_data(city, days)
 
 @st.cache_data(ttl=1800)
 def cached_all_cities_temp():
     """获取广东21地市当前实时观测温度（wttr.in气象站实测数据）"""
-    return fetch_all_cities_current()
+    return get_current_city_temps()
 
 @st.cache_data(ttl=7200)
 def cached_fuel(days):
-    """获取燃料价格数据，带缓存和备用方案"""
-    return build_fuel_display_data(days)
+    return get_fuel_data(days)
 @st.cache_data(ttl=7200)
-def cached_fuel_summary(): return get_fuel_latest_summary()
+def cached_fuel_summary(): return get_fuel_summary()
 @st.cache_data(ttl=1800)
 def cached_price(): return fetch_electricity_data()
 
@@ -591,7 +594,7 @@ with st.sidebar:
     st.markdown("## ⚙️ 控制面板")
     selected_city = st.selectbox("📍 气象城市", list(GUANGDONG_CITIES.keys()), index=0)
     forecast_days = st.slider("📅 预报天数", 1, 16, 7)
-    fuel_days = st.slider("📅 燃料天数", 7, 180, 60)
+    fuel_days = st.slider("📅 燃料天数", 7, 180, 30)
 
     st.markdown("---")
     st.markdown("## 📁 数据文件管理")
@@ -835,6 +838,9 @@ if os.path.exists(_actual_path):
         _adf["_avg"] = _adf[_hour_cols].mean(axis=1)
         _adf["_date"] = pd.to_datetime(_adf["日期"], errors="coerce")
         _adf = _adf.dropna(subset=["_date"]).sort_values("_date")
+        # 只取近30天用于KPI
+        _cutoff = pd.Timestamp.now() - pd.Timedelta(days=30)
+        _adf = _adf[_adf["_date"] >= _cutoff].copy()
         ld = _adf["_date"].max().strftime("%Y-%m-%d")
         da = _adf["_avg"].iloc[-1]
         _elec_sp = _make_sparkline_svg(_adf["_avg"].tail(7).tolist(), "#00d2d3", 64, 14)
@@ -1351,7 +1357,13 @@ with col3:
         # 加载实际电价和预测电价
         _actual_path = _ACTUAL_PRICE_PATH
         _forecast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "广东日前电价预测.xlsx")
-        _actual_df = pd.read_excel(_actual_path) if os.path.exists(_actual_path) else pd.DataFrame()
+        if os.path.exists(_actual_path):
+            _actual_df = pd.read_excel(_actual_path)
+            _actual_df["日期"] = pd.to_datetime(_actual_df["日期"], errors="coerce")
+            _cutoff = pd.Timestamp.now() - pd.Timedelta(days=90)
+            _actual_df = _actual_df[_actual_df["日期"] >= _cutoff].copy()
+        else:
+            _actual_df = pd.DataFrame()
         _forecast_df = pd.read_excel(_forecast_path) if os.path.exists(_forecast_path) else pd.DataFrame()
 
         _hour_cols = [f"{i}时" for i in range(24)]
@@ -1585,9 +1597,18 @@ with col3:
                         st.markdown(_metrics_html, unsafe_allow_html=True)
 
                 # ===== 实时电价曲线图表 =====
-                # 实时电价单独日期选择器
+                # 实时电价单独日期选择器（默认选择有数据的最新日期）
                 _rt_date_options = [d for d in _all_dates]
-                _rt_sel_date = st.selectbox("实时电价日期", _rt_date_options, index=0, key="rt_price_date_sel", label_visibility="collapsed")
+                _rt_actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
+                _rt_default_idx = 0
+                for _i, _d in enumerate(_rt_date_options):
+                    _rt_month = str(int(_d[5:7]))
+                    _rt_path = os.path.join(_rt_actual_dir, _rt_month)
+                    _rt_file = os.path.join(_rt_path, f"实时节点电价查询({_d}).xlsx")
+                    if os.path.exists(_rt_file):
+                        _rt_default_idx = _i
+                        break
+                _rt_sel_date = st.selectbox("实时电价日期", _rt_date_options, index=_rt_default_idx, key="rt_price_date_sel", label_visibility="collapsed")
                 
                 _rt_fig = go.Figure()
                 _rt_has_data = False
@@ -1596,7 +1617,6 @@ with col3:
                 _rt_fc_vals = None
 
                 # 实际实时电价（从披露数据读取96点，转换为24点）
-                _rt_actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
                 _rt_actual_month = _rt_sel_date[:7]  # 格式: 2026-06
                 _rt_actual_path = os.path.join(_rt_actual_dir, str(int(_rt_actual_month.split("-")[1])))
                 if os.path.exists(_rt_actual_path):

@@ -293,11 +293,12 @@ with col_left:
         
         # 取最近30天
         daily_avg = daily_avg.tail(30)
+        daily_avg['日期标签'] = daily_avg['日期'].apply(lambda d: f"{d.month}月{d.day}日")
         
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=daily_avg['日期'], y=daily_avg['均价'], name='均价', line=dict(color='#007bff', width=2)))
-        fig.add_trace(go.Scatter(x=daily_avg['日期'], y=daily_avg['峰值'], name='峰值', line=dict(color='#dc3545', width=1, dash='dot')))
-        fig.add_trace(go.Scatter(x=daily_avg['日期'], y=daily_avg['谷值'], name='谷值', line=dict(color='#28a745', width=1, dash='dot')))
+        fig.add_trace(go.Scatter(x=daily_avg['日期标签'], y=daily_avg['均价'], name='均价', line=dict(color='#007bff', width=2)))
+        fig.add_trace(go.Scatter(x=daily_avg['日期标签'], y=daily_avg['峰值'], name='峰值', line=dict(color='#dc3545', width=1, dash='dot')))
+        fig.add_trace(go.Scatter(x=daily_avg['日期标签'], y=daily_avg['谷值'], name='谷值', line=dict(color='#28a745', width=1, dash='dot')))
         
         fig.update_layout(
             height=200, template="neumorphic", showlegend=True,
@@ -408,9 +409,23 @@ with col_right:
         with st.container(border=True):
             st.markdown('<div class="mod-head mod-head-r">⚡ 统调负荷对比<span class="mod-sub">日前预测 vs 实际</span></div>', unsafe_allow_html=True)
             
-            # 选择日期
-            _ld_cmp_date_options = sorted(price_df['日期'].dt.strftime('%Y-%m-%d').unique(), reverse=True)
-            _ld_cmp_sel_date = st.selectbox("选择日期", _ld_cmp_date_options, index=0, key="ld_cmp_date_sel", label_visibility="collapsed")
+            # 选择日期（从披露数据获取）
+            _ld_cmp_disclosure_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+            _ld_cmp_date_options = []
+            if os.path.exists(_ld_cmp_disclosure_dir):
+                import glob
+                _ld_cmp_files = glob.glob(os.path.join(_ld_cmp_disclosure_dir, "信息披露查询预测信息(*.xlsx"))
+                for _f in _ld_cmp_files:
+                    import re
+                    _m = re.search(r'(\d{4}-\d{2}-\d{2})', os.path.basename(_f))
+                    if _m:
+                        _ld_cmp_date_options.append(_m.group(1))
+            _ld_cmp_date_options = sorted(set(_ld_cmp_date_options), reverse=True)
+            
+            if _ld_cmp_date_options:
+                _ld_cmp_sel_date = st.selectbox("选择日期", _ld_cmp_date_options, index=0, key="ld_cmp_date_sel", label_visibility="collapsed")
+            else:
+                _ld_cmp_sel_date = None
             
             # 实际统调负荷
             _ld_cmp_fig = go.Figure()
@@ -445,7 +460,7 @@ with col_right:
                     pass
             
             # 日前预测统调负荷
-            _ld_forecast_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露预测")
+            _ld_forecast_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
             _ld_forecast_file = os.path.join(_ld_forecast_dir, f"信息披露查询预测信息({_ld_cmp_sel_date}).xlsx")
             _ld_forecast_hourly = None
             
@@ -529,11 +544,11 @@ with col_right:
                 fig1 = go.Figure()
                 fig1.add_trace(go.Histogram(x=daily_stats['峰时'], nbinsx=24, name='峰时分布', marker_color='#dc3545'))
                 fig1.update_layout(
-                    height=150, template="neumorphic", showlegend=False,
+                    height=160, template="neumorphic", showlegend=False,
                     margin=dict(l=20, r=10, t=5, b=20),
-                    font=dict(size=7, color="#000000"),
-                    xaxis=dict(title="小时", tickfont=dict(size=6, color="#000000")),
-                    yaxis=dict(title="天数", tickfont=dict(size=6, color="#000000"))
+                    font=dict(size=8, color="#000000"),
+                    xaxis=dict(title="小时", tickfont=dict(size=10, color="#000000")),
+                    yaxis=dict(title="天数", tickfont=dict(size=10, color="#000000"))
                 )
                 st.plotly_chart(fig1, use_container_width=True)
             
@@ -541,11 +556,11 @@ with col_right:
                 fig2 = go.Figure()
                 fig2.add_trace(go.Histogram(x=daily_stats['谷时'], nbinsx=24, name='谷时分布', marker_color='#28a745'))
                 fig2.update_layout(
-                    height=150, template="neumorphic", showlegend=False,
+                    height=160, template="neumorphic", showlegend=False,
                     margin=dict(l=20, r=10, t=5, b=20),
-                    font=dict(size=7, color="#000000"),
-                    xaxis=dict(title="小时", tickfont=dict(size=6, color="#000000")),
-                    yaxis=dict(title="天数", tickfont=dict(size=6, color="#000000"))
+                    font=dict(size=8, color="#000000"),
+                    xaxis=dict(title="小时", tickfont=dict(size=10, color="#000000")),
+                    yaxis=dict(title="天数", tickfont=dict(size=10, color="#000000"))
                 )
                 st.plotly_chart(fig2, use_container_width=True)
             
@@ -553,5 +568,12 @@ with col_right:
             st.markdown(f'<span style="font-size:0.6rem;color:#666">平均峰谷差 <b>{daily_stats["峰谷差"].mean():.0f}</b> 元/MWh | 最大 {daily_stats["峰谷差"].max():.0f} | 最小 {daily_stats["峰谷差"].min():.0f}</span>', unsafe_allow_html=True)
 
 # 页脚
-st.markdown("---")
-st.markdown("📊 数据来源: 广东电力交易中心 | Powered by Streamlit")
+st.markdown('''<div style="margin-top:4px;padding:16px 0 8px;border-top:1px solid #e5e5e7;text-align:center;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;">
+        <span style="font-size:0.6rem;color:#888;">📊 数据来源: Open-Meteo · CCTD · SHPGX · 广东电力交易中心</span>
+        <span style="font-size:0.6rem;color:#888;">🔄 更新周期: 气象10分钟 · 燃料1小时 · 电价实时</span>
+    </div>
+    <div style="margin-top:8px;font-size:0.55rem;color:#aaa;">
+        © 2024-2026 电力市场多源数据监控大屏 v2.0 | Powered by Streamlit
+    </div>
+</div>''', unsafe_allow_html=True)

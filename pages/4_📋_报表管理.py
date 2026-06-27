@@ -23,7 +23,6 @@ from header_nav import render_header_nav
 render_header_nav("报表管理")
 
 st.markdown("## 📋 报表管理")
-st.markdown("---")
 
 # 数据路径
 PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")
@@ -90,7 +89,6 @@ else:
             
             # 统计汇总
             vals = df_display['电价(元/MWh)'].tolist()
-            st.markdown("---")
             col1, col2, col3, col4, col5 = st.columns(5)
             col1.metric("均价", f"{np.mean(vals):.1f}")
             col2.metric("峰值", f"{max(vals):.1f}")
@@ -120,7 +118,6 @@ else:
             st.plotly_chart(fig, use_container_width=True)
             
             # 月度统计
-            st.markdown("---")
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("月均价", f"{month_df['均价'].mean():.1f}")
             col2.metric("最高价", f"{month_df['峰值'].max():.1f}")
@@ -176,5 +173,12 @@ else:
         st.plotly_chart(fig, use_container_width=True)
 
 # 页脚
-st.markdown("---")
-st.markdown("📈 数据来源: 广东电力交易中心 | Powered by Streamlit")
+st.markdown('''<div style="margin-top:4px;padding:16px 0 8px;border-top:1px solid #e5e5e7;text-align:center;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;">
+        <span style="font-size:0.6rem;color:#888;">📊 数据来源: Open-Meteo · CCTD · SHPGX · 广东电力交易中心</span>
+        <span style="font-size:0.6rem;color:#888;">🔄 更新周期: 气象10分钟 · 燃料1小时 · 电价实时</span>
+    </div>
+    <div style="margin-top:8px;font-size:0.55rem;color:#aaa;">
+        © 2024-2026 电力市场多源数据监控大屏 v2.0 | Powered by Streamlit
+    </div>
+</div>''', unsafe_allow_html=True)
