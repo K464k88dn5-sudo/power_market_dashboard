@@ -145,17 +145,17 @@ st.markdown("""
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 12px 32px rgba(0,0,0,0.12);
     }
-    .kpi-label { font-size: 0.55rem; color: #C7C7CC; }
+    .kpi-label { font-size: 0.6rem; color: #86868B; }
     .kpi-value { 
-        font-size: 0.9rem; font-weight: 700; color: #1D1D1F; 
+        font-size: 1.2rem; font-weight: 700; color: #1D1D1F; 
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.02em;
         text-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
     .kpi-delta { 
-        font-size: 0.55rem; color: #86868B;
+        font-size: 0.6rem; color: #86868B;
         display: flex; align-items: center; justify-content: center; gap: 2px;
-        margin-top: 1px;
+        margin-top: 2px;
     }
     .kpi-sparkline { margin-top: 2px; line-height: 0; }
 
@@ -800,7 +800,7 @@ if _real_temp is not None:
     if not weather_df.empty and "温度(℃)" in weather_df.columns:
         _recent_t = weather_df["温度(℃)"].tail(24).tolist()
         _temp_sp = _make_sparkline_svg(_recent_t, "#ff6b6b", 64, 14)
-    kpi += f'<div class="kpi-card{_temp_pulse}"><div class="kpi-label">🌡️ {selected_city} 实况</div><div class="kpi-value" style="color:#ff6b6b">{_real_temp:.1f}℃</div><div class="kpi-delta" style="color:#888">{_real_weather}</div>{_temp_sp}</div>'
+    kpi += f'<div class="kpi-card{_temp_pulse}"><div class="kpi-label">🌡️ {selected_city} 实况</div><div class="kpi-value" style="color:#ff6b6b">{_real_temp:.1f}<span style="font-size:0.6rem">℃</span></div><div class="kpi-delta" style="color:#888">{_real_weather}</div>{_temp_sp}</div>'
 
 # --- 煤价 KPI（始终显示，无数据时显示N/A）---
 if fuel_summary.get("煤价最新"):
@@ -809,9 +809,9 @@ if fuel_summary.get("煤价最新"):
     _coal_sp = ""
     if not fuel_df.empty and "动力煤价格(元/吨)" in fuel_df.columns:
         _coal_sp = _make_sparkline_svg(fuel_df["动力煤价格(元/吨)"].tail(7).tolist(), "#ff9f43", 64, 14)
-    kpi += f'<div class="kpi-card"><div class="kpi-label">动力煤</div><div class="kpi-value" style="color:#ff9f43">{c:.0f}元/吨</div><div class="kpi-delta" style="color:{"#ff6b6b" if ch>0 else "#2ecc71"}">{ch:+.2f}% {_coal_arrow}</div>{_coal_sp}</div>'
+    kpi += f'<div class="kpi-card"><div class="kpi-label">⛏️ 动力煤</div><div class="kpi-value" style="color:#D2691E">{c:.0f}<span style="font-size:0.6rem">元/吨</span></div><div class="kpi-delta" style="color:{"#ff6b6b" if ch>0 else "#2ecc71"}">{ch:+.2f}% {_coal_arrow}</div>{_coal_sp}</div>'
 else:
-    kpi += '<div class="kpi-card"><div class="kpi-label">动力煤</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
+    kpi += '<div class="kpi-card"><div class="kpi-label">⛏️ 动力煤</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
 
 # --- LNG KPI（始终显示，无数据时显示N/A）---
 if fuel_summary.get("LNG出厂价"):
@@ -823,9 +823,9 @@ if fuel_summary.get("LNG出厂价"):
     if not fuel_df.empty and "LNG出厂价(元/吨)" in fuel_df.columns and len(fuel_df) >= 2:
         _lng_prev = fuel_df["LNG出厂价(元/吨)"].iloc[-2]
     _lng_arrow = _kpi_arrow(_lng_val, _lng_prev)
-    kpi += f'<div class="kpi-card"><div class="kpi-label">LNG</div><div class="kpi-value" style="color:#54a0ff">{_lng_val:.0f}元/吨</div><div class="kpi-delta" style="color:#888">参考{fuel_summary.get("LNG参考价",0):.2f}元/m³ {_lng_arrow}</div>{_lng_sp}</div>'
+    kpi += f'<div class="kpi-card"><div class="kpi-label">🔥 LNG</div><div class="kpi-value" style="color:#00BCD4">{_lng_val:.0f}<span style="font-size:0.6rem">元/吨</span></div><div class="kpi-delta" style="color:#888">参考{fuel_summary.get("LNG参考价",0):.2f}元/m³ {_lng_arrow}</div>{_lng_sp}</div>'
 else:
-    kpi += '<div class="kpi-card"><div class="kpi-label">LNG</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
+    kpi += '<div class="kpi-card"><div class="kpi-label">🔥 LNG</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
 
 # --- 电价均价 KPI（sparkline来自日前节点电价最近7天均价，脉冲>500）---
 # 优先使用实际电价数据的日期和均价，而非参考模板
@@ -854,7 +854,7 @@ if not ld and not pdf.empty and "参考电价(元/MWh)" in pdf.columns:
     ld = pdf["日期"].max(); da = pdf[pdf["日期"] == ld]["参考电价(元/MWh)"].mean()
 
 _elec_pulse = ' kpi-pulse' if da > 500 else ''
-kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价均价</div><div class="kpi-value" style="color:#0D7A3F">{da:.0f}元/MWh</div><div class="kpi-delta" style="color:#888">{ld} {_elec_arrow}</div>{_elec_sp}</div>'
+kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价均价</div><div class="kpi-value" style="color:#007AFF">{da:.0f}<span style="font-size:0.6rem">元/MWh</span></div><div class="kpi-delta" style="color:#888">{ld} {_elec_arrow}</div>{_elec_sp}</div>'
 
 # --- 统调负荷最大值 KPI ---
 _load_max_val = None
@@ -882,7 +882,7 @@ if ld:
             pass
 
 if _load_max_val is not None:
-    kpi += f'<div class="kpi-card"><div class="kpi-label">⚡ 统调负荷</div><div class="kpi-value" style="color:#dc3545">{_load_max_val:.0f}MW</div><div class="kpi-delta" style="color:#888">峰值{_load_peak_hour}时</div></div>'
+    kpi += f'<div class="kpi-card"><div class="kpi-label">⚡ 统调负荷</div><div class="kpi-value" style="color:#dc3545">{_load_max_val:.0f}<span style="font-size:0.6rem">MW</span></div><div class="kpi-delta" style="color:#888">峰值{_load_peak_hour}时</div></div>'
 else:
     kpi += '<div class="kpi-card"><div class="kpi-label">⚡ 统调负荷</div><div class="kpi-value" style="color:#C7C7CC">N/A</div><div class="kpi-delta" style="color:#C7C7CC">暂无数据</div></div>'
 
@@ -1100,7 +1100,7 @@ with col2:
             gd_temp = copy.deepcopy(GD_GEOJSON)
             for f in gd_temp["features"]: f["properties"]["温度"] = temp_map.get(f["properties"]["adcode"],0)
 
-            cmap = LinearColormap(colors=["#2196F3","#00BCD4","#FFC107","#FF9800","#F44336","#B71C1C","#9C27B0"],vmin=18,vmax=40)
+            cmap = LinearColormap(colors=["#2196F3","#00BCD4","#FFC107","#FF9800","#F44336","#B71C1C","#9C27B0"],vmin=20,vmax=40)
 
             all_c = []
             def ext(c):
@@ -1175,8 +1175,8 @@ with col2:
 
             folium.GeoJson(gd_temp,
                 style_function=lambda f:{"fillColor":cmap(f["properties"].get("温度",0)),"color":"#e5e5e7","weight":1.5,"fillOpacity":0.5},
-                tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度:"],
-                    style="background:rgba(255,255,255,.9);color:#1a1a1a;padding:3px;border-radius:4px;font-size:11px;border:1px solid transparent;"),
+                tooltip=GeoJsonTooltip(fields=["name","温度"],aliases=["城市:","温度(℃):"],
+                    style="background:rgba(255,255,255,0.95);color:#1a1a1a;padding:6px 10px;border-radius:8px;font-size:12px;border:1px solid #E5E5EA;box-shadow:0 2px 8px rgba(0,0,0,0.1);"),
                 highlight_function=lambda x:{"weight":3,"fillOpacity":0.85}).add_to(m)
 
             for feat in GD_GEOJSON["features"]:
@@ -1208,7 +1208,7 @@ with col2:
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
             # 色阶图例 + 修复公网白色背景JS
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
-                <span>18℃</span>
+                <span>20℃</span>
                 <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2196F3,#00BCD4,#FFC107,#FF9800,#F44336,#B71C1C,#9C27B0)"></div>
                 <span>40℃</span>
             </div>
@@ -1516,17 +1516,17 @@ with col3:
             if has_data:
                 # 峰谷区间着色
                 _shapes = []
-                # 谷时 0-6: 蓝色
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=-0.5, x1=6.5, y0=0, y1=1, fillcolor="rgba(84,160,255,0.06)", line_width=0))
+                # 谷时 0-6: 浅绿
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=-0.5, x1=6.5, y0=0, y1=1, fillcolor="rgba(40,167,69,0.10)", line_width=0))
                 # 平时 7: 无色
                 # 峰时 8-12, 14-17: 浅红
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=7.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=13.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.06)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=7.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.10)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=13.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,107,107,0.10)", line_width=0))
                 # 尖峰 10-12, 15-17: 深红
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=9.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=14.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(255,71,87,0.08)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=9.5, x1=12.5, y0=0, y1=1, fillcolor="rgba(220,53,69,0.12)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=14.5, x1=17.5, y0=0, y1=1, fillcolor="rgba(220,53,69,0.12)", line_width=0))
                 # 晚间 18-23: 浅灰
-                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.04)", line_width=0))
+                _shapes.append(dict(type="rect", xref="x", yref="paper", x0=17.5, x1=23.5, y0=0, y1=1, fillcolor="rgba(136,136,136,0.06)", line_width=0))
 
                 fig.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=210, template="neumorphic",
                     showlegend=True,
