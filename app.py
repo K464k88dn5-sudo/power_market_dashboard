@@ -1000,7 +1000,7 @@ with col1:
             _max_t = weather_df["温度(℃)"].max()
             _avg_t = weather_df["温度(℃)"].mean()
 
-            _wx_html = '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">'
+            _wx_html = '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;margin-bottom:17px">'
             for _label,_val,_sub in [("实况温度",f"{_cur_t:.1f}℃",f"{_cur_wx}"),
                                       ("预报均温",f"{_avg_t:.1f}℃",""),
                                       ("预报极值",f"{_min_t:.0f}~{_max_t:.0f}℃",""),
@@ -1029,7 +1029,7 @@ with col1:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#ff9f43",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(255,159,67,0.1)"))
 
-                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=200,template="neumorphic",showlegend=False,
+                fig_coal.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=191,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="动力煤价格(元/吨)",font=dict(size=10, color="#000000")))
@@ -1056,7 +1056,7 @@ with col1:
                     mode="lines+markers",marker=dict(size=3),
                     line=dict(color="#54a0ff",width=1.5,shape="spline"),fill="tozeroy",fillcolor="rgba(84,160,255,0.1)"))
 
-                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=200,template="neumorphic",showlegend=False,
+                fig_lng.update_layout(transition=dict(duration=500, easing="cubic-in-out"), height=191,template="neumorphic",showlegend=False,
                     hovermode="x unified",
                     margin=dict(l=30,r=10,t=30,b=30),font=dict(size=8, color="#000000"),
                     title=dict(text="LNG出厂价(元/吨)",font=dict(size=10, color="#000000")))
@@ -1204,7 +1204,7 @@ with col2:
                     icon_size=(55,28),icon_anchor=(27,14))).add_to(m)
 
             # 计算地图高度：窗口高度 - 标题栏 - KPI卡片 - 模块标题 - 图例统计
-            _map_height = 318
+            _map_height = 300
             st_folium(m,width="100%",height=_map_height,returned_objects=[])
             # 色阶图例 + 修复公网白色背景JS
             _legend_html = '''<div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:0.5rem;color:#000000">
@@ -1323,12 +1323,12 @@ with col2:
 
         if not _mach.empty:
             _mach_html = f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;display:block;margin-bottom:2px;">🔩 机组检修（{len(_mach)}台）</span>'
-            _mach_html += _df_to_dark_html(_mach, 175, col_widths=["30%", "15%", "15%", "20%", "20%"])
+            _mach_html += _df_to_dark_html(_mach, 186, col_widths=["30%", "15%", "15%", "20%", "20%"])
             st.markdown(_mach_html, unsafe_allow_html=True)
 
         if not _line.empty:
             _line_html = f'<span style="font-size:0.6rem;font-weight:bold;color:#ff9f43;display:block;margin-bottom:2px;">⚡ 输变电检修（{len(_line)}条）</span>'
-            _line_html += _df_to_dark_html(_line, 180)
+            _line_html += _df_to_dark_html(_line, 186)
             st.markdown(_line_html, unsafe_allow_html=True)
             st.markdown('<div style="height:1px"></div>', unsafe_allow_html=True)
 
