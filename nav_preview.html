@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+    background: #F5F5F7;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.nav-container {
+    width: 1200px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,242,245,0.95) 100%);
+    border: 1px solid #E5E5EA;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    height: 50px;
+}
+.logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #007AFF, #0056b3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #00d2d3;
+    letter-spacing: 3px;
+    margin-left: 60px;
+    flex: 1;
+    text-align: center;
+}
+.time {
+    font-size: 14px;
+    color: #666;
+}
+.tab-bar {
+    display: flex;
+    padding: 0 20px;
+    margin-top: -1px;
+    position: relative;
+}
+.tab {
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    background: #E8EAED;
+    border: 1px solid #E5E5EA;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 2px;
+    position: relative;
+}
+.tab:hover {
+    background: #F0F2F5;
+    color: #1D1D1F;
+}
+.tab.active {
+    background: white;
+    color: #007AFF;
+    border-color: #E5E5EA;
+    border-bottom: 1px solid white;
+    z-index: 1;
+    font-weight: 600;
+}
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #007AFF;
+}
+.sync-btn {
+    margin-left: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #666;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #E5E5EA;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.content-area {
+    background: white;
+    border: 1px solid #E5E5EA;
+    border-radius: 0 0 14px 14px;
+    min-height: 100px;
+    padding: 20px;
+    margin: 0 0 0 0;
+}
+</style>
+</head>
+<body>
+<div class="nav-container">
+    <div class="header">
+        <div class="logo">⚡</div>
+        <div class="title">电力市场多源数据监控大屏</div>
+        <div class="time">2026-06-27 22:50</div>
+    </div>
+    <div class="tab-bar">
+        <div class="tab active">📊 电力大屏</div>
+        <div class="tab">📈 数据分析</div>
+        <div class="tab">📋 历史数据</div>
+        <div class="tab">📡 实时数据</div>
+        <div class="tab">📝 报表管理</div>
+        <div class="sync-btn">☁️ 同步公网</div>
+    </div>
+    <div class="content-area">
+        <p style="color:#888;font-size:13px;">页面内容区域...</p>
+    </div>
+</div>
+</body>
+</html>

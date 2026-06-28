@@ -119,7 +119,7 @@ st.markdown("""
     }
 
     /* KPI 行 */
-    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; margin-top: -28px; }
+    .kpi-bar { display: flex; gap: 0.5rem; margin-bottom: 12px; margin-top: -19px; }
     .kpi-card {
         flex: 1;
         background: rgba(255,255,255,0.78);
@@ -730,7 +730,7 @@ inject_styles()
 
 # 标题栏和导航栏（使用共享模块）
 from header_nav import render_header_nav
-render_header_nav("电力大屏")
+render_header_nav("电力大屏", margin_top="4px")
 
 # ============================================================
 # KPI 行（实时数据）

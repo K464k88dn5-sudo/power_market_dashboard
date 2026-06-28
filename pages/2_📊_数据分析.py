@@ -19,7 +19,9 @@ def _now(): return datetime.now(_CN_TZ)
 
 # 标题栏和导航栏
 from header_nav import render_header_nav
-render_header_nav("数据分析")
+render_header_nav("数据分析", margin_top="-12px")
+
+
 
 # 定义neumorphic模板
 import plotly.io as pio

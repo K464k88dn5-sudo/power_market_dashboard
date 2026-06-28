@@ -17,7 +17,9 @@ _CN_TZ = timezone(timedelta(hours=8))
 def _now(): return datetime.now(_CN_TZ)
 
 from header_nav import render_header_nav
-render_header_nav("历史数据")
+render_header_nav("历史数据", margin_top="-12px")
+
+
 
 # 数据路径
 PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")

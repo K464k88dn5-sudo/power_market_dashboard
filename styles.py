@@ -27,7 +27,7 @@ SHARED_CSS = """
     .dash-header {
         margin-top: 6px;
         background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,242,245,0.95) 100%);
-        border: 1px solid #E5E5EA;
+        border: 1px solid #ffffff;
         border-radius: 14px;
         padding: 8px 16px;
         margin-bottom: 12px;
@@ -39,7 +39,7 @@ SHARED_CSS = """
     /* 模块卡片 */
     .mod-card {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-        border: 1px solid #E5E5EA;
+        border: 1px solid #ffffff;
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
@@ -54,7 +54,7 @@ SHARED_CSS = """
     /* st.container(border=True) 样式 */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
-        border: 1px solid #E5E5EA !important;
+        border: 1px solid #ffffff !important;
         border-radius: 12px !important;
         padding: 12px 12px 20px 12px !important;
         margin-bottom: 12px !important;
@@ -67,16 +67,17 @@ SHARED_CSS = """
 
     /* 模块标题 */
     .mod-head {
-        font-size: 0.7rem; font-weight: 600;
+        font-size: 0.8rem; font-weight: 600;
         padding: 0.35rem 0.5rem; margin-bottom: 0.3rem;
         border-bottom: 2px solid #e5e5e7;
         color: #1D1D1F;
         display: flex; align-items: baseline; gap: 8px;
-        background: #ffffff;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
         border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     }
     .mod-sub {
-        font-size: 0.5rem; font-weight: 400; color: #C7C7CC;
+        font-size: 0.6rem; font-weight: 400; color: #86868B;
     }
 
     /* 图表容器 */
@@ -84,7 +85,7 @@ SHARED_CSS = """
         margin: 0 !important; padding: 0.3rem !important;
         background: transparent !important;
         border-radius: 10px !important;
-        border: 1px solid rgba(0,0,0,0.06) !important;
+        border: 1px solid #ffffff !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         overflow: hidden !important;
     }
@@ -96,23 +97,20 @@ SHARED_CSS = """
     [data-testid="stMetric"] { padding: 0.05rem 0 !important; }
 
     /* DataFrame样式 */
-    [data-testid="stDataFrame"] th { background: #F5F5F7 !important; color: #1a1a1a !important; }
-    [data-testid="stDataFrame"] td { background: #ffffff !important; color: #1a1a1a !important; }
+    [data-testid="stDataFrame"] th { background: #F5F5F7 !important; color: #1a1a1a !important; font-size: 12px !important; text-align: center !important; }
+    [data-testid="stDataFrame"] td { background: #ffffff !important; color: #1a1a1a !important; font-size: 12px !important; text-align: center !important; }
 
     /* 按钮样式 */
     .stButton > button {
         border-radius: 8px !important;
         font-size: 0.75rem !important;
-        border: 1px solid #E5E5EA !important;
+        border: 1px solid #ffffff !important;
         background: rgba(255,255,255,0.8) !important;
         color: #1D1D1F !important;
         transition: all 0.2s !important;
+        margin: 0 !important;
     }
-    .stButton > button:hover {
-        background: #007bff !important;
-        color: white !important;
-        border-color: #007bff !important;
-    }
+
     .stButton > button:active {
         background: #0D7A3F !important;
         border-color: #0D7A3F !important;
@@ -121,12 +119,89 @@ SHARED_CSS = """
     /* Selectbox样式 */
     div[data-baseweb="select"] {
         border-radius: 8px !important;
+        border: 1px solid #ffffff !important;
     }
 
     /* 隐藏不需要的元素 */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+
+    /* 强制所有容器边框为白色 */
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stVerticalBlockBorderWrapper"] > div,
+    div[data-testid="stVerticalBlockBorderWrapper"] > div > div {
+        border-color: #ffffff !important;
+        border: 1px solid #ffffff !important;
+    }
+    
+    /* 强制所有卡片边框为白色 */
+    .stMarkdown,
+    .stMarkdown > div,
+    .stMarkdown > div > div {
+        border-color: #ffffff !important;
+    }
+
+    /* 确保图表背景透明 */
+    .stPlotlyChart > div {
+        background: transparent !important;
+        overflow: hidden !important;
+    }
+    .stPlotlyChart .plotly .main-svg {
+        background: transparent !important;
+    }
+    .stPlotlyChart .plotly .svg-container {
+        background: transparent !important;
+    }
+
+    /* folium 地图 — 全面覆盖所有wrapper */
+    .stFolium, .stFolium > iframe, .stFolium > div,
+    [data-testid="stFolium"], [data-testid="stFolium"] > div,
+    [data-testid="stFolium"] > iframe,
+    iframe[src*="st_folium"], iframe[src*="st_folium"] + div,
+    iframe[src*="streamlit_folium"] {
+        background: transparent !important;
+        border-radius: 14px;
+        overflow: hidden !important;
+    }
+    /* 隐藏iframe外层所有sibling元素（folium组件常在iframe后追加div） */
+    iframe[src*="streamlit_folium"] ~ * {
+        display: none !important;
+        height: 0 !important;
+        width: 0 !important;
+    }
+    /* 隐藏iframe内所有控件 */
+    .stFolium iframe,
+    [data-testid="stFolium"] iframe,
+    iframe[src*="streamlit_folium"] {
+        overflow: hidden !important;
+    }
+    .stFolium iframe .leaflet-control-zoom,
+    .stFolium iframe .leaflet-control-attribution {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+
+
+
+    /* 导航按钮悬停效果（不覆盖选中状态） */
+    .stButton > button:hover:not([style*="background: #007AFF"]) {
+        background: #87CEEB !important;
+        color: #ffffff !important;
+        border-color: #87CEEB !important;
+    }
+
+
+    /* 减少标题栏和导航栏之间的间距 */
+    .stMarkdown {
+        margin-bottom: 0 !important;
+    }
+
+    /* 减少标题栏和导航栏之间的间距 */
+    [data-testid="stVerticalBlock"] > div {
+        gap: 0 !important;
+    }
 </style>
 """
 
