@@ -1707,39 +1707,64 @@ with col3:
                     _rt_kpi_parts.append('偏差 <b>--</b>')
                 st.markdown(f'<span style="font-size:0.6rem;color:#666">{" | ".join(_rt_kpi_parts)}</span>', unsafe_allow_html=True)
 
-                # ===== 负荷曲线图表（省内B类电源）=====
+                # ===== 负荷曲线图表（日前预测+实时实际）=====
                 _load_fig = go.Figure()
                 _load_has_data = False
                 
-                # 从披露数据读取省内B类电源
-                _disclosure_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-                _load_fp = os.path.join(_disclosure_dir, f"信息披露查询预测信息({sel_date}).xlsx")
+                # 数据源路径
+                _pred_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+                _actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
                 
-                if os.path.exists(_load_fp):
+                # 读取日前预测数据（统调负荷预测）
+                _pred_fp = os.path.join(_pred_dir, f"信息披露查询预测信息({sel_date}).xlsx")
+                if os.path.exists(_pred_fp):
                     try:
-                        _load_xl = pd.ExcelFile(_load_fp)
-                        for s in _load_xl.sheet_names:
-                            if "负荷预测" in s:
-                                _load_df = pd.read_excel(_load_fp, sheet_name=s, header=None, skiprows=1)
-                                for _, row in _load_df.iterrows():
-                                    ch = str(row.iloc[1]) if len(row) > 1 else ""
-                                    if "B类电源" in ch:
-                                        _load_vals = []
-                                        for col_idx in range(2, min(98, len(row))):
-                                            try:
-                                                _load_vals.append(float(row.iloc[col_idx]))
-                                            except:
-                                                pass
-                                        if len(_load_vals) >= 96:
-                                            _load_hourly = [np.mean(_load_vals[h*4:(h+1)*4]) for h in range(24)]
-                                            _load_fig.add_trace(go.Scattergl(
-                                                x=list(range(24)), y=_load_hourly,
-                                                name=f"B类电源 {sel_date}",
-                                                line=dict(color="#54a0ff", width=2),
-                                                mode="lines+markers", marker=dict(size=4),
-                                                fill="tozeroy", fillcolor="rgba(84,160,255,0.08)"
-                                            ))
-                                            _load_has_data = True
+                        _pred_df = pd.read_excel(_pred_fp, sheet_name=0, header=None, skiprows=1)
+                        for _, row in _pred_df.iterrows():
+                            ch = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
+                            if "统调负荷" in ch and "预测" in ch:
+                                _pred_vals = []
+                                for col_idx in range(1, min(25, len(row))):
+                                    try:
+                                        _pred_vals.append(float(row.iloc[col_idx]))
+                                    except:
+                                        pass
+                                if len(_pred_vals) >= 24:
+                                    _load_fig.add_trace(go.Scattergl(
+                                        x=list(range(24)), y=_pred_vals,
+                                        name=f"日前预测 {sel_date}",
+                                        line=dict(color="#ff6b6b", width=2),
+                                        mode="lines+markers", marker=dict(size=4),
+                                        fill="tozeroy", fillcolor="rgba(255,107,107,0.08)"
+                                    ))
+                                    _load_has_data = True
+                                break
+                    except Exception as e:
+                        pass
+                
+                # 读取实时实际数据（统调负荷实际）
+                _actual_fp = os.path.join(_actual_dir, f"信息披露查询实际信息({sel_date}).xlsx")
+                if os.path.exists(_actual_fp):
+                    try:
+                        _actual_df = pd.read_excel(_actual_fp, sheet_name=0, header=None, skiprows=1)
+                        for _, row in _actual_df.iterrows():
+                            ch = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
+                            if "统调负荷" in ch and "实际" in ch:
+                                _actual_vals = []
+                                for col_idx in range(1, min(25, len(row))):
+                                    try:
+                                        _actual_vals.append(float(row.iloc[col_idx]))
+                                    except:
+                                        pass
+                                if len(_actual_vals) >= 24:
+                                    _load_fig.add_trace(go.Scattergl(
+                                        x=list(range(24)), y=_actual_vals,
+                                        name=f"实时实际 {sel_date}",
+                                        line=dict(color="#54a0ff", width=2),
+                                        mode="lines+markers", marker=dict(size=4),
+                                        fill="tozeroy", fillcolor="rgba(84,160,255,0.08)"
+                                    ))
+                                    _load_has_data = True
                                 break
                     except Exception as e:
                         pass
@@ -1765,13 +1790,18 @@ with col3:
                         _load_fig.update_yaxes(range=[_load_y_min - _load_pad, _load_y_max + _load_pad])
                     st.plotly_chart(_load_fig, use_container_width=True)
                     
-                    # 负荷KPI（始终显示）
-                    _load_avg = np.nanmean(_load_hourly)
-                    _load_max = max(_load_hourly)
-                    _load_min = min(_load_hourly)
-                    _load_peak_h = _load_hourly.index(_load_max)
-                    _load_valley_h = _load_hourly.index(_load_min)
-                    st.markdown(f'<span style="font-size:0.6rem;color:#666">日均 <b>{_load_avg:.0f}</b> MW | 峰值 <b>{_load_max:.0f}</b> MW {_load_peak_h}时 | 谷值 <b>{_load_min:.0f}</b> MW {_load_valley_h}时</span>', unsafe_allow_html=True)
+                    # 负荷KPI（显示日前预测和实时实际）
+                    _kpi_parts = []
+                    for _tr in _load_fig.data:
+                        if _tr.y is not None and len(_tr.y) > 0:
+                            _tr_avg = np.nanmean(_tr.y)
+                            _tr_max = max(_tr.y)
+                            _tr_min = min(_tr.y)
+                            _tr_peak_h = list(_tr.y).index(_tr_max)
+                            _tr_valley_h = list(_tr.y).index(_tr_min)
+                            _kpi_parts.append(f'{_tr.name}: 日均 <b>{_tr_avg:.0f}</b> | 峰 <b>{_tr_max:.0f}</b> {_tr_peak_h}时 | 谷 <b>{_tr_min:.0f}</b> {_tr_valley_h}时')
+                    if _kpi_parts:
+                        st.markdown(f'<span style="font-size:0.6rem;color:#666">{" | ".join(_kpi_parts)}</span>', unsafe_allow_html=True)
                 else:
                     st.markdown('<span style="font-size:0.6rem;color:#666">日均 <b>--</b> MW | 峰值 <b>--</b> MW | 谷值 <b>--</b> MW</span>', unsafe_allow_html=True)
 
