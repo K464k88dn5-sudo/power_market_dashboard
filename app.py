@@ -523,7 +523,7 @@ with open(GEO_PATH, "r", encoding="utf-8") as f:
 def cached_weather(city, days):
     return get_weather_data(city, days)
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=300)
 def cached_all_cities_temp():
     """获取广东21地市当前实时观测温度（wttr.in气象站实测数据）"""
     return get_current_city_temps()
