@@ -194,28 +194,30 @@ with col3:
                     if len(pred_df) > 0:
                         load_row = None
                         for idx, row in pred_df.iterrows():
-                            if pd.notna(row.iloc[0]) and '统调负荷' in str(row.iloc[0]) and '预测' in str(row.iloc[0]):
+                            ch = str(row.iloc[1]) if len(row) > 1 and pd.notna(row.iloc[1]) else ""
+                            if "统调负荷" in ch:
                                 load_row = row
                                 break
                         if load_row is not None:
                             load_vals = []
-                            for col_idx in range(1, min(25, len(pred_df.columns))):
+                            for col_idx in range(2, min(98, len(pred_df.columns))):
                                 try: load_vals.append(float(load_row.iloc[col_idx]))
                                 except: pass
-                            if len(load_vals) >= 24:
+                            if len(load_vals) >= 96:
+                                load_hourly = [np.mean(load_vals[h*4:(h+1)*4]) for h in range(24)]
                                 fig = go.Figure()
-                                fig.add_trace(go.Scatter(x=list(range(24)), y=load_vals, mode='lines+markers', name='统调负荷预测', line=dict(color='#28a745', width=2), marker=dict(size=6), fill='tozeroy', fillcolor='rgba(40,167,69,0.1)'))
-                                pk_idx = load_vals.index(max(load_vals))
-                                vl_idx = load_vals.index(min(load_vals))
-                                fig.add_annotation(x=pk_idx, y=max(load_vals), text=f'{max(load_vals):.0f}', showarrow=True, arrowhead=2, font=dict(color='red'))
-                                fig.add_annotation(x=vl_idx, y=min(load_vals), text=f'{min(load_vals):.0f}', showarrow=True, arrowhead=2, font=dict(color='green'))
+                                fig.add_trace(go.Scatter(x=list(range(24)), y=load_hourly, mode='lines+markers', name='统调负荷预测', line=dict(color='#28a745', width=2), marker=dict(size=6), fill='tozeroy', fillcolor='rgba(40,167,69,0.1)'))
+                                pk_idx = load_hourly.index(max(load_hourly))
+                                vl_idx = load_hourly.index(min(load_hourly))
+                                fig.add_annotation(x=pk_idx, y=max(load_hourly), text=f'{max(load_hourly):.0f}', showarrow=True, arrowhead=2, font=dict(color='red'))
+                                fig.add_annotation(x=vl_idx, y=min(load_hourly), text=f'{min(load_hourly):.0f}', showarrow=True, arrowhead=2, font=dict(color='green'))
                                 fig.update_layout(title='统调负荷预测曲线', xaxis_title='小时', yaxis_title='MW', height=300, margin=dict(l=30, r=10, t=30, b=30))
                                 st.plotly_chart(fig, use_container_width=True)
                                 c1, c2 = st.columns(2)
-                                c1.metric("日均负荷", f"{np.nanmean(load_vals):.0f}")
-                                c2.metric("峰谷差", f"{max(load_vals)-min(load_vals):.0f}")
+                                c1.metric("日均负荷", f"{np.nanmean(load_hourly):.0f}")
+                                c2.metric("峰谷差", f"{max(load_hourly)-min(load_hourly):.0f}")
                             else:
-                                st.warning("统调负荷预测数据不足24小时")
+                                st.warning("统调负荷预测数据不足96点")
                         else:
                             st.warning("未找到统调负荷预测数据行")
                 except Exception as e:
@@ -234,28 +236,30 @@ with col3:
                     if len(pred_df) > 0:
                         b_row = None
                         for idx, row in pred_df.iterrows():
-                            if pd.notna(row.iloc[0]) and 'B类' in str(row.iloc[0]):
+                            ch = str(row.iloc[1]) if len(row) > 1 and pd.notna(row.iloc[1]) else ""
+                            if "B类" in ch:
                                 b_row = row
                                 break
                         if b_row is not None:
                             b_vals = []
-                            for col_idx in range(1, min(25, len(pred_df.columns))):
+                            for col_idx in range(2, min(98, len(pred_df.columns))):
                                 try: b_vals.append(float(b_row.iloc[col_idx]))
                                 except: pass
-                            if len(b_vals) >= 24:
+                            if len(b_vals) >= 96:
+                                b_hourly = [np.mean(b_vals[h*4:(h+1)*4]) for h in range(24)]
                                 fig = go.Figure()
-                                fig.add_trace(go.Scatter(x=list(range(24)), y=b_vals, mode='lines+markers', name='省内B类电源', line=dict(color='#fd7e14', width=2), marker=dict(size=6), fill='tozeroy', fillcolor='rgba(253,126,20,0.1)'))
-                                pk_idx = b_vals.index(max(b_vals))
-                                vl_idx = b_vals.index(min(b_vals))
-                                fig.add_annotation(x=pk_idx, y=max(b_vals), text=f'{max(b_vals):.0f}', showarrow=True, arrowhead=2, font=dict(color='red'))
-                                fig.add_annotation(x=vl_idx, y=min(b_vals), text=f'{min(b_vals):.0f}', showarrow=True, arrowhead=2, font=dict(color='green'))
+                                fig.add_trace(go.Scatter(x=list(range(24)), y=b_hourly, mode='lines+markers', name='省内B类电源', line=dict(color='#fd7e14', width=2), marker=dict(size=6), fill='tozeroy', fillcolor='rgba(253,126,20,0.1)'))
+                                pk_idx = b_hourly.index(max(b_hourly))
+                                vl_idx = b_hourly.index(min(b_hourly))
+                                fig.add_annotation(x=pk_idx, y=max(b_hourly), text=f'{max(b_hourly):.0f}', showarrow=True, arrowhead=2, font=dict(color='red'))
+                                fig.add_annotation(x=vl_idx, y=min(b_hourly), text=f'{min(b_hourly):.0f}', showarrow=True, arrowhead=2, font=dict(color='green'))
                                 fig.update_layout(title='省内B类电源曲线', xaxis_title='小时', yaxis_title='MW', height=300, margin=dict(l=30, r=10, t=30, b=30))
                                 st.plotly_chart(fig, use_container_width=True)
                                 c1, c2 = st.columns(2)
-                                c1.metric("日均出力", f"{np.nanmean(b_vals):.0f}")
-                                c2.metric("峰谷差", f"{max(b_vals)-min(b_vals):.0f}")
+                                c1.metric("日均出力", f"{np.nanmean(b_hourly):.0f}")
+                                c2.metric("峰谷差", f"{max(b_hourly)-min(b_hourly):.0f}")
                             else:
-                                st.warning("省内B类电源数据不足24小时")
+                                st.warning("省内B类电源数据不足96点")
                         else:
                             st.warning("未找到省内B类电源数据行")
                 except Exception as e:
