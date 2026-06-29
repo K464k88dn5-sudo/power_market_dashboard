@@ -168,9 +168,11 @@ def fetch_current_observation(city: str) -> dict:
 
 def fetch_all_cities_current() -> pd.DataFrame:
     """
-    获取广东21地市当前实况温度
+    获取广东21地市当前实况温度（并行获取）
     返回 DataFrame: 城市, adcode, 温度, 湿度, 风速, 天气
     """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    
     city_adcode = {
         "广州":"440100","韶关":"440200","深圳":"440300","珠海":"440400",
         "汕头":"440500","佛山":"440600","江门":"440700","湛江":"440800",
@@ -180,17 +182,27 @@ def fetch_all_cities_current() -> pd.DataFrame:
     }
 
     results = []
-    for city in GUANGDONG_CITIES:
-        obs = fetch_current_observation(city)
-        if obs:
-            results.append({
-                "城市": city,
-                "adcode": city_adcode.get(city, ""),
-                "温度": obs["温度"],
-                "湿度": obs["湿度"],
-                "风速": obs["风速"],
-                "天气": obs["天气"],
-            })
+    cities = list(GUANGDONG_CITIES.keys())
+    
+    # 并行获取21个城市
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        future_to_city = {executor.submit(fetch_current_observation, city): city for city in cities}
+        for future in as_completed(future_to_city):
+            city = future_to_city[future]
+            try:
+                obs = future.result()
+                if obs:
+                    results.append({
+                        "城市": city,
+                        "adcode": city_adcode.get(city, ""),
+                        "温度": obs["温度"],
+                        "湿度": obs["湿度"],
+                        "风速": obs["风速"],
+                        "天气": obs["天气"],
+                    })
+            except Exception as e:
+                pass
+    
     return pd.DataFrame(results)
 
 
