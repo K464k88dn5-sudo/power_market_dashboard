@@ -51,104 +51,111 @@ def _load_cache(cache_file):
 # ============================================================
 def get_weather_data(city="广州", forecast_days=2):
     """
-    获取气象数据（优先缓存，过期自动更新）
+    获取气象数据（优先实时获取，缓存作为兜底）
     """
     from data_sources.weather_api import fetch_weather_single
     
     cache_key = f"{city}_{forecast_days}d"
     
-    # 检查缓存
-    if _is_cache_fresh(WEATHER_CACHE, WEATHER_MAX_AGE):
-        cached = _load_cache(WEATHER_CACHE)
-        if cached and cache_key in cached:
-            df = pd.DataFrame(cached[cache_key])
-            if not df.empty and "时间" in df.columns:
-                df["时间"] = pd.to_datetime(df["时间"])
-            return df
-    
-    # 缓存过期，从API获取
-    df = fetch_weather_single(city, forecast_days=forecast_days)
-    
-    # 更新缓存
+    # 优先从API获取实时数据
     try:
-        existing = _load_cache(WEATHER_CACHE) or {}
+        df = fetch_weather_single(city, forecast_days=forecast_days)
         if not df.empty:
-            df_save = df.copy()
-            if "时间" in df_save.columns:
-                df_save["时间"] = df_save["时间"].astype(str)
-            existing[cache_key] = df_save.to_dict(orient="records")
-        _save_cache(WEATHER_CACHE, existing)
-    except:
+            # 更新缓存
+            try:
+                existing = _load_cache(WEATHER_CACHE) or {}
+                df_save = df.copy()
+                if "时间" in df_save.columns:
+                    df_save["时间"] = df_save["时间"].astype(str)
+                existing[cache_key] = df_save.to_dict(orient="records")
+                _save_cache(WEATHER_CACHE, existing)
+            except:
+                pass
+            return df
+    except Exception as e:
         pass
     
-    return df
+    # API失败，使用缓存作为兜底
+    cached = _load_cache(WEATHER_CACHE)
+    if cached and cache_key in cached:
+        df = pd.DataFrame(cached[cache_key])
+        if not df.empty and "时间" in df.columns:
+            df["时间"] = pd.to_datetime(df["时间"])
+        return df
+    
+    return pd.DataFrame()
 
 def get_all_cities_weather(forecast_days=2):
     """
-    获取所有城市气象数据（优先缓存，过期自动更新）
+    获取所有城市气象数据（优先实时获取，缓存作为兜底）
     """
     from data_sources.weather_api import fetch_all_cities_parallel
     
     cache_key = f"all_cities_{forecast_days}d"
     
-    # 检查缓存
-    if _is_cache_fresh(WEATHER_CACHE, WEATHER_MAX_AGE):
-        cached = _load_cache(WEATHER_CACHE)
-        if cached and cache_key in cached:
-            df = pd.DataFrame(cached[cache_key])
-            if not df.empty and "时间" in df.columns:
-                df["时间"] = pd.to_datetime(df["时间"])
-            return df
-    
-    # 缓存过期，从API获取
-    results, errors = fetch_all_cities_parallel(forecast_days=forecast_days)
-    dfs = []
-    for city, city_df in results.items():
-        if not city_df.empty:
-            dfs.append(city_df)
-    df = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
-    
-    # 更新缓存
+    # 优先从API获取实时数据
     try:
-        existing = _load_cache(WEATHER_CACHE) or {}
+        results, errors = fetch_all_cities_parallel(forecast_days=forecast_days)
+        dfs = []
+        for city, city_df in results.items():
+            if not city_df.empty:
+                dfs.append(city_df)
+        df = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+        
         if not df.empty:
-            df_save = df.copy()
-            if "时间" in df_save.columns:
-                df_save["时间"] = df_save["时间"].astype(str)
-            existing[cache_key] = df_save.to_dict(orient="records")
-        _save_cache(WEATHER_CACHE, existing)
-    except:
+            # 更新缓存
+            try:
+                existing = _load_cache(WEATHER_CACHE) or {}
+                df_save = df.copy()
+                if "时间" in df_save.columns:
+                    df_save["时间"] = df_save["时间"].astype(str)
+                existing[cache_key] = df_save.to_dict(orient="records")
+                _save_cache(WEATHER_CACHE, existing)
+            except:
+                pass
+            return df
+    except Exception as e:
         pass
     
-    return df
+    # API失败，使用缓存作为兜底
+    cached = _load_cache(WEATHER_CACHE)
+    if cached and cache_key in cached:
+        df = pd.DataFrame(cached[cache_key])
+        if not df.empty and "时间" in df.columns:
+            df["时间"] = pd.to_datetime(df["时间"])
+        return df
+    
+    return pd.DataFrame()
 
 def get_current_city_temps():
     """
-    获取当前城市温度（优先缓存，过期自动更新）
+    获取当前城市温度（优先实时获取，缓存作为兜底）
     """
     from data_sources.weather_api import fetch_all_cities_current
     
     cache_key = "current_temps"
     
-    # 检查缓存（15分钟）
-    if _is_cache_fresh(WEATHER_CACHE, timedelta(minutes=15)):
-        cached = _load_cache(WEATHER_CACHE)
-        if cached and cache_key in cached:
-            return pd.DataFrame(cached[cache_key])
-    
-    # 缓存过期，从API获取
-    df = fetch_all_cities_current()
-    
-    # 更新缓存
+    # 优先从API获取实时数据
     try:
-        existing = _load_cache(WEATHER_CACHE) or {}
+        df = fetch_all_cities_current()
         if not df.empty:
-            existing[cache_key] = df.to_dict(orient="records")
-        _save_cache(WEATHER_CACHE, existing)
-    except:
+            # 更新缓存
+            try:
+                existing = _load_cache(WEATHER_CACHE) or {}
+                existing[cache_key] = df.to_dict(orient="records")
+                _save_cache(WEATHER_CACHE, existing)
+            except:
+                pass
+            return df
+    except Exception as e:
         pass
     
-    return df
+    # API失败，使用缓存作为兜底
+    cached = _load_cache(WEATHER_CACHE)
+    if cached and cache_key in cached:
+        return pd.DataFrame(cached[cache_key])
+    
+    return pd.DataFrame()
 
 
 # ============================================================
@@ -156,51 +163,67 @@ def get_current_city_temps():
 # ============================================================
 def get_fuel_data(days=30):
     """
-    获取燃料价格数据（优先缓存，过期自动更新）
+    获取燃料价格数据（优先实时获取，缓存作为兜底）
     """
     from data_sources.fuel_api import build_fuel_display_data
     
     cache_key = f"fuel_{days}d"
     
-    # 检查缓存
-    if _is_cache_fresh(FUEL_CACHE, FUEL_MAX_AGE):
-        cached = _load_cache(FUEL_CACHE)
-        if cached and cache_key in cached:
-            df = pd.DataFrame(cached[cache_key])
-            if not df.empty and "日期" in df.columns:
-                df["日期"] = pd.to_datetime(df["日期"])
-            return df
-    
-    # 缓存过期，从API获取
-    df = build_fuel_display_data(days)
-    
-    # 更新缓存
+    # 优先从API获取实时数据
     try:
-        existing = _load_cache(FUEL_CACHE) or {}
+        df = build_fuel_display_data(days)
         if not df.empty:
-            df_save = df.copy()
-            if "日期" in df_save.columns:
-                df_save["日期"] = df_save["日期"].astype(str)
-            existing[cache_key] = df_save.to_dict(orient="records")
-        _save_cache(FUEL_CACHE, existing)
-    except:
+            # 更新缓存
+            try:
+                existing = _load_cache(FUEL_CACHE) or {}
+                df_save = df.copy()
+                if "日期" in df_save.columns:
+                    df_save["日期"] = df_save["日期"].astype(str)
+                existing[cache_key] = df_save.to_dict(orient="records")
+                _save_cache(FUEL_CACHE, existing)
+            except:
+                pass
+            return df
+    except Exception as e:
         pass
     
-    return df
+    # API失败，使用缓存作为兜底
+    cached = _load_cache(FUEL_CACHE)
+    if cached and cache_key in cached:
+        df = pd.DataFrame(cached[cache_key])
+        if not df.empty and "日期" in df.columns:
+            df["日期"] = pd.to_datetime(df["日期"])
+        return df
+    
+    return pd.DataFrame()
 
 def get_fuel_summary():
     """
-    获取燃料价格摘要（优先缓存）
+    获取燃料价格摘要（优先实时获取，缓存作为兜底）
     """
     from data_sources.fuel_api import get_fuel_latest_summary
     
     cache_key = "fuel_summary"
     
-    # 检查缓存
-    if _is_cache_fresh(FUEL_CACHE, FUEL_MAX_AGE):
-        cached = _load_cache(FUEL_CACHE)
-        if cached and cache_key in cached:
-            return cached[cache_key]
+    # 优先从API获取实时数据
+    try:
+        summary = get_fuel_latest_summary()
+        if summary:
+            # 更新缓存
+            try:
+                existing = _load_cache(FUEL_CACHE) or {}
+                existing[cache_key] = summary
+                _save_cache(FUEL_CACHE, existing)
+            except:
+                pass
+            return summary
+    except Exception as e:
+        pass
+    
+    # API失败，使用缓存作为兜底
+    cached = _load_cache(FUEL_CACHE)
+    if cached and cache_key in cached:
+        return cached[cache_key]
     
     # 缓存过期，从API获取
     summary = get_fuel_latest_summary()
