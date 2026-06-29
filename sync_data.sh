@@ -59,7 +59,7 @@ done
 if [ "$CHANGED" = true ]; then
     DATE_STR=$(date '+%Y-%m-%d')
     git commit -m "data: ${DATE_STR} 更新电价+检修数据"
-    git push origin main >> "$LOG_FILE" 2>&1
+    timeout 60 git push origin main >> "$LOG_FILE" 2>&1 || echo "[$(date +'%H:%M:%S')] ⚠️ 推送超时或失败" >> "$LOG_FILE"
     echo "[$(date '+%H:%M:%S')] ✅ 推送成功" >> "$LOG_FILE"
 else
     echo "[$(date '+%H:%M:%S')] 数据无变化，跳过" >> "$LOG_FILE"

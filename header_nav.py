@@ -61,7 +61,7 @@ def render_header_nav(current_page="电力大屏", margin_top="0px", nav_gap="0p
             with st.spinner("同步中..."):
                 _result = subprocess.run(
                     ["bash", os.path.join(_repo, "sync_data.sh")],
-                    capture_output=True, text=True, cwd=_repo, timeout=60
+                    capture_output=True, text=True, cwd=_repo, timeout=120
                 )
                 if _result.returncode == 0:
                     st.toast("✅ 同步成功", icon="☁️")
