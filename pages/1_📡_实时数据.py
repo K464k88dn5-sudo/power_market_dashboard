@@ -74,6 +74,12 @@ with col2:
         except:
             city_temps_df = get_all_cities_weather()
         
+        # 构建观测时间映射
+        obs_time_map = {}
+        if 'city_temps_df' in dir() and not city_temps_df.empty and "观测时间" in city_temps_df.columns:
+            for _, r in city_temps_df.iterrows():
+                obs_time_map[r["城市"]] = str(r["观测时间"])[:16].replace("T", " ")
+        
         city_data = []
         for city_name in list(GUANGDONG_CITIES.keys()):
             try:
@@ -81,8 +87,9 @@ with col2:
                 if not city_df.empty:
                     city_df["时间"] = pd.to_datetime(city_df["时间"]).dt.tz_localize(None)
                     last_24h = city_df[city_df["时间"] >= now_naive - timedelta(days=7)]
+                    obs_ts = obs_time_map.get(city_name, "")
                     for _, row in last_24h.iterrows():
-                        city_data.append({"地市": city_name, "时间": row["时间"].strftime("%m-%d %H:%M"), "温度℃": f'{row.get("温度(℃)", 0):.1f}'})
+                        city_data.append({"地市": city_name, "观测时间": obs_ts, "时间": row["时间"].strftime("%m-%d %H:%M"), "温度℃": f'{row.get("温度(℃)", 0):.1f}'})
             except:
                 pass
         if city_data:
