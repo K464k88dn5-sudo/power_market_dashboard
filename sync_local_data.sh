@@ -35,11 +35,14 @@ for i in $(seq -7 0); do
         continue
     fi
     MONTH=$(echo $D | cut -d'-' -f2 | sed 's/^0//')
-    DAY=$(echo $D | cut -d'-' -f3 | sed 's/^0//')
-    SRC="$SRC_BASE/实时训练数据/日前和实时电价占比/2026/$MONTH/实时节点电价查询($D).xlsx"
-    DST="$REPO_DIR/realtime_price/实时节点电价查询($D).xlsx"
-    if [ -f "$SRC" ]; then
-        cp "$SRC" "$DST"
+    SRC_DIR="$SRC_BASE/实时训练数据/日前和实时电价占比/2026/$MONTH"
+    if [ -d "$SRC_DIR" ]; then
+        mkdir -p "$REPO_DIR/realtime_price/$MONTH"
+        SRC="$SRC_DIR/实时节点电价查询($D).xlsx"
+        DST="$REPO_DIR/realtime_price/$MONTH/实时节点电价查询($D).xlsx"
+        if [ -f "$SRC" ]; then
+            cp "$SRC" "$DST"
+        fi
     fi
 done
 echo "✅ 同步: 实时电价数据"
