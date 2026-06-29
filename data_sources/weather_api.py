@@ -199,6 +199,7 @@ def fetch_all_cities_current() -> pd.DataFrame:
                         "湿度": obs["湿度"],
                         "风速": obs["风速"],
                         "天气": obs["天气"],
+                        "观测时间": obs.get("时间", ""),
                     })
             except Exception as e:
                 pass
