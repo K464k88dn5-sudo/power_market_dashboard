@@ -38,7 +38,23 @@ st.set_page_config(page_title="电力市场监控大屏", page_icon="⚡", layou
 
 from streamlit_autorefresh import st_autorefresh
 
-# 检查是否需要刷新（缓存过期时缩短刷新间隔）
+# 检查缓存状态
+from data.weather_cache import _load_cache, CACHE_MAX_AGE
+_cache = _load_cache()
+_cache_expired = False
+if "all_cities_current" not in _cache:
+    _cache_expired = True
+else:
+    from datetime import datetime, timedelta, timezone
+    _cn_tz = timezone(timedelta(hours=8))
+    try:
+        _ts = datetime.fromisoformat(_cache["all_cities_current"]["timestamp"])
+        if (datetime.now(_cn_tz) - _ts) > CACHE_MAX_AGE:
+            _cache_expired = True
+    except:
+        _cache_expired = True
+
+# 缓存过期时缩短刷新间隔
 if _cache_expired:
     st_autorefresh(interval=30 * 1000, key="auto_refresh_fast")  # 30秒后刷新获取新数据
 else:
