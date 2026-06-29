@@ -1089,7 +1089,17 @@ with col1:
 with col2:
     # ----- 广东地图 -----
     with st.container(border=True):
-        st.markdown('<div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo</span></div>', unsafe_allow_html=True)
+        # 获取数据时间
+        _temp_ts = ""
+        try:
+            from data.weather_cache import _load_cache, CACHE_MAX_AGE
+            _cache = _load_cache()
+            if "all_cities_current" in _cache:
+                _temp_ts = _cache["all_cities_current"].get("timestamp", "")[:16].replace("T", " ")
+        except:
+            pass
+        _temp_ts_str = f" · {_temp_ts}" if _temp_ts else ""
+        st.markdown(f'<div class="mod-head mod-head-g">🗺️ 广东地市实时温度<span class="mod-sub">21地市 · Open-Meteo{_temp_ts_str}</span></div>', unsafe_allow_html=True)
         if city_temps.empty:
             st.warning("数据获取失败")
         else:
