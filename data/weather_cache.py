@@ -167,3 +167,12 @@ def get_cache_status() -> dict:
             status[key] = {"error": "invalid cache entry"}
     
     return status
+
+# 兼容旧接口
+def load_city_weather(city: str, max_age_hours=6) -> pd.DataFrame:
+    """兼容旧接口：从缓存读取单城市气象数据"""
+    return get_cached_weather(city, forecast_days=2)
+
+def load_all_cities_weather(max_age_hours=6) -> pd.DataFrame:
+    """兼容旧接口：从缓存读取所有城市气象数据"""
+    return get_cached_all_cities()
