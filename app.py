@@ -860,24 +860,25 @@ kpi += f'<div class="kpi-card{_elec_pulse}"><div class="kpi-label">📊 电价�
 _load_max_val = None
 _load_peak_hour = None
 if ld:
-    _disclosure_dir_kpi = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disclosure")
-    _load_fp_kpi = os.path.join(_disclosure_dir_kpi, f"信息披露查询预测信息({ld}).xlsx")
+    _pred_dir_kpi = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+    _load_fp_kpi = os.path.join(_pred_dir_kpi, f"信息披露查询预测信息({ld}).xlsx")
     if os.path.exists(_load_fp_kpi):
         try:
-            _load_sheets_kpi = [s for s in pd.ExcelFile(_load_fp_kpi).sheet_names if "负荷预测" in s]
-            if _load_sheets_kpi:
-                _load_df_kpi = pd.read_excel(_load_fp_kpi, sheet_name=_load_sheets_kpi[0], header=None, skiprows=1)
-                if len(_load_df_kpi) > 0:
-                    _load_row_kpi = _load_df_kpi.iloc[0]
-                    _load_vals_kpi = _load_row_kpi[2:].tolist()
-                    if len(_load_vals_kpi) == 96:
-                        _load_hourly_kpi = [_load_vals_kpi[i*4] for i in range(24)]
-                    elif len(_load_vals_kpi) == 24:
-                        _load_hourly_kpi = _load_vals_kpi
-                    else:
-                        _load_hourly_kpi = _load_vals_kpi[:24]
-                    _load_max_val = max(_load_hourly_kpi)
-                    _load_peak_hour = _load_hourly_kpi.index(_load_max_val)
+            _load_df_kpi = pd.read_excel(_load_fp_kpi, sheet_name=0, header=None, skiprows=1)
+            for _, row in _load_df_kpi.iterrows():
+                ch = str(row.iloc[1]) if len(row) > 1 and pd.notna(row.iloc[1]) else ""
+                if "统调负荷" in ch:
+                    _load_vals_kpi = []
+                    for col_idx in range(2, min(98, len(row))):
+                        try:
+                            _load_vals_kpi.append(float(row.iloc[col_idx]))
+                        except:
+                            pass
+                    if len(_load_vals_kpi) >= 96:
+                        _load_hourly_kpi = [np.mean(_load_vals_kpi[h*4:(h+1)*4]) for h in range(24)]
+                        _load_max_val = max(_load_hourly_kpi)
+                        _load_peak_hour = _load_hourly_kpi.index(_load_max_val)
+                    break
         except Exception:
             pass
 
