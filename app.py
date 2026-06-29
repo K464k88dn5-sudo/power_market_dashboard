@@ -37,7 +37,12 @@ st.set_page_config(page_title="电力市场监控大屏", page_icon="⚡", layou
                    initial_sidebar_state="collapsed")
 
 from streamlit_autorefresh import st_autorefresh
-st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh")
+
+# 检查是否需要刷新（缓存过期时缩短刷新间隔）
+if _cache_expired:
+    st_autorefresh(interval=30 * 1000, key="auto_refresh_fast")  # 30秒后刷新获取新数据
+else:
+    st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh")  # 正常5分钟刷新
 
 # 刷新倒计时进度条
 st.markdown('<div class="refresh-bar-wrap"><div class="refresh-bar"></div></div>', unsafe_allow_html=True)
