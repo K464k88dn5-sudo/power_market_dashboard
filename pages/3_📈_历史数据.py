@@ -7,6 +7,7 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, timezone
 import os
+from data.data_paths import get_price_path, get_disclosure_pred_dir, get_disclosure_actual_dir
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,7 +23,7 @@ render_header_nav("历史数据", margin_top="-12px")
 
 
 # 数据路径
-PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")
+PRICE_PATH = get_price_path()
 FUEL_DATA_PATH = os.path.expanduser("~/Desktop/power_market_dashboard/data/fuel_cache.json")
 
 hour_cols = [f"{i}时" for i in range(24)]
@@ -62,7 +63,7 @@ with col_date:
         date_options = sorted(price_df['日期'].dt.strftime('%Y-%m-%d').unique(), reverse=True)
         selected_date = st.selectbox("选择日期", date_options, index=0, key="hist_date_sel")
     elif data_type in ["统调负荷预测", "省内B类电源预测"]:
-        disclosure_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = get_disclosure_pred_dir()
         import glob
         files = glob.glob(os.path.join(disclosure_dir, "信息披露查询预测信息(*.xlsx"))
         dates = sorted([f.split("(")[1].split(")")[0] for f in files], reverse=True)
@@ -71,7 +72,7 @@ with col_date:
         else:
             selected_date = _now().strftime('%Y-%m-%d')
     elif data_type in ["统调负荷实际", "省内B类电源实际"]:
-        actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
+        actual_dir = get_disclosure_actual_dir()
         import glob
         files = glob.glob(os.path.join(actual_dir, "信息披露查询实际信息(*.xlsx"))
         dates = sorted([f.split("(")[1].split(")")[0] for f in files], reverse=True)
@@ -188,7 +189,7 @@ elif data_type == "统调负荷预测":
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-r">📊 统调负荷预测<span class="mod-sub">日前预测</span></div>', unsafe_allow_html=True)
         
-        disclosure_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = get_disclosure_pred_dir()
         fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({selected_date}).xlsx")
         
         if os.path.exists(fp):
@@ -229,7 +230,7 @@ elif data_type == "省内B类电源预测":
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-b">📊 省内B类电源预测<span class="mod-sub">日前预测</span></div>', unsafe_allow_html=True)
         
-        disclosure_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+        disclosure_dir = get_disclosure_pred_dir()
         fp = os.path.join(disclosure_dir, f"信息披露查询预测信息({selected_date}).xlsx")
         
         if os.path.exists(fp):
@@ -270,7 +271,7 @@ elif data_type == "统调负荷实际":
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-r">📊 统调负荷实际<span class="mod-sub">实际出清</span></div>', unsafe_allow_html=True)
         
-        actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
+        actual_dir = get_disclosure_actual_dir()
         fp = os.path.join(actual_dir, f"信息披露查询实际信息({selected_date}).xlsx")
         
         if os.path.exists(fp):
@@ -304,7 +305,7 @@ elif data_type == "省内B类电源实际":
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-b">📊 省内B类电源实际<span class="mod-sub">实际出清</span></div>', unsafe_allow_html=True)
         
-        actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
+        actual_dir = get_disclosure_actual_dir()
         fp = os.path.join(actual_dir, f"信息披露查询实际信息({selected_date}).xlsx")
         
         if os.path.exists(fp):

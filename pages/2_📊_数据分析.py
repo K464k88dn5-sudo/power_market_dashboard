@@ -7,6 +7,7 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, timezone
 import os
+from data.data_paths import get_price_path, get_disclosure_pred_dir, get_disclosure_actual_dir, get_realtime_price_dir
 import sys
 
 # 添加项目根目录到路径
@@ -63,7 +64,7 @@ pio.templates["neumorphic"] = NEUMORPHIC_TEMPLATE
 pio.templates.default = "neumorphic"
 
 # 数据路径
-PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")
+PRICE_PATH = get_price_path()
 DISCLOSURE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "disclosure")
 
 # 读取电价数据
@@ -163,7 +164,7 @@ with col_left:
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-g">⚡ 负荷分析<span class="mod-sub">统调负荷 · B类电源 · 环比</span></div>', unsafe_allow_html=True)
         
-        _disclosure_dir_ld = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+        _disclosure_dir_ld = get_disclosure_pred_dir()
         
         # 日期选择（从披露数据获取可用日期）
         _ld_date_options = []
@@ -346,7 +347,7 @@ with col_right:
                 _cmp_has = True
             
             # 实时电价实际值
-            _rt_actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
+            _rt_actual_dir = get_realtime_price_dir()
             _rt_actual_path = os.path.join(_rt_actual_dir, str(int(_cmp_sel_date[5:7])))
             _rt_hourly = None
             if os.path.exists(_rt_actual_path):
@@ -412,7 +413,7 @@ with col_right:
             st.markdown('<div class="mod-head mod-head-r">⚡ 统调负荷对比<span class="mod-sub">日前预测 vs 实际</span></div>', unsafe_allow_html=True)
             
             # 选择日期（从披露数据获取）
-            _ld_cmp_disclosure_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+            _ld_cmp_disclosure_dir = get_disclosure_pred_dir()
             _ld_cmp_date_options = []
             if os.path.exists(_ld_cmp_disclosure_dir):
                 import glob
@@ -433,7 +434,7 @@ with col_right:
             _ld_cmp_fig = go.Figure()
             _ld_cmp_has = False
             
-            _ld_actual_dir = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
+            _ld_actual_dir = get_disclosure_actual_dir()
             _ld_actual_file = os.path.join(_ld_actual_dir, f"信息披露查询实际信息({_ld_cmp_sel_date}).xlsx")
             _ld_actual_hourly = None
             
@@ -462,7 +463,7 @@ with col_right:
                     pass
             
             # 日前预测统调负荷
-            _ld_forecast_dir = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+            _ld_forecast_dir = get_disclosure_pred_dir()
             _ld_forecast_file = os.path.join(_ld_forecast_dir, f"信息披露查询预测信息({_ld_cmp_sel_date}).xlsx")
             _ld_forecast_hourly = None
             

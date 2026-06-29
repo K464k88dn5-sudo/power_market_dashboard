@@ -7,6 +7,7 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, timezone
 import os
+from data.data_paths import get_price_path, get_disclosure_pred_dir, get_disclosure_actual_dir, get_realtime_price_dir
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -91,7 +92,7 @@ with col3:
         # ---- 实时电价 ----
         if data_type == "实时电价":
             st.markdown(f'<div class="mod-head mod-head-p">📡 实时电价<span class="mod-sub">{selected_date}</span></div>', unsafe_allow_html=True)
-            RT_PRICE_DIR = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
+            RT_PRICE_DIR = get_realtime_price_dir()
             rt_month = str(int(selected_date[5:7]))
             rt_path = os.path.join(RT_PRICE_DIR, rt_month)
             rt_file = os.path.join(rt_path, f"实时节点电价查询({selected_date}).xlsx")
@@ -125,7 +126,7 @@ with col3:
         # ---- 日前电价 ----
         elif data_type == "日前电价":
             st.markdown(f'<div class="mod-head mod-head-b">📊 日前电价<span class="mod-sub">{selected_date}</span></div>', unsafe_allow_html=True)
-            PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")
+            PRICE_PATH = get_price_path()
             if os.path.exists(PRICE_PATH):
                 try:
                     price_df = pd.read_excel(PRICE_PATH)
@@ -155,7 +156,7 @@ with col3:
         # ---- 实时负荷 ----
         elif data_type == "实时负荷":
             st.markdown(f'<div class="mod-head mod-head-r">⚡ 实时负荷<span class="mod-sub">{selected_date}</span></div>', unsafe_allow_html=True)
-            DISCLOSURE_DIR = os.path.expanduser("~/projects/能源电力资料/实时训练数据/信息披露实际")
+            DISCLOSURE_DIR = get_disclosure_actual_dir()
             actual_file = os.path.join(DISCLOSURE_DIR, f"信息披露查询实际信息({selected_date}).xlsx")
             if os.path.exists(actual_file):
                 try:
@@ -186,7 +187,7 @@ with col3:
         # ---- 统调负荷预测 ----
         elif data_type == "统调负荷预测":
             st.markdown(f'<div class="mod-head mod-head-g">📈 统调负荷预测<span class="mod-sub">{selected_date}</span></div>', unsafe_allow_html=True)
-            DISCLOSURE_PRED_DIR = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+            DISCLOSURE_PRED_DIR = get_disclosure_pred_dir()
             pred_file = os.path.join(DISCLOSURE_PRED_DIR, f"信息披露查询预测信息({selected_date}).xlsx")
             if os.path.exists(pred_file):
                 try:
@@ -228,7 +229,7 @@ with col3:
         # ---- 省内B类电源 ----
         elif data_type == "省内B类电源":
             st.markdown(f'<div class="mod-head mod-head-p">🔋 省内B类电源<span class="mod-sub">{selected_date}</span></div>', unsafe_allow_html=True)
-            DISCLOSURE_PRED_DIR = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
+            DISCLOSURE_PRED_DIR = get_disclosure_pred_dir()
             pred_file = os.path.join(DISCLOSURE_PRED_DIR, f"信息披露查询预测信息({selected_date}).xlsx")
             if os.path.exists(pred_file):
                 try:
@@ -270,8 +271,8 @@ with col3:
         # ---- 电价对比 ----
         elif data_type == "电价对比":
             st.markdown(f'<div class="mod-head mod-head-b">📊 电价对比<span class="mod-sub">日前 vs 实时</span></div>', unsafe_allow_html=True)
-            PRICE_PATH = os.path.expanduser("~/projects/能源电力资料/日前训练数据/日前节点电价.xlsx")
-            RT_PRICE_DIR = os.path.expanduser("~/projects/能源电力资料/实时训练数据/日前和实时电价占比/2026")
+            PRICE_PATH = get_price_path()
+            RT_PRICE_DIR = get_realtime_price_dir()
             if os.path.exists(PRICE_PATH):
                 price_df = pd.read_excel(PRICE_PATH)
                 price_df['日期'] = pd.to_datetime(price_df['日期'])
