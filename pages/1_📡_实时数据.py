@@ -20,8 +20,9 @@ def _now(): return datetime.now(_CN_TZ)
 from header_nav import render_header_nav
 render_header_nav("实时数据", margin_top="-12px")
 
-from data_sources.weather_api import GUANGDONG_CITIES
+from data_sources.weather_api import GUANGDONG_CITIES, fetch_weather_single, fetch_all_cities_current
 from data.data_manager import get_weather_data, get_all_cities_weather
+from data.weather_cache import save_weather_cache, save_all_cities_cache
 
 hour_cols = [f"{i}时" for i in range(24)]
 selected_date = _now().strftime('%Y-%m-%d')
@@ -36,7 +37,13 @@ col1, col2, col3 = st.columns(3)
 with col1:
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-w">🌤️ 气象数据<span class="mod-sub">广州 · 近7天</span></div>', unsafe_allow_html=True)
-        weather_df = get_weather_data("广州", forecast_days=2)
+        # 实时获取气象数据并缓存
+        try:
+            weather_df = fetch_weather_single("广州", forecast_days=2)
+            if not weather_df.empty:
+                save_weather_cache("广州", 2, weather_df)
+        except:
+            weather_df = get_weather_data("广州", forecast_days=2)
         if not weather_df.empty:
             weather_df["时间"] = pd.to_datetime(weather_df["时间"]).dt.tz_localize(None)
             last_24h = weather_df[weather_df["时间"] >= now_naive - timedelta(days=7)].copy()
@@ -59,6 +66,14 @@ with col1:
 with col2:
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-g">🌡️ 地市温度<span class="mod-sub">近7天</span></div>', unsafe_allow_html=True)
+        # 实时获取所有城市温度并缓存
+        try:
+            city_temps_df = fetch_all_cities_current()
+            if not city_temps_df.empty:
+                save_all_cities_cache(city_temps_df)
+        except:
+            city_temps_df = get_all_cities_weather()
+        
         city_data = []
         for city_name in list(GUANGDONG_CITIES.keys()):
             try:
