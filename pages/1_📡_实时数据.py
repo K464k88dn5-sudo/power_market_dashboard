@@ -82,7 +82,7 @@ with col2:
 # ============================================================
 with col3:
     with st.container(border=True):
-        data_type = st.selectbox("数据类型", ["实时电价", "日前电价", "实时负荷", "统调负荷预测", "省内B类电源", "电价对比"], key="rt_data_type", label_visibility="visible")
+        data_type = st.selectbox("数据类型", ["统调负荷预测", "实时电价", "日前电价", "实时负荷", "省内B类电源", "电价对比"], key="rt_data_type", label_visibility="visible")
 
         # 自动刷新（5分钟）
         from streamlit_autorefresh import st_autorefresh

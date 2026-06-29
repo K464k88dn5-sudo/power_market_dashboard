@@ -163,7 +163,7 @@ with col_left:
     with st.container(border=True):
         st.markdown('<div class="mod-head mod-head-g">⚡ 负荷分析<span class="mod-sub">统调负荷 · B类电源 · 环比</span></div>', unsafe_allow_html=True)
         
-        _disclosure_dir_ld = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "disclosure")
+        _disclosure_dir_ld = os.path.expanduser("~/projects/能源电力资料/日前训练数据/信息披露日前")
         
         # 日期选择（从披露数据获取可用日期）
         _ld_date_options = []
