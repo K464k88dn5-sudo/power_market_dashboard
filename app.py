@@ -1721,17 +1721,18 @@ with col3:
                     try:
                         _pred_df = pd.read_excel(_pred_fp, sheet_name=0, header=None, skiprows=1)
                         for _, row in _pred_df.iterrows():
-                            ch = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
-                            if "统调负荷" in ch and "预测" in ch:
+                            ch = str(row.iloc[1]) if len(row) > 1 and pd.notna(row.iloc[1]) else ""
+                            if "统调负荷" in ch:
                                 _pred_vals = []
-                                for col_idx in range(1, min(25, len(row))):
+                                for col_idx in range(2, min(98, len(row))):
                                     try:
                                         _pred_vals.append(float(row.iloc[col_idx]))
                                     except:
                                         pass
-                                if len(_pred_vals) >= 24:
+                                if len(_pred_vals) >= 96:
+                                    _pred_hourly = [np.mean(_pred_vals[h*4:(h+1)*4]) for h in range(24)]
                                     _load_fig.add_trace(go.Scattergl(
-                                        x=list(range(24)), y=_pred_vals,
+                                        x=list(range(24)), y=_pred_hourly,
                                         name=f"日前预测 {sel_date}",
                                         line=dict(color="#ff6b6b", width=2),
                                         mode="lines+markers", marker=dict(size=4),
@@ -1748,17 +1749,18 @@ with col3:
                     try:
                         _actual_df = pd.read_excel(_actual_fp, sheet_name=0, header=None, skiprows=1)
                         for _, row in _actual_df.iterrows():
-                            ch = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
-                            if "统调负荷" in ch and "实际" in ch:
+                            ch = str(row.iloc[1]) if len(row) > 1 and pd.notna(row.iloc[1]) else ""
+                            if "统调负荷" in ch:
                                 _actual_vals = []
-                                for col_idx in range(1, min(25, len(row))):
+                                for col_idx in range(2, min(98, len(row))):
                                     try:
                                         _actual_vals.append(float(row.iloc[col_idx]))
                                     except:
                                         pass
-                                if len(_actual_vals) >= 24:
+                                if len(_actual_vals) >= 96:
+                                    _actual_hourly = [np.mean(_actual_vals[h*4:(h+1)*4]) for h in range(24)]
                                     _load_fig.add_trace(go.Scattergl(
-                                        x=list(range(24)), y=_actual_vals,
+                                        x=list(range(24)), y=_actual_hourly,
                                         name=f"实时实际 {sel_date}",
                                         line=dict(color="#54a0ff", width=2),
                                         mode="lines+markers", marker=dict(size=4),
