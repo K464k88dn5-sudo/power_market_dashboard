@@ -303,7 +303,10 @@ with col_left:
         
         # 取最近30天
         daily_avg = daily_avg.tail(30)
-        daily_avg['日期标签'] = daily_avg['日期'].apply(lambda d: f"{d.month}月{d.day}日")
+        if '日期' in daily_avg.columns:
+            daily_avg['日期标签'] = daily_avg['日期'].apply(lambda d: f"{d.month}月{d.day}日")
+        else:
+            daily_avg['日期标签'] = range(len(daily_avg))
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=daily_avg['日期标签'], y=daily_avg['均价'], name='均价', line=dict(color='#007bff', width=2)))
