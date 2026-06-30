@@ -290,9 +290,16 @@ with col_left:
         st.markdown('<div class="mod-head mod-head-w">📈 周度电价趋势<span class="mod-sub">近30天</span></div>', unsafe_allow_html=True)
         
         daily_avg = price_df.copy()
-        daily_avg['均价'] = daily_avg[hour_cols].mean(axis=1)
-        daily_avg['峰值'] = daily_avg[hour_cols].max(axis=1)
-        daily_avg['谷值'] = daily_avg[hour_cols].min(axis=1)
+        # 检查列名是否存在
+        valid_hour_cols = [h for h in hour_cols if h in daily_avg.columns]
+        if valid_hour_cols:
+            daily_avg['均价'] = daily_avg[valid_hour_cols].mean(axis=1)
+            daily_avg['峰值'] = daily_avg[valid_hour_cols].max(axis=1)
+            daily_avg['谷值'] = daily_avg[valid_hour_cols].min(axis=1)
+        else:
+            daily_avg['均价'] = 0
+            daily_avg['峰值'] = 0
+            daily_avg['谷值'] = 0
         
         # 取最近30天
         daily_avg = daily_avg.tail(30)
@@ -532,10 +539,18 @@ with col_right:
             st.markdown('<div class="mod-head mod-head-o">📊 峰谷时段分析<span class="mod-sub">近30天分布</span></div>', unsafe_allow_html=True)
             
             daily_stats = price_df.copy()
-            daily_stats['峰值'] = daily_stats[hour_cols].max(axis=1)
-            daily_stats['谷值'] = daily_stats[hour_cols].min(axis=1)
-            daily_stats['峰时'] = daily_stats[hour_cols].idxmax(axis=1).apply(lambda x: int(x.replace('时', '')))
-            daily_stats['谷时'] = daily_stats[hour_cols].idxmin(axis=1).apply(lambda x: int(x.replace('时', '')))
+            # 检查列名是否存在
+            valid_hour_cols_stats = [h for h in hour_cols if h in daily_stats.columns]
+            if valid_hour_cols_stats:
+                daily_stats['峰值'] = daily_stats[valid_hour_cols_stats].max(axis=1)
+                daily_stats['谷值'] = daily_stats[valid_hour_cols_stats].min(axis=1)
+                daily_stats['峰时'] = daily_stats[valid_hour_cols_stats].idxmax(axis=1).apply(lambda x: int(x.replace('时', '')))
+                daily_stats['谷时'] = daily_stats[valid_hour_cols_stats].idxmin(axis=1).apply(lambda x: int(x.replace('时', '')))
+            else:
+                daily_stats['峰值'] = 0
+                daily_stats['谷值'] = 0
+                daily_stats['峰时'] = 0
+                daily_stats['谷时'] = 0
             daily_stats['峰谷差'] = daily_stats['峰值'] - daily_stats['谷值']
             
             # 取最近30天
